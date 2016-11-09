@@ -1,3 +1,3 @@
-DROP TABLE blog.users;
+DROP TABLE blog.Users;
 DROP SCHEMA blog;
 
