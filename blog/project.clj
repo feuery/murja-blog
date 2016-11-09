@@ -22,7 +22,10 @@
 
                  [org.postgresql/postgresql "9.4-1201-jdbc41"]
                  [ragtime "0.6.3"]
-                 [hikari-cp "1.7.5"]]
+                 [hikari-cp "1.7.5"]
+                 [metosin/compojure-api "1.1.9"]
+                 [prismatic/schema "1.1.3"]
+                 [cheshire "5.6.3"]]
 
   :plugins [[lein-environ "1.0.2"]
             [lein-cljsbuild "1.1.1"]

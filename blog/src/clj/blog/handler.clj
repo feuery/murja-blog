@@ -1,37 +1,18 @@
 (ns blog.handler
-  (:require [compojure.core :refer [GET defroutes]]
-            [compojure.route :refer [not-found resources]]
+  (:require [compojure.api.api :as api :refer [defapi api]]
             [hiccup.page :refer [include-js include-css html5]]
             [blog.middleware :refer [wrap-middleware]]
+            [blog.posts.routes :as post-r]
             [config.core :refer [env]]))
 
-(def mount-target
-  [:div#app
-      [:h3 "ClojureScript has not been compiled!"]
-      [:p "please run "
-       [:b "lein figwheel"]
-       " in order to start the compiler"]])
 
-(defn head []
-  [:head
-   [:meta {:charset "utf-8"}]
-   [:meta {:name "viewport"
-           :content "width=device-width, initial-scale=1"}]
-   (include-css (if (env :dev) "/css/site.css" "/css/site.min.css"))])
+#_((include-css (if (env :dev) "/css/site.css" "/css/site.min.css"))
+   (include-js "/js/app.js"))
 
-(defn loading-page []
-  (html5
-    (head)
-    [:body {:class "body-container"}
-     mount-target
-     (include-js "/js/app.js")]))
-
-
-(defroutes routes
-  (GET "/" [] (loading-page))
-  (GET "/about" [] (loading-page))
-  
-  (resources "/")
-  (not-found "Not Found"))
-
-(def app (wrap-middleware #'routes))
+(defapi app {:swagger {:ui "/api-docs"
+                       :spec "/swagger.json"
+                       :data {:info {:title "Feuer's clj-blog's backend"
+                                     :description "Backend for managing blog posts and stuff"}
+                              :tags [{:name "posts"
+                                      :description "Routes for managing posts"}]}}}
+  #'post-r/routes)
