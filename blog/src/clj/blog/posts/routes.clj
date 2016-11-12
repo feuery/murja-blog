@@ -7,10 +7,14 @@
             [blog.posts.schemas :refer [Post]]
             [blog.posts.db :refer [get-by-id]]))
 
+(declare db)
+
 (def routes
   (context "/posts" []
+           :sys _
            :tags ["posts"]
-           (GET "/:id" []
+           (GET "/:id" rq
                 :path-params [id :- s/Int]
                 :return Post
-                (ok (get-by-id id)))))
+                (let [{:keys [system]} rq]
+                  (ok (get-by-id db id))))))

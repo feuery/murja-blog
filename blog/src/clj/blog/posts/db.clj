@@ -2,7 +2,6 @@
   (:require [clojure.java.jdbc :as j]
             [schema.core :as s]
             [blog.posts.schemas :refer [Post]]
-            [blog.ragtime :refer [db]]
             [clojure.pprint :refer :all]
             [cheshire.core :as ch])
   (:import [org.postgresql.util PGobject]))
@@ -24,8 +23,8 @@ blogdb=# INSERT INTO blog.Post (Title, Content, creator_id, tags) VALUES ('Hello
          
 
 (s/defn get-by-id :- Post
-  [id]
-  (let [{:keys [username nickname img_location] :as db-row}  (j/query db ["SELECT p.Title, p.Content, p.tags, u.Username, u.Nickname, u.Img_location
+  [{:keys [db-spec]} id]
+  (let [{:keys [username nickname img_location] :as db-row}  (j/query db-spec ["SELECT p.Title, p.Content, p.tags, u.Username, u.Nickname, u.Img_location
 FROM blog.Post p
 JOIN blog.Users u ON u.ID = p.creator_id
 WHERE p.ID = ?" id] :result-set-fn first)]

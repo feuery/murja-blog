@@ -4,7 +4,10 @@
             [ring.adapter.jetty :refer [run-jetty]])
   (:gen-class))
 
- (defn -main [& args]
-   (let [port (Integer/parseInt (or (env :port) "3000"))]
-     (run-jetty app {:port port :join? false})
-     (println "Server running!")))
+(defn run-server! [port]
+  {:pre [(number? port)]}
+  (run-jetty app {:port port :join? false}))
+
+(defn stop-server! [s]
+  (if s
+    (.stop s)))
