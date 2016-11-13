@@ -5,8 +5,8 @@
 
 (defn go
   ([port db-passwd]
-  (reset! current-system {:db (start-db db-passwd)
-                          :server (start-server! port)}))
+   (reset! current-system {:db (start-db db-passwd)
+                           :server (start-server! port)}))
   ([]
    (go 3000 "")))
 

@@ -5,6 +5,7 @@ CREATE TABLE blog.Comment
 	parent_comment_id INT NULL,
 	Content TEXT NOT NULL DEFAULT '',
 	creator_id INT NOT NULL,
+	created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY(ID),
 	FOREIGN KEY(creator_id) REFERENCES blog.users(ID)
 		ON UPDATE CASCADE

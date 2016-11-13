@@ -1,5 +1,6 @@
 (ns blog.posts.schemas
-  (:require [schema.core :as s]))
+  (:require [schema.core :as s])
+  (:import [java.util Date]))
 
 (s/defschema User
   {:username s/Str
@@ -10,4 +11,15 @@
   {:title s/Str
    :content s/Str
    :creator User
-   :tags [s/Str]})
+   :tags [s/Str]
+   :amount-of-comments s/Num})
+
+(s/defschema Comment
+  {:content s/Str
+   :creator User
+   ;; This is going to be fun once these schemas are needed client side...
+   :created_at Date
+   (s/optional-key :children) [(s/recursive #'Comment)]})
+
+(s/defschema Commented-Post
+  (assoc Post :comments [Comment]))
