@@ -5,28 +5,27 @@
             [ring.util.http-response :refer [internal-server-error ok]]
             [clojure.pprint :refer :all]
             [blog.posts.schemas :as post-sc]
-            [blog.posts.db :as pdb]))
-
-(declare db)
-
-(defmacro if-db [& forms]
-  `(if (and ~'db
-            (:db-spec ~'db))
-     (do
-       ~@forms)
-     (internal-server-error "Db is a lie")))
+            [blog.posts.db :as pdb]
+            [blog.util :refer [destructure-db]]))
 
 (def routes
   (context "/posts" []
-           :sys _
+           :sys sys
            :tags ["posts"]
-           (GET "/:id" rq
+           (GET "/:id" []
                 :path-params [id :- s/Int]
                 :return post-sc/Commented-Post
-                (if-db
-                 (pdb/get-by-id db id)))
-           (GET "/all/:limit" rq
+                :summary "Returns a post per its id"
+                (destructure-db [sys]
+                                (ok (pdb/get-by-id db id))))
+           (GET "/all/:limit" []
                 :return [post-sc/Post]
-                :path-params [limit :- (s/maybe s/Int)]
-                (if-db
-                 (pdb/get-all db limit)))))
+                :path-params [limit :- s/Int]
+                :summary "Returns first $limit of all posts sorted by their creation date DESC"
+                (destructure-db [sys]
+                                (pdb/get-all db limit)))
+           (GET "/" []
+                :return [post-sc/Post]
+                :summary "Returns all posts sorted by their creation date DESC"
+                (destructure-db [sys]
+                                (pdb/get-all db nil)))))
