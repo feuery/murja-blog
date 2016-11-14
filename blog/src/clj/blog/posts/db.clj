@@ -73,7 +73,7 @@ ORDER BY c.created_at", post-id])
 
 (s/defn ^:always-validate get-by-id :- sc/Commented-Post
   [{:keys [db-spec]} id]
-  (let [db-row (j/query db-spec ["SELECT p.Title, p.Content, p.tags, u.Username, u.Nickname, u.Img_location, COUNT(c.ID) AS amount_of_comments
+  (let [db-row (j/query db-spec ["SELECT p.Title, p.created_at, p.Content, p.tags, u.Username, u.Nickname, u.Img_location, COUNT(c.ID) AS amount_of_comments
 FROM blog.Post p
 JOIN blog.Users u ON u.ID = p.creator_id
 JOIN blog.Comment c ON c.parent_post_id = p.ID
@@ -86,16 +86,18 @@ GROUP BY p.ID, u.ID" id] :result-set-fn first
 (s/defn ^:always-validate get-all :- [sc/Post]
   [{:keys [db-spec]} limit :- (s/maybe s/Int)]
   (let [sql-vec (if limit
-                  ["SELECT p.Title, p.Content, p.tags, u.Username, u.Nickname, u.Img_location, COUNT(c.ID) AS amount_of_comments
+                  ["SELECT p.Title, p.Content, p.created_at, p.tags, u.Username, u.Nickname, u.Img_location, COUNT(c.ID) AS amount_of_comments
 FROM blog.Post p
 JOIN blog.Users u ON u.ID = p.creator_id
-JOIN blog.Comment c ON c.parent_post_id = p.ID
+LEFT JOIN blog.Comment c ON c.parent_post_id = p.ID
 GROUP BY p.ID, u.ID
+ORDER BY p.created_at DESC
 LIMIT ?" limit]
-                  ["SELECT p.Title, p.Content, p.tags, u.Username, u.Nickname, u.Img_location, COUNT(c.ID) AS amount_of_comments
+                  ["SELECT p.Title, p.Content, p.created_at, p.tags, u.Username, u.Nickname, u.Img_location, COUNT(c.ID) AS amount_of_comments
 FROM blog.Post p
 JOIN blog.Users u ON u.ID = p.creator_id
-JOIN blog.Comment c ON c.parent_post_id = p.ID
-GROUP BY p.ID, u.ID"])]
+LEFT JOIN blog.Comment c ON c.parent_post_id = p.ID
+GROUP BY p.ID, u.ID
+ORDER BY p.created_at DESC"])]
     (j/query db-spec sql-vec :row-fn (comp #(change-key % :amount_of_comments :amount-of-comments)
                                            ->Post))))

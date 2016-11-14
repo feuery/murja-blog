@@ -11,6 +11,7 @@
   {:title s/Str
    :content s/Str
    :creator User
+   :created_at Date
    :tags [s/Str]
    :amount-of-comments s/Num})
 
