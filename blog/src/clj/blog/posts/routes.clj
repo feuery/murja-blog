@@ -24,6 +24,13 @@
                 :summary "Returns first $limit of all posts sorted by their creation date DESC"
                 (destructure-db [sys]
                                 (pdb/get-all db limit)))
+           (GET "/page/:page/page-size/:page-size" []
+                :return [post-sc/Post]
+                :path-params [page :- s/Int
+                              page-size :- s/Int]
+                :summary "Returns a page of specific size. Posts are sorted by their creation date DESC"
+                (destructure-db [sys]
+                                (pdb/get-page db page page-size)))
            (GET "/" []
                 :return [post-sc/Post]
                 :summary "Returns all posts sorted by their creation date DESC"
