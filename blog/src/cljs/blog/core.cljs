@@ -1,19 +1,16 @@
 (ns blog.core
     (:require [reagent.core :as reagent :refer [atom]]
               [reagent.session :as session]
+              [re-frame.core :refer [dispatch]]
               [secretary.core :as secretary :include-macros true]
-              [accountant.core :as accountant]))
+              [accountant.core :as accountant]
+
+              [blog.settings :refer [settings]]
+              [blog.state.handlers]
+              [blog.main.post-widget :refer [default-post-widget]]))
 
 ;; -------------------------
 ;; Views
-
-(defn home-page []
-  [:div [:h2 "Welcome to blog"]
-   [:div [:a {:href "/about"} "go to about page"]]])
-
-(defn about-page []
-  [:div [:h2 "About blog"]
-   [:div [:a {:href "/"} "go to the home page"]]])
 
 (defn current-page []
   [:div [(session/get :current-page)]])
@@ -21,16 +18,16 @@
 ;; -------------------------
 ;; Routes
 
-(secretary/defroute "/" []
-  (session/put! :current-page #'home-page))
+(secretary/defroute "/blog/" []
+  (session/put! :current-page #'default-post-widget))
 
-(secretary/defroute "/about" []
-  (session/put! :current-page #'about-page))
+(secretary/defroute "/" []
+  (session/put! :current-page #'default-post-widget))
 
 ;; -------------------------
 ;; Initialize app
 
-(defn mount-root []
+(defn mount-root []  
   (reagent/render [current-page] (.getElementById js/document "app")))
 
 (defn init! []
@@ -43,3 +40,5 @@
        (secretary/locate-route path))})
   (accountant/dispatch-current!)
   (mount-root))
+
+(dispatch [:load-page 1 (:recent-post-count settings)]) ;;page 1 amount-of-posts-per-page
