@@ -17,6 +17,7 @@
  :page-loaded
  [trim-v]
  (fn [db [result]]
-   (js/console.log "Loaded " (pr-str result))
-   (assoc db :page {:type :recent-posts
-                    :posts result})))
+   (assoc db
+          :page {:type :recent-posts
+                 :posts result}
+          :show-devtool? false))) 

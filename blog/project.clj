@@ -87,6 +87,7 @@
    :nrepl-port 7002
    :nrepl-middleware ["cemerick.piggieback/wrap-cljs-repl"]
    :css-dirs ["resources/public/css"]
+   :hawk-options {:watcher :polling}
    :ring-handler blog.handler/app}
 
 

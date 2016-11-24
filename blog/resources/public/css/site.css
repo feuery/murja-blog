@@ -9,26 +9,22 @@
   line-height: 1.5em;
 }
 
-h1, h2, h3 {
-  color: #000;
-}
-h1 {
-  font-size: 2.5em
-}
-
-h2 {
-  font-size: 2em
+#devtool {
+    background-color: #FF0000;
+    position: fixed;
+    right: 1%;
+    bottom: 1%;
 }
 
-h3 {
-  font-size: 1.5em
+#minidevtool {
+    width: 20%;
+    position: fixed;
+    right: 1%;
+    bottom: 1%;
+    background-color: #FF9002;
+    /* display: table; */
 }
 
-a {
-  text-decoration: none;
-  color: #09f;
-}
-
-a:hover {
-  text-decoration: underline;
+#devtool td {
+    border: 2px solid black;
 }

@@ -1,19 +1,26 @@
 (ns blog.core
     (:require [reagent.core :as reagent :refer [atom]]
               [reagent.session :as session]
-              [re-frame.core :refer [dispatch]]
+              [re-frame.core :refer [dispatch dispatch-sync subscribe]]
+              [re-frame.db :refer [app-db]]
               [secretary.core :as secretary :include-macros true]
               [accountant.core :as accountant]
 
               [blog.settings :refer [settings]]
+              [blog.devtool :refer [devtool]]
               [blog.state.handlers]
+              [blog.state.devtool-subs]
               [blog.main.post-widget :refer [default-post-widget]]))
 
 ;; -------------------------
 ;; Views
 
 (defn current-page []
-  [:div [(session/get :current-page)]])
+  (let [devtool-vis? (subscribe [:devtool-visible?])]
+    (fn []
+      [:div
+       [(session/get :current-page)]
+        [devtool @app-db @devtool-vis?]])))
 
 ;; -------------------------
 ;; Routes
@@ -22,14 +29,17 @@
   (session/put! :current-page #'default-post-widget))
 
 (secretary/defroute "/" []
-  (session/put! :current-page #'default-post-widget))
+  (dispatch-sync [:load-page 1 (:recent-post-count settings)])
+  (session/put! :current-page #'default-post-widget)) ;;page 1 amount-of-posts-per-page)
 
 ;; -------------------------
 ;; Initialize app
 
-(defn mount-root []  
-  (reagent/render [current-page] (.getElementById js/document "app")))
+(defn mount-root []
+  (let [target (.getElementById js/document "app")]
+    (reagent/render [current-page] target)))
 
+;;Called in $blogroot/env/dev/cljs/blog/dev.cljs
 (defn init! []
   (accountant/configure-navigation!
     {:nav-handler
@@ -39,6 +49,6 @@
      (fn [path]
        (secretary/locate-route path))})
   (accountant/dispatch-current!)
-  (mount-root))
+  (mount-root)
+  (js/console.log "init!"))
 
-(dispatch [:load-page 1 (:recent-post-count settings)]) ;;page 1 amount-of-posts-per-page
