@@ -27,9 +27,9 @@
      (into [:table]
            (mapv (partial devtool-branch []) db))
      
-     [:button {:on-click #(dispatch [:toggle-devtool-visibility])}
+     [:button.dev_btn {:on-click #(dispatch [:toggle-devtool-visibility])}
       "Click to hide appdb's state"]]
     [:div#minidevtool
-     [:button
+     [:button.dev_btn
       {:on-click #(dispatch [:toggle-devtool-visibility])}
       "Click to show appdb's state"]]))
