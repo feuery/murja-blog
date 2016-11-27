@@ -19,8 +19,8 @@
                  :body [{:keys [username password]} {:username s/Str
                                                      :password s/Str}]
                  (destructure-db [sys]
-                                 (if-let [groups (db/authenticate? db username password)]
-                                   (assoc-in (ok groups) [:session :identity] {:_id (rand-int Integer/MAX_VALUE)
+                                 (if-let [login-data (db/authenticate? db username password)]
+                                   (assoc-in (ok login-data) [:session :identity] {:_id (:userid login-data)
                                                                                :groups (db/user-groups db username)})
                                    (unauthorized))))
            (POST "/logout" []

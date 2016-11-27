@@ -5,8 +5,9 @@
             [blog.util :refer [value-of]]))
 
 (defn loginview [user]
-  (let [login-state (r/atom {:username ""
-                             :password ""})]
+  (let [default {:username ""
+                 :password ""}
+        login-state (r/atom default)]
     (fn [user]
       (if-not user
         [:div#loginview
@@ -19,6 +20,7 @@
                                        :type :password}]]
          [:button {:on-click #(dispatch [:log-in @login-state])} "Log in!"]]
         (let [{:keys [nickname img_location]} user]
+          (reset! login-state default)
           [:div#loginview
            [:img.user_avatar {:src img_location
                   :alt (str nickname "'s avatar")}]

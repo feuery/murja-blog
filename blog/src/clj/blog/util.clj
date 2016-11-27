@@ -16,3 +16,14 @@
 
 (defn in? [col x]
   (some (partial = x) col))
+
+;; Why tf is xor not part of the damned stdlib?
+(defmacro xor 
+  ([] nil)
+  ([a] a)
+  ([a b]
+    `(let [a# ~a
+           b# ~b]
+      (if a# 
+        (if b# nil a#)
+        (if b# b# nil)))))
