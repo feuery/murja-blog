@@ -20,7 +20,8 @@
                                                      :password s/Str}]
                  (destructure-db [sys]
                                  (if-let [groups (db/authenticate? db username password)]
-                                   (assoc-in (ok groups) [:session :identity] {:_id (rand-int Integer/MAX_VALUE)})
+                                   (assoc-in (ok groups) [:session :identity] {:_id (rand-int Integer/MAX_VALUE)
+                                                                               :groups (db/user-groups db username)})
                                    (unauthorized))))
            (POST "/logout" []
                  (assoc-in (ok {}) [:session :identity] nil))

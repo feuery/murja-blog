@@ -6,7 +6,8 @@
             [clojure.pprint :refer :all]
             [blog.posts.schemas :as post-sc]
             [blog.posts.db :as pdb]
-            [blog.util :refer [destructure-db]]))
+            [blog.util :refer [destructure-db]]
+            [blog.access :refer [can?]]))
 
 (def routes
   (context "/posts" []
@@ -35,4 +36,12 @@
                 :return [post-sc/Post]
                 :summary "Returns all posts sorted by their creation date DESC"
                 (destructure-db [sys]
-                                (pdb/get-all db nil)))))
+                                (pdb/get-all db nil)))
+
+           (context "/post" []
+                    :auth-rules (partial can? "create-post")
+                    (POST "/post" []
+                          :summary "Writes a new post into the db"
+                          (println "Wrote a post!")))))
+                 
+  

@@ -27,3 +27,11 @@ WHERE u.Username = ? AND u.Password = ?" username (sha-512 passwd)])]
             {:nickname nickname
              :img_location img_location
              :primary-group-name groupname}))))))
+
+(defn user-groups
+  [{:keys [db-spec]} username]
+  (j/query db-spec ["SELECT ug.ID, ug.Name, ug.Description
+FROM blog.Users u
+LEFT JOIN blog.GroupMapping um ON um.UserID = u.ID
+LEFT JOIN blog.UserGroup ug ON um.GroupID = ug.ID
+WHERE u.Username = ?" username]))
