@@ -21,3 +21,16 @@
    (if (s/validate login-response result)
      (assoc db :current-user result)
      db)))
+
+(reg-event-fx
+ :log-out
+ [trim-v]
+ (fn [{:keys [db]} _]
+   {:post {:url (str "/api/login/logout")
+           :dispatch-key :logout-succeeded}
+    :db db}))
+
+(reg-event-db
+ :logout-succeeded
+ (fn [db _]
+   (assoc db :current-user nil)))

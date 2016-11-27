@@ -23,7 +23,7 @@
                                    (assoc-in (ok groups) [:session :identity] {:_id (rand-int Integer/MAX_VALUE)})
                                    (unauthorized))))
            (POST "/logout" []
-                 (assoc-in (ok) [:session :identity] nil))
+                 (assoc-in (ok {}) [:session :identity] nil))
 
            (GET "/session" []
                 :auth-rules access/authenticated

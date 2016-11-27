@@ -23,4 +23,4 @@
            [:img.user_avatar {:src img_location
                   :alt (str nickname "'s avatar")}]
            nickname " logged in"
-           [:button "Log out!"]])))))
+           [:button {:on-click #(dispatch [:log-out])}"Log out!"]])))))

@@ -13,4 +13,4 @@
               :format :transit
               :response-format :transit
               :handler handler
-              :params body}))
+              :params (or body {})}))
