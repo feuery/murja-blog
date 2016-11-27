@@ -6,20 +6,26 @@
             [compojure.api.core :as c :refer [GET POST PUT DELETE]]
             [ring.util.http-response :refer [internal-server-error ok]]
             [hiccup.page :refer [include-js include-css html5]]
-            [blog.middleware :refer [wrap-middleware]]
+            [ring.middleware.params :refer [wrap-params]]
             [blog.posts.routes :as post-r]
+            [blog.login.routes :as login-routes]
             [config.core :refer [env]]
             [blog.system.current :refer :all]
-            [compojure.route :as route]))
+            [compojure.route :as route]
+            [blog.session :refer [wrap-app-session]]
+            [blog.access :as access]))
 
-(defapi app {:swagger {:ui "/api-docs"
+(defapi app- {:swagger {:ui "/api-docs"
                        :spec "/swagger.json"
                        :data {:info {:title "Feuer's clj-blog's backend"
                                      :description "Backend for managing blog posts and stuff"}
                               :tags [{:name "posts"
-                                      :description "Routes for managing posts"}]}}}
+                                      :description "Routes for managing posts"}
+                                     {:name "login"
+                                      :description "Routes for logging in and managing sessions"}]}}}
   (context "/api" []
-           #'post-r/routes)
+           #'post-r/routes
+           #'login-routes/routes)
 
   (undocumented #_(route/resources "/css/")
                 
@@ -33,3 +39,8 @@
                                [:p "If you're dev, run `lein figwheel` in the project dir"]]
                               (include-js "/js/app.js")])))
                 (route/resources "/")))
+
+(def app
+  (-> app-
+      wrap-params
+      wrap-app-session))

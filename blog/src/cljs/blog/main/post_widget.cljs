@@ -1,7 +1,10 @@
 (ns blog.main.post-widget
   (:require [blog.settings :refer [settings]]
             [blog.state.post-subs]
-            [re-frame.core :refer [subscribe]]))
+            [re-frame.core :refer [subscribe]]
+
+            [blog.loginview :refer [loginview]]
+            blog.state.login-subs))
 
 (defn post-widget [{:keys [title content creator created_at tags amount-of-comments]}]
   (let [{:keys [nickname img_location]} creator]
@@ -16,7 +19,8 @@
   
 ;; this sets up the state
 (defn default-post-widget []
-  (let [page (subscribe [:current-page])]
+  (let [page (subscribe [:current-page])
+        user (subscribe [:current-user])]
     (fn []
       (let [{:keys [posts]} @page]
         ;; I hate css's layout system
@@ -24,4 +28,4 @@
          (into [:div#page]
                (mapv post-widget posts))
          [:div#sidebar
-          "Hello everybody, I'm a sidebar with an awful lot of content! Hello everybody, I'm a sidebar with an awful lot of content! Hello everybody, I'm a sidebar with an awful lot of content! Hello everybody, I'm a sidebar with an awful lot of content! Hello everybody, I'm a sidebar with an awful lot of content! Hello everybody, I'm a sidebar with an awful lot of content! Hello everybody, I'm a sidebar with an awful lot of content! Hello everybody, I'm a sidebar with an awful lot of content! Hello everybody, I'm a sidebar with an awful lot of content! Hello everybody, I'm a sidebar with an awful lot of content! Hello everybody, I'm a sidebar with an awful lot of content! Hello everybody, I'm a sidebar with an awful lot of content! Hello everybody, I'm a sidebar with an awful lot of content! Hello everybody, I'm a sidebar with an awful lot of content! Hello everybody, I'm a sidebar with an awful lot of content! Hello everybody, I'm a sidebar with an awful lot of content! Hello everybody, I'm a sidebar with an awful lot of content! Hello everybody, I'm a sidebar with an awful lot of content! Hello everybody, I'm a sidebar with an awful lot of content!"]]))))
+          [loginview @user]]]))))

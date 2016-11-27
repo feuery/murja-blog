@@ -1,7 +1,16 @@
 (ns blog.client
-  (:require [ajax.core :refer [GET] :rename {GET aGET}]))
+  (:require [ajax.core :refer [POST GET] :rename {GET aGET
+                                                  POST aPOST}]))
 
 (defn GET [url handler]
-  (aGET url {:headers {"Accept" "application/transit+json"}
-             :error-handler #(js/alert %)
+  (aGET url {:error-handler #(js/alert %)
+             :format :transit
+             :response-format :transit
              :handler handler}))
+
+(defn POST [url body handler]
+  (aPOST url {:error-handler #(js/alert %)
+              :format :transit
+              :response-format :transit
+              :handler handler
+              :params body}))

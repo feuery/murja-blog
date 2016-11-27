@@ -13,3 +13,6 @@
        (do
          ~@forms)
        (internal-server-error "Db is a lie"))))
+
+(defn in? [col x]
+  (some (partial = x) col))

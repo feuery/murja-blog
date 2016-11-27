@@ -1,6 +1,5 @@
 (ns blog.state.handlers
   (:require [re-frame.core :refer [dispatch reg-event-db reg-event-fx trim-v]]
-            [blog.client :refer [GET]]
             [blog.state.effects]))
 
 ;; https://github.com/Day8/re-frame/blob/master/docs/Interceptors.md#wrapping-handlers

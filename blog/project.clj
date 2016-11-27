@@ -27,7 +27,8 @@
                  [metosin/compojure-api "1.1.9"]
                  [prismatic/schema "1.1.3"]
                  [cheshire "5.6.3"]
-                 [re-frame "0.8.0"]]
+                 [re-frame "0.8.0"]
+                 [buddy "1.2.0"]]
 
   :plugins [[lein-environ "1.0.2"]
             [lein-cljsbuild "1.1.1"]
