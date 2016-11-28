@@ -20,9 +20,13 @@
                                                      :password s/Str}]
                  (destructure-db [sys]
                                  (if-let [login-data (db/authenticate? db username password)]
-                                   (assoc-in (ok login-data) [:session :identity] {:_id (:userid login-data)
-                                                                               :groups (db/user-groups db username)})
-                                   (unauthorized))))
+                                   (do
+                                     (println username " logged in!")
+                                     (assoc-in (ok login-data) [:session :identity] {:_id (:userid login-data)
+                                                                                     :groups (db/user-groups db username)}))
+                                   (do
+                                     (println (pr-str username) " failed to log in! Have the groups been set up correctly?")
+                                     (unauthorized)))))
            (POST "/logout" []
                  (assoc-in (ok {}) [:session :identity] nil))
 

@@ -17,9 +17,11 @@
         :else (do
                 (println "Type " type " not recognized")
                 value)))))
-(comment "INSERT INTO blog.Users(Username, Password, Nickname, Img_location) VALUES ('feuer', '', 'Feuer', '');
-blogdb=# INSERT INTO blog.Post (Title, Content, creator_id, tags) VALUES ('Hello World!', 'Minä olen maailman ensimmäinen teksti', 1, '["eka teksti"]'::jsonb);"
-         "INSERT INTO blog.comment (parent_post_id, Content, creator_id) VALUES (1, 'HEIMOI', 1)"
+(comment "INSERT INTO blog.Users(Username, Password, Nickname, Img_location) VALUES ('feuer', '0e8e646b38387254e1f677d4df3ca290b03318440b87f4d45d67fe7b7c76a6316cf616fb155a61bb489c8eae829b837ae460421c31c450bddc02daee1ee3d609', 'Feuer', 'http://3.bp.blogspot.com/_z3wgxCQrDJY/S6CgYhXSkyI/AAAAAAAAAAg/0Vv0ffa871g/S220-s80/imagex100x100.jpeg');
+INSERT INTO blog.Post (Title, Content, creator_id, tags) VALUES ('Hello World!', 'Minä olen maailman ensimmäinen teksti', 1, '["eka teksti"]'::jsonb);
+         INSERT INTO blog.comment (parent_post_id, Content, creator_id) VALUES (1, 'HEIMOI', 1)
+         INSERT INTO blog.GroupMapping VALUES(1,1,true);
+         INSERT INTO blog.GroupMapping VALUES(1,2,false);"
          )
 
 (defn add-user [row username nickname img_location]   
