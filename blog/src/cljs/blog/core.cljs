@@ -10,17 +10,23 @@
               [blog.devtool :refer [devtool]]
               [blog.state.handlers]
               [blog.state.devtool-subs]
-              [blog.main.post-widget :refer [default-post-widget]]))
+              [blog.main.post-widget :refer [default-post-widget]]
+              [blog.main.editor :refer [editor-container]]
+              blog.state.editor-subs))
 
 ;; -------------------------
 ;; Views
 
 (defn current-page []
-  (let [devtool-vis? (subscribe [:devtool-visible?])]
+  (let [devtool-vis? (subscribe [:devtool-visible?])
+        editor-visible? (subscribe [:editor-visible?])]
     (fn []
       [:div
-       [(session/get :current-page)]
-        [devtool @app-db @devtool-vis?]])))
+       #_[:p "Hello world! " (pr-str @editor-visible?)]
+       (if @editor-visible?
+         [editor-container @editor-visible?]
+         [(session/get :current-page)])
+       [devtool @app-db @devtool-vis?]])))
 
 ;; -------------------------
 ;; Routes

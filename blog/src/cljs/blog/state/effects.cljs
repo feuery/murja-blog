@@ -9,3 +9,7 @@
 (reg-fx :post
         (fn [{:keys [url dispatch-key body]}]
           (POST url body #(dispatch [dispatch-key %]))))
+
+(reg-fx :alert
+        (fn [msg]
+          (js/alert msg)))

@@ -1,11 +1,12 @@
 (ns blog.main.post-widget
   (:require [blog.settings :refer [settings]]
             [blog.state.post-subs]
-            [re-frame.core :refer [subscribe]]
+            [re-frame.core :refer [subscribe dispatch]]
 
             [blog.util :refer [in?]]
             [blog.loginview :refer [loginview]]
-            blog.state.login-subs))
+            blog.state.login-subs
+            blog.state.editor-handlers))
 
 (defn post-widget [{:keys [title content creator created_at tags amount-of-comments]}]
   (let [{:keys [nickname img_location]} creator]
@@ -28,7 +29,8 @@
         [:div#container
          (into [:div#page
                 [:div#title-actions (if (in? (:permissions @user) "create-post")
-                                      [:button "Create post!"])]]
+                                      [:button {:on-click #(dispatch [:start-new-post])}
+                                       "Create post!"])]]
                (mapv post-widget posts))
          [:div#sidebar
           [loginview @user]]]))))

@@ -42,6 +42,7 @@
                     :auth-rules (partial can? "create-post")
                     (POST "/post" []
                           :summary "Writes a new post into the db"
-                          (println "Wrote a post!")))))
+                          (println "Wrote a post!")
+                          (ok {:success? true})))))
                  
   
