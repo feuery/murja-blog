@@ -43,9 +43,10 @@
                     :current-user user
                     (POST "/post" []
                           :body [post post-sc/New-post]
-                          :summary "Writes a new post into the db"
+                          :return post-sc/Post
+                          :summary "Writes a new post into the db"                          
                           (destructure-db [sys]
                                           (pdb/save-post! db user post)
-                                          (ok {:success? true}))))))
+                                          (ok (first (pdb/get-page db 1 1))))))))
                  
   

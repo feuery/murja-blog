@@ -52,8 +52,11 @@
 
 (reg-event-fx
  :post-published
- (fn [{:keys [db]} _]
+ [trim-v]
+ (fn [{:keys [db]} [new-post]]
    {:alert "Post published!"
     :db (-> db
             (assoc :editor-visible? false)
-            (dissoc :edited-post ))}))
+            (dissoc :edited-post )
+            (update-in [:page :posts] (fn [posts]
+                                        (vec (concat [new-post] posts)))))}))
