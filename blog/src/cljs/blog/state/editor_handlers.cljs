@@ -5,18 +5,12 @@
 (reg-event-db
  :start-new-post
  (fn [db _]
-   (assoc db :editor-visible? true
+   (assoc db
           :edited-post {:status :new
                         :title ""
                         :content ""
                         ;; tags will be split to a vector on send
                         :tags ""})))
-
-(reg-event-db
- :set-editor-visibility
- [trim-v]
- (fn [db [visible?]]
-   (assoc db :editor-visible? visible?)))
 
 (reg-event-db
  :set-post-content
@@ -55,8 +49,8 @@
  [trim-v]
  (fn [{:keys [db]} [new-post]]
    {:alert "Post published!"
+    :redirect-to "/blog/"
     :db (-> db
-            (assoc :editor-visible? false)
-            (dissoc :edited-post )
+            (dissoc :edited-post)
             (update-in [:page :posts] (fn [posts]
                                         (vec (concat [new-post] posts)))))}))

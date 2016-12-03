@@ -11,32 +11,42 @@
               [blog.state.handlers]
               [blog.state.devtool-subs]
               [blog.main.post-widget :refer [default-post-widget]]
-              [blog.main.editor :refer [editor-container]]
-              blog.state.editor-subs))
+              [blog.main.single-post :refer [single-post-widget]]
+              [blog.main.editor :refer [editor-container editor-sidebar-container]]
+              blog.state.editor-subs
+              blog.state.single-post-handlers
+              blog.state.single-post-subs
+              [blog.loginview :refer [loginview]]))
 
 ;; -------------------------
 ;; Views
 
 (defn current-page []
-  (let [devtool-vis? (subscribe [:devtool-visible?])
-        editor-visible? (subscribe [:editor-visible?])]
-    (fn []
-      [:div
-       #_[:p "Hello world! " (pr-str @editor-visible?)]
-       (if @editor-visible?
-         [editor-container @editor-visible?]
-         [(session/get :current-page)])
-       [devtool @app-db @devtool-vis?]])))
+  [:div#container
+   [(session/get :current-main)]
+   [:div#sidebar
+    [(session/get :current-sidebar)]]])
 
 ;; -------------------------
 ;; Routes
 
 (secretary/defroute "/blog/" []
-  (session/put! :current-page #'default-post-widget))
+  (dispatch [:load-page 1 (:recent-post-count settings)])
+  (session/put! :current-sidebar #'loginview)
+  (session/put! :current-main #'default-post-widget))
+
+(secretary/defroute "/blog/post/:id" {:keys [id]}
+  (println "JEEEE " id)
+  (dispatch [:load-post-full (js/parseInt id)])
+  (session/put! :current-main #'single-post-widget))
+
+(secretary/defroute "/blog/create-post" []
+  (dispatch [:start-new-post])
+  (session/put! :current-main #'editor-container)
+  (session/put! :current-sidebar #'editor-sidebar-container))
 
 (secretary/defroute "/" []
-  (dispatch-sync [:load-page 1 (:recent-post-count settings)])
-  (session/put! :current-page #'default-post-widget)) ;;page 1 amount-of-posts-per-page)
+  (secretary/dispatch! "/blog/"))
 
 ;; -------------------------
 ;; Initialize app

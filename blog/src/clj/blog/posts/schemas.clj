@@ -23,7 +23,14 @@
    :creator User
    ;; This is going to be fun once these schemas are needed client side...
    :created_at Date
+   :id s/Num
    (s/optional-key :children) [(s/recursive #'Comment)]})
+
+(s/defschema New-comment
+  {:content s/Str
+   :parent-post-id s/Num
+   :parent-comment-id (s/maybe s/Num)})
+  
 
 (s/defschema Commented-Post
   (assoc Post :comments [Comment]))

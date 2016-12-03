@@ -17,7 +17,6 @@
        (.-key e)))
 
 (defn post-editor [post]
-  [:div#container
    [:div#page.editor-container
     [:div#title-actions
      [:button {:on-click #(dispatch [:publish-post])} "Publish post!"]]
@@ -30,17 +29,22 @@
                 :on-keyDown #(when (emacs-ctrl-keychord? %)
                                (println (emacs-chord %))
                                (.preventDefault %))
-                :value (:content post)}]]
-   [:div#sidebar
-    [:label "Tags "]
-    [:input {:type :text
-             :value (:tags post)
-             :on-change #(dispatch [:set-post-tags (value-of %)])}]
-    [:button {:on-click #(dispatch [:set-editor-visibility false])}
-     "Hide editor"]]])
+                               :value (:content post)}]])
+(defn editor-sidebar [post]
+  [:div
+   [:label "Tags "]
+   [:input {:type :text
+            :value (:tags post)
+            :on-change #(dispatch [:set-post-tags (value-of %)])}]
+   [:button {:on-click #(dispatch [:set-editor-visibility false])}
+    "Hide editor"]])
 
-(defn editor-container [visible?]
+(defn editor-sidebar-container []
   (let [post (subscribe [:edited-post])]
-    (fn [visible?]
-      (if visible?
-        [post-editor @post]))))
+    (fn []
+      [editor-sidebar @post])))
+
+(defn editor-container []
+  (let [post (subscribe [:edited-post])]
+    (fn []
+      [post-editor @post])))

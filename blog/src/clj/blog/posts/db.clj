@@ -73,8 +73,7 @@ ORDER BY c.created_at", post-id])
             (assoc :children (mapv
                               #(dissoc % :id :parent_comment_id)
                               (filter (fn [{:keys [parent_comment_id]}]
-                                        (= parent_comment_id id)) children)))
-            (dissoc :id)))
+                                        (= parent_comment_id id)) children)))))
       (fn [comment]
         (->Comment comment)))
      root-comments)))
@@ -86,12 +85,13 @@ ORDER BY c.created_at", post-id])
       (add-user username nickname img_location)
       (dissoc :username :nickname :img_location)))
 
-(s/defn ^:always-validate get-by-id :- sc/Commented-Post
+(s/defn ^:always-validate
+  get-by-id :- sc/Commented-Post
   [{:keys [db-spec]} id]
-  (let [db-row (j/query db-spec ["SELECT p.Title, p.created_at, p.Content, p.tags, u.Username, u.Nickname, u.Img_location, COUNT(c.ID) AS amount_of_comments
+  (let [db-row (j/query db-spec ["SELECT p.ID, p.Title, p.created_at, p.Content, p.tags, u.Username, u.Nickname, u.Img_location, COUNT(c.ID) AS amount_of_comments
 FROM blog.Post p
 JOIN blog.Users u ON u.ID = p.creator_id
-JOIN blog.Comment c ON c.parent_post_id = p.ID
+LEFT JOIN blog.Comment c ON c.parent_post_id = p.ID
 WHERE p.ID = ?
 GROUP BY p.ID, u.ID" id] :result-set-fn first
                         :row-fn #(change-key % :amount_of_comments :amount-of-comments))]
@@ -143,3 +143,18 @@ OFFSET ?" page-size (* (dec page) page-size)] :row-fn (comp #(change-key % :amou
   [{:keys [db-spec]}
    post-id]
   (j/delete! db-spec :blog.Post ["ID = ?" post-id]))
+
+(defn delete-comment-by-id
+  [{:keys [db-spec]}
+   comment-id]
+  (j/delete! db-spec :blog.Comment ["ID = ?" comment-id]))
+
+(s/defn comment-post!
+  [{:keys [db-spec]}
+   {:keys [_id] :as user}
+   comment :- s/Str]
+  (let [{:keys [content parent-post-id
+                parent-comment-id]} comment]
+    (j/insert! db-spec :blog.Comment
+               [:parent_post_id :parent_comment_id :content :creator_id]
+               [parent-post-id parent-comment-id content _id])))

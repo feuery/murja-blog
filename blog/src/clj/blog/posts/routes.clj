@@ -27,7 +27,15 @@
                    (destructure-db [sys]
                                    (pdb/delete-by-id db id)
                                    (ok id)))
-                   
+           (DELETE "/comments/:id" []
+                   :path-params [id :- s/Int]
+                   :return s/Int
+                   :summary "Deletes a post and returns its id"
+                   :auth-rules (partial can? "delete-comment")
+                   (destructure-db [sys]
+                                   (pdb/delete-comment-by-id db id)
+                                   (ok id)))
+           
            (GET "/all/:limit" []
                 :return [post-sc/Post]
                 :path-params [limit :- s/Int]
@@ -56,6 +64,15 @@
                           :summary "Writes a new post into the db"                          
                           (destructure-db [sys]
                                           (pdb/save-post! db user post)
-                                          (ok (first (pdb/get-page db 1 1))))))))
+                                          (ok (first (pdb/get-page db 1 1)))))
+                    (POST "/comment" []
+                          :body [comment post-sc/New-comment]
+                          :summary "Comments a post and returns it with the new comment appended"
+                          :return post-sc/Commented-Post
+                          (destructure-db [sys]
+                                          (let [{post-id :parent-post-id} comment]
+                                            (pdb/comment-post! db user comment)
+                                            (ok (pdb/get-by-id db post-id))))))))
+                          
                  
   

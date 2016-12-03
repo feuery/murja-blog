@@ -1,5 +1,6 @@
 (ns blog.state.effects
   (:require [re-frame.core :refer [dispatch reg-fx]]
+            [secretary.core :as secretary :include-macros true]
             [blog.client :refer [GET POST DELETE]]))
 
 (reg-fx :get
@@ -17,3 +18,7 @@
 (reg-fx :delete
         (fn [{:keys [url dispatch-key]}]
           (DELETE url #(dispatch [dispatch-key %]))))
+
+(reg-fx :redirect-to
+        (fn [url]
+          (secretary/dispatch! url)))
