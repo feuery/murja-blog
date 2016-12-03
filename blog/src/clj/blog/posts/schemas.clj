@@ -15,6 +15,8 @@
    :tags [s/Str]
    :amount-of-comments s/Num})
 
+(s/defschema New-post (dissoc Post :creator :created_at :amount-of-comments))
+
 (s/defschema Comment
   {:content s/Str
    :creator User

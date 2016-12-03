@@ -40,9 +40,12 @@
 
            (context "/post" []
                     :auth-rules (partial can? "create-post")
+                    :current-user user
                     (POST "/post" []
+                          :body [post post-sc/New-post]
                           :summary "Writes a new post into the db"
-                          (println "Wrote a post!")
-                          (ok {:success? true})))))
+                          (destructure-db [sys]
+                                          (pdb/save-post! db user post)
+                                          (ok {:success? true}))))))
                  
   

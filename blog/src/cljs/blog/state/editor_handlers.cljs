@@ -39,12 +39,16 @@
 (reg-event-fx
  :publish-post
  (fn [{:keys [db]} _]
-   {:post {:url "/api/posts/post/post"
-           :body (update-in db [:edited-post :tags]
-                            (fn [tags]
-                              (str/split tags #",\s*")))
-           :dispatch-key :post-published}
-    :db db}))
+   (let [{:keys [edited-post]} (-> db
+                                   (update-in [:edited-post :tags]
+                                              (fn [tags]
+                                                (str/split tags #",\s*")))
+                                   (update :edited-post dissoc :status))]
+     (println (pr-str edited-post))
+     {:post {:url "/api/posts/post/post"
+             :body edited-post
+             :dispatch-key :post-published}
+      :db db})))
 
 (reg-event-fx
  :post-published

@@ -6,6 +6,19 @@
             [clojure.pprint :refer :all]
             [cheshire.core :as ch])
   (:import [org.postgresql.util PGobject]))
+
+(extend-protocol j/ISQLValue
+  clojure.lang.IPersistentMap
+  (sql-value [value]
+    (doto (PGobject.)
+      (.setType "jsonb")
+      (.setValue (ch/generate-string value))))
+  clojure.lang.PersistentVector
+  (sql-value [value]
+    (doto (PGobject.)
+      (.setType "jsonb")
+      (.setValue (ch/generate-string value)))))
+
 (extend-protocol j/IResultSetReadColumn
   PGobject
   (result-set-read-column [pgobj metadata idx]
@@ -116,4 +129,12 @@ GROUP BY p.ID, u.ID
 ORDER BY p.created_at DESC
 LIMIT ?
 OFFSET ?" page-size (* (dec page) page-size)] :row-fn (comp #(change-key % :amount_of_comments :amount-of-comments)
-                                                      ->Post)))
+                                                            ->Post)))
+
+(s/defn ^:always-validate save-post!
+  [{:keys [db-spec]}
+   {:keys [_id] :as user}
+   {:keys[title content tags] :as post} :- sc/New-post]
+  (j/insert! db-spec :blog.post
+             [:Title :Content :creator_id :tags ]
+             [title content _id tags]))
