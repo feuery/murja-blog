@@ -9,13 +9,14 @@
 
 (s/defschema Post
   {:title s/Str
+   :id s/Num
    :content s/Str
    :creator User
    :created_at Date
    :tags [s/Str]
    :amount-of-comments s/Num})
 
-(s/defschema New-post (dissoc Post :creator :created_at :amount-of-comments))
+(s/defschema New-post (dissoc Post :creator :created_at :amount-of-comments :id))
 
 (s/defschema Comment
   {:content s/Str

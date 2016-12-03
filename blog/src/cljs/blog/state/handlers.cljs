@@ -20,3 +20,18 @@
           :page {:type :recent-posts
                  :posts result}
           :show-devtool? false))) 
+
+(reg-event-fx
+ :delete-post
+ [trim-v]
+ (fn [{:keys [db]} [post-id]]
+   {:delete {:url (str "/api/posts/" post-id)
+             :dispatch-key :post-deleted}
+    :db db}))
+
+(reg-event-db
+ :post-deleted
+ [trim-v]
+ (fn [db [id]]
+   (update-in db [:page :posts] (fn [posts]
+                                  (filterv #(not= (:id %) id) posts)))))

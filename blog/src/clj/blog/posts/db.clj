@@ -121,7 +121,7 @@ ORDER BY p.created_at DESC"])]
   [{:keys [db-spec]}
    page :- s/Num
    page-size :- s/Num]
-  (j/query db-spec ["SELECT p.Title, p.Content, p.created_at, p.tags, u.Username, u.Nickname, u.Img_location, COUNT(c.ID) AS amount_of_comments
+  (j/query db-spec ["SELECT p.ID, p.Title, p.Content, p.created_at, p.tags, u.Username, u.Nickname, u.Img_location, COUNT(c.ID) AS amount_of_comments
 FROM blog.Post p
 JOIN blog.Users u ON u.ID = p.creator_id
 LEFT JOIN blog.Comment c ON c.parent_post_id = p.ID
@@ -138,3 +138,8 @@ OFFSET ?" page-size (* (dec page) page-size)] :row-fn (comp #(change-key % :amou
   (j/insert! db-spec :blog.post
              [:Title :Content :creator_id :tags ]
              [title content _id tags]))
+
+(defn delete-by-id
+  [{:keys [db-spec]}
+   post-id]
+  (j/delete! db-spec :blog.Post ["ID = ?" post-id]))

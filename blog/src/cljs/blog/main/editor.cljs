@@ -20,9 +20,7 @@
   [:div#container
    [:div#page.editor-container
     [:div#title-actions
-     [:button {:on-click #(if (js/confirm "Do you really want to publish this post? At the moment it can't be undone without SQL magic")
-                                            ;; The post is being edited in the re-frame's store so no need to pass it as a param here
-                                            (dispatch [:publish-post]))} "Publish post!"]]
+     [:button {:on-click #(dispatch [:publish-post])} "Publish post!"]]
     [:label "Title"]
     [:input {:type :text
              :on-change #(dispatch [:set-post-title (value-of %)])

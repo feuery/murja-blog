@@ -19,6 +19,15 @@
                 :summary "Returns a post per its id"
                 (destructure-db [sys]
                                 (ok (pdb/get-by-id db id))))
+           (DELETE "/:id" []
+                   :path-params [id :- s/Int]
+                   :return s/Int
+                   :summary "Deletes a post and returns its id"
+                   :auth-rules (partial can? "delete-post")
+                   (destructure-db [sys]
+                                   (pdb/delete-by-id db id)
+                                   (ok id)))
+                   
            (GET "/all/:limit" []
                 :return [post-sc/Post]
                 :path-params [limit :- s/Int]

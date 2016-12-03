@@ -8,10 +8,16 @@
             blog.state.login-subs
             blog.state.editor-handlers))
 
-(defn post-widget [{:keys [title content creator created_at tags amount-of-comments]}]
+(defn post-widget [{:keys [id title content creator created_at tags amount-of-comments]} can-edit? can-delete?]
   (let [{:keys [nickname img_location]} creator]
     [:div.post
      [:h2 title]
+     [:div.meta-actions
+      (if can-edit?
+        [:button "edit"])
+      (if can-delete?
+        [:button {:on-click #(if (js/confirm (str "Are you sure you want to delete post titled " title "?"))
+                               (dispatch [:delete-post id]))} "delete"])]
      [:p.meta [:img.user_avatar
                {:src img_location}] "By " nickname]
      [:p.meta "Written at " (pr-str created_at)] ;; TODO add user-configurable formatting
@@ -31,6 +37,9 @@
                 [:div#title-actions (if (in? (:permissions @user) "create-post")
                                       [:button {:on-click #(dispatch [:start-new-post])}
                                        "Create post!"])]]
-               (mapv post-widget posts))
+               (mapv post-widget
+                     posts
+                     (repeat (in? (:permissions @user) "edit-post"))
+                     (repeat (in? (:permissions @user) "delete-post"))))
          [:div#sidebar
           [loginview @user]]]))))
