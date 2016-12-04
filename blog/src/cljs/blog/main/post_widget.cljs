@@ -10,6 +10,12 @@
             blog.state.login-subs
             blog.state.editor-handlers))
 
+(defn clean-html [html]
+  (-> html
+      js/String
+      (.replace (js/RegExp. "<\\s*/?\\s*script\\s*>" "i") "&lt;script&gt;")
+      (.replace (js/RegExp. "<\\s*/?\\s*style\\s*>" "i") "&lt;style&gt;")))
+
 (defn comment-widget [can-edit? can-delete? {:keys [creator content created_at id]}]
   (let [{:keys [nickname img_location]} creator]
     [:div.post
@@ -22,7 +28,7 @@
      [:p.meta [:img.user_avatar
                {:src img_location}] "By " nickname]
      [:p.meta "Written at " (pr-str created_at)] ;; TODO add user-configurable formatting
-     [:article.content content]]))
+     [:article.content {:dangerouslySetInnerHTML {:__html (clean-html content)}}]]))
 
 (defn post-widget [{:keys [id title content creator created_at tags amount-of-comments comments]} can-edit? can-delete?]
   (let [{:keys [nickname img_location]} creator]
@@ -37,12 +43,14 @@
      [:p.meta [:img.user_avatar
                {:src img_location}] "By " nickname]
      [:p.meta "Written at " (pr-str created_at)] ;; TODO add user-configurable formatting
-     [:article.content content]
+     [:article.content {:dangerouslySetInnerHTML {:__html (if (:xss-filter-posts? settings)
+                                                            (clean-html content)
+                                                            content)}}]
      ;; TODO make a link to the post-and-its-comments view
      [:p amount-of-comments " comments"]
      (if comments
        (into [:div
-              [:h5 "Comments: "]]
+              [:h1 "Comments: "]]
              (map (partial comment-widget can-edit? can-delete?) comments)))]))
 
 ;; this sets up the state
