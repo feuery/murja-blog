@@ -12,13 +12,20 @@
                                           :password (sha-512 password)}
                                    (empty? password) (dissoc :password)) ["ID = ?" _id]))
 
+(defn everything-is-empty? [{:keys [db-spec]}]
+  (= (j/query db-spec ["SELECT COUNT(*) AS Count FROM blog.Users"] :row-fn :count :result-set-fn first) 0))
+
 (defn register-user! [{:keys [db-spec]} nickname username img_location password]
   (j/with-db-transaction [d db-spec]
+    (let [everything-was-empty? (everything-is-empty? {:db-spec d})]
 
-    (j/insert! d :blog.Users
-               [:Username :Nickname :Img_location :password]
-               [username nickname img_location (sha-512 password)])
-    (let [user-id (j/query d ["SELECT u.id FROM blog.Users u WHERE u.Username = ?" username] :row-fn :id :result-set-fn first)]
-      (j/insert! d :blog.GroupMapping
-                 [:UserID :GroupID :PrimaryGroup]
-                 [user-id 2 true]))))
+      (j/insert! d :blog.Users
+                 [:Username :Nickname :Img_location :password]
+                 [username nickname img_location (sha-512 password)])
+      (let [user-id (j/query d ["SELECT u.id FROM blog.Users u WHERE u.Username = ?" username] :row-fn :id :result-set-fn first)]
+        (j/insert! d :blog.GroupMapping
+                   [:UserID :GroupID :PrimaryGroup]
+                   [user-id (if everything-was-empty?
+                              1 ;; admin's id
+                              2 ;; user's id
+                              ) true])))))

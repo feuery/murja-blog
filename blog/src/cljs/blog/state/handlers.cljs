@@ -5,6 +5,19 @@
 ;; https://github.com/Day8/re-frame/blob/master/docs/Interceptors.md#wrapping-handlers
 
 (reg-event-fx
+ :is-empty?
+ (fn [{:keys [db]} _]
+   {:get {:url "/api/users/is-empty"
+          :dispatch-key :emptiness-found}
+    :db db}))
+
+(reg-event-db
+ :emptiness-found
+ [trim-v]
+ (fn [db [is-empty?]]
+   (assoc db :is-empty? is-empty?)))
+
+(reg-event-fx
  :load-page
  [trim-v]
  (fn [{:keys [db]} [page page-size]]

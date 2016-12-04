@@ -15,6 +15,11 @@
            :sys sys
            :tags ["users"]
 
+           (GET "/is-empty" []
+                :return s/Bool
+                (destructure-db [sys]
+                                (ok (db/everything-is-empty? db))))
+
            (POST "/save" []
                  :auth-rules access/authenticated
                  :body [{:keys [nickname img_location password] :as user-msg} new-user-message]

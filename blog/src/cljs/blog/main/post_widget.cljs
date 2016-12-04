@@ -2,6 +2,8 @@
   (:require [blog.settings :refer [settings]]
             [blog.state.post-subs]
             [re-frame.core :refer [subscribe dispatch]]
+            [secretary.core :as secretary :include-macros true]
+            [blog.main.register-view :refer [register]]
 
             [blog.util :refer [in?]]
             
@@ -46,14 +48,17 @@
 ;; this sets up the state
 (defn default-post-widget []
   (let [page (subscribe [:current-page])
-        user (subscribe [:current-user])]
+        user (subscribe [:current-user])
+        is-empty? (subscribe [:is-empty?])]
     (fn []
-      (let [{:keys [posts]} @page]
-        (into [:div
-               [:div#title-actions (if (in? (:permissions @user) "create-post")
-                                     [:a {:href "/blog/create-post"}
-                                      "Create post!"])]]
-              (mapv post-widget
-                    posts
-                    (repeat (in? (:permissions @user) "edit-post"))
-                    (repeat (in? (:permissions @user) "delete-post"))))))))
+      (if-not @is-empty?
+        (let [{:keys [posts]} @page]
+          (into [:div
+                 [:div#title-actions (if (in? (:permissions @user) "create-post")
+                                       [:a {:href "/blog/create-post"}
+                                        "Create post!"])]]
+                (mapv post-widget
+                      posts
+                      (repeat (in? (:permissions @user) "edit-post"))
+                      (repeat (in? (:permissions @user) "delete-post")))))
+        [register]))))

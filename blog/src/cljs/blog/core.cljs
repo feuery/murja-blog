@@ -38,6 +38,7 @@
 ;; Routes
 
 (secretary/defroute "/blog/" []
+  (dispatch [:is-empty?])
   (dispatch [:load-page 1 (:recent-post-count settings)])
   (session/put! :current-sidebar #'loginview)
   (session/put! :current-main #'default-post-widget))
@@ -50,6 +51,7 @@
   (session/put! :current-main #'user-editor))
 
 (secretary/defroute "/blog/register" []
+  (println "moi?")
   (session/put! :current-main #'register))
 
 (secretary/defroute "/blog/create-post" []
