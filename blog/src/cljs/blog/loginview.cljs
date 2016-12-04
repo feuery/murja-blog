@@ -28,7 +28,9 @@
          [:label "Password: " [:input {:value (:password @login-state)
                                        :on-change #(swap! login-state assoc :password (value-of %))
                                        :type :password}]]
-         [:button {:on-click #(dispatch [:log-in @login-state])} "Log in!"]]
+         [:button {:on-click #(dispatch [:log-in @login-state])} "Log in!"]
+
+         [:a {:href "/blog/register"} "Register"]]
         (do
           (reset! login-state default)
           [user-ctrl-panel @user])))))

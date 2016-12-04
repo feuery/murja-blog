@@ -11,3 +11,14 @@
                                           :Img_location img_location
                                           :password (sha-512 password)}
                                    (empty? password) (dissoc :password)) ["ID = ?" _id]))
+
+(defn register-user! [{:keys [db-spec]} nickname username img_location password]
+  (j/with-db-transaction [d db-spec]
+
+    (j/insert! d :blog.Users
+               [:Username :Nickname :Img_location :password]
+               [username nickname img_location (sha-512 password)])
+    (let [user-id (j/query d ["SELECT u.id FROM blog.Users u WHERE u.Username = ?" username] :row-fn :id :result-set-fn first)]
+      (j/insert! d :blog.GroupMapping
+                 [:UserID :GroupID :PrimaryGroup]
+                 [user-id 2 true]))))

@@ -16,4 +16,5 @@
 
 (s/defschema new-user-message {:nickname s/Str
                                :img_location s/Str
-                               (s/optional-key :password) s/Str})
+                               (s/optional-key :password) s/Str
+                               (s/optional-key :username) s/Str})

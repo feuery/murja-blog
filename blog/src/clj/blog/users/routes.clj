@@ -23,4 +23,9 @@
                  (let [{:keys [_id]} user]
                    (destructure-db [sys]
                                    (db/update-user! db _id nickname img_location password)
-                                   (ok (dissoc user-msg :password)))))))
+                                   (ok (dissoc user-msg :password)))))
+           (PUT "/save" [] 
+                :body [{:keys [username nickname
+                               img_location password] :as user-msg} new-user-message]
+                (destructure-db [sys]
+                                (db/register-user! db nickname username img_location password)))))

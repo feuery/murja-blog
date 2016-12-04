@@ -14,6 +14,7 @@
               [blog.main.single-post :refer [single-post-widget]]
               [blog.main.editor :refer [editor-container editor-sidebar-container]]
               [blog.main.user-editor :refer [user-editor]]
+              [blog.main.register-view :refer [register]]
               blog.state.editor-subs
               blog.state.single-post-handlers
               blog.state.single-post-subs
@@ -47,6 +48,9 @@
 
 (secretary/defroute "/blog/user-editor" []
   (session/put! :current-main #'user-editor))
+
+(secretary/defroute "/blog/register" []
+  (session/put! :current-main #'register))
 
 (secretary/defroute "/blog/create-post" []
   (dispatch [:start-new-post])

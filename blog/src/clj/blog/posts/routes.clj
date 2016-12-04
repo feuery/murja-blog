@@ -56,10 +56,10 @@
                                 (pdb/get-all db nil)))
 
            (context "/post" []
-                    :auth-rules (partial can? "create-post")
                     :current-user user
                     (POST "/post" []
                           :body [post post-sc/New-post]
+                          :auth-rules (partial can? "create-post")
                           :return post-sc/Post
                           :summary "Writes a new post into the db"                          
                           (destructure-db [sys]
@@ -69,6 +69,7 @@
                           :body [comment post-sc/New-comment]
                           :summary "Comments a post and returns it with the new comment appended"
                           :return post-sc/Commented-Post
+                          :auth-rules (partial can? "comment-post")
                           (destructure-db [sys]
                                           (let [{post-id :parent-post-id} comment]
                                             (pdb/comment-post! db user comment)
