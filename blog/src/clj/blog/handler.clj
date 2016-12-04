@@ -9,6 +9,7 @@
             [ring.middleware.params :refer [wrap-params]]
             [blog.posts.routes :as post-r]
             [blog.login.routes :as login-routes]
+            [blog.users.routes :as users]
             [config.core :refer [env]]
             [blog.system.current :refer :all]
             [compojure.route :as route]
@@ -22,10 +23,13 @@
                               :tags [{:name "posts"
                                       :description "Routes for managing posts"}
                                      {:name "login"
-                                      :description "Routes for logging in and managing sessions"}]}}}
+                                      :description "Routes for logging in and managing sessions"}
+                                     {:name "users"
+                                      :description "Routes for persisting user records"}]}}}
   (context "/api" []
            #'post-r/routes
-           #'login-routes/routes)
+           #'login-routes/routes
+           #'users/routes)
 
   (undocumented #_(route/resources "/css/")
                 

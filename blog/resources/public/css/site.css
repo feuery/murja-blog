@@ -69,6 +69,7 @@ body {
     height: 50px;
     margin-left: 10px;
     margin-right: 10px;
+    display: block;
 }
 
 /* .editor-container  */label {
@@ -90,4 +91,8 @@ textarea {
 
 .commenting-area {
     margin-top: 60px;
+}
+
+#form button {
+    display: block;
 }

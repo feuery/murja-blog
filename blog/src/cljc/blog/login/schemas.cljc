@@ -13,3 +13,7 @@
                              :userid s/Num
                              :primary-group-name s/Str
                              :permissions [Permission]})
+
+(s/defschema new-user-message {:nickname s/Str
+                               :img_location s/Str
+                               (s/optional-key :password) s/Str})

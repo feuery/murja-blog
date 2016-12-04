@@ -49,7 +49,7 @@
         user (subscribe [:current-user])]
     (fn []
       (let [{:keys [posts]} @page]
-        (into [:div#page
+        (into [:div
                [:div#title-actions (if (in? (:permissions @user) "create-post")
                                      [:a {:href "/blog/create-post"}
                                       "Create post!"])]]

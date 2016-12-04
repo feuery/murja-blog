@@ -13,6 +13,7 @@
               [blog.main.post-widget :refer [default-post-widget]]
               [blog.main.single-post :refer [single-post-widget]]
               [blog.main.editor :refer [editor-container editor-sidebar-container]]
+              [blog.main.user-editor :refer [user-editor]]
               blog.state.editor-subs
               blog.state.single-post-handlers
               blog.state.single-post-subs
@@ -22,10 +23,15 @@
 ;; Views
 
 (defn current-page []
-  [:div#container
-   [(session/get :current-main)]
-   [:div#sidebar
-    [(session/get :current-sidebar)]]])
+  (let [devtool-vis? (subscribe [:devtool-visible?])]
+    (fn []
+      [:div
+       [:div#container
+        [:div#page
+         [(session/get :current-main)]]
+        [:div#sidebar
+         [(session/get :current-sidebar)]]]
+       [devtool @app-db @devtool-vis?]])))
 
 ;; -------------------------
 ;; Routes
@@ -36,9 +42,11 @@
   (session/put! :current-main #'default-post-widget))
 
 (secretary/defroute "/blog/post/:id" {:keys [id]}
-  (println "JEEEE " id)
   (dispatch [:load-post-full (js/parseInt id)])
   (session/put! :current-main #'single-post-widget))
+
+(secretary/defroute "/blog/user-editor" []
+  (session/put! :current-main #'user-editor))
 
 (secretary/defroute "/blog/create-post" []
   (dispatch [:start-new-post])

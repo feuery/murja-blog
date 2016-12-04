@@ -24,7 +24,7 @@
   (if visible?
     [:div#devtool
 
-     (into [:table]
+     (into [:table#devtable]
            (mapv (partial devtool-branch []) db))
      
      [:button.dev_btn {:on-click #(dispatch [:toggle-devtool-visibility])}

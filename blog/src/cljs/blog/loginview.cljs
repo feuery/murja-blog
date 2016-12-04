@@ -1,9 +1,17 @@
 (ns blog.loginview
-  (:require [re-frame.core :refer [dispatch]]
-            blog.state.login-handlers
+  (:require blog.state.login-handlers
             [reagent.core :as r]
             [blog.util :refer [value-of]]
             [re-frame.core :refer [subscribe dispatch]]))
+
+(defn user-ctrl-panel [{:keys [nickname img_location] :as user}]
+  [:div#loginview
+   [:p [:img.user_avatar {:src img_location
+                          :alt (str nickname "'s avatar")}]
+    nickname " logged in"]
+   
+   [:a {:href "/blog/user-editor"} "Edit your information"]
+   [:button {:on-click #(dispatch [:log-out])}"Log out!"]])  
 
 (defn loginview []
   (let [default {:username ""
@@ -21,10 +29,6 @@
                                        :on-change #(swap! login-state assoc :password (value-of %))
                                        :type :password}]]
          [:button {:on-click #(dispatch [:log-in @login-state])} "Log in!"]]
-        (let [{:keys [nickname img_location]} @user]
+        (do
           (reset! login-state default)
-          [:div#loginview
-           [:img.user_avatar {:src img_location
-                  :alt (str nickname "'s avatar")}]
-           nickname " logged in"
-           [:button {:on-click #(dispatch [:log-out])}"Log out!"]])))))
+          [user-ctrl-panel @user])))))
