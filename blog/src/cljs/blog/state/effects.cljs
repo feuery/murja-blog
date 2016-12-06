@@ -8,8 +8,8 @@
           (GET url #(dispatch [dispatch-key %]))))
 
 (reg-fx :post
-        (fn [{:keys [url dispatch-key body]}]
-          (POST url body #(dispatch [dispatch-key %]))))
+        (fn [{:keys [url dispatch-key body file?] :or {file? false}}]
+          (POST url body #(dispatch [dispatch-key %]) file?)))
 
 (reg-fx :put
         (fn [{:keys [url dispatch-key body]}] 

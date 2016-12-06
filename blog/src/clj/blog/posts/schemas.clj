@@ -8,13 +8,21 @@
    :img_location s/Str})
 
 (s/defschema Post
-  {:title s/Str
-   :id s/Num
-   :content s/Str
-   :creator User
+  {:title s/Str     ;; title
+   :id s/Num        ;; autoincrement
+   :content s/Str   ;; contents
+   :creator User    ;; user-id 1
+   :created_at Date ;; published-date
+   :tags [s/Str]    ;; categories
+   :amount-of-comments s/Num ;; 0
+   })
+
+(s/defschema Imported-Post
+  {:Title s/Str
+   :Content s/Str
+   :creator_id s/Num
    :created_at Date
-   :tags [s/Str]
-   :amount-of-comments s/Num})
+   :tags [s/Str]})
 
 (s/defschema New-post (dissoc Post :creator :created_at :amount-of-comments :id))
 

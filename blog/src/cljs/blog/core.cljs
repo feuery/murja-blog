@@ -18,7 +18,9 @@
               blog.state.editor-subs
               blog.state.single-post-handlers
               blog.state.single-post-subs
-              [blog.loginview :refer [loginview]]))
+              [blog.loginview :refer [loginview]]
+              blog.state.login-subs
+              [blog.main.importer :refer [import-gui]]))
 
 ;; -------------------------
 ;; Views
@@ -58,6 +60,9 @@
   (dispatch [:start-new-post])
   (session/put! :current-main #'editor-container)
   (session/put! :current-sidebar #'editor-sidebar-container))
+
+(secretary/defroute "/blog/import/atom" []
+  (session/put! :current-main #'import-gui))
 
 (secretary/defroute "/" []
   (secretary/dispatch! "/blog/"))

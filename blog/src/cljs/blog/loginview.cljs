@@ -11,6 +11,7 @@
     nickname " logged in"]
    
    [:a {:href "/blog/user-editor"} "Edit your information"]
+   [:a {:href "/blog/import/atom"} "Import atom content"]
    [:button {:on-click #(dispatch [:log-out])}"Log out!"]])  
 
 (defn loginview []

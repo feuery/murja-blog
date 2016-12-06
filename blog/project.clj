@@ -20,6 +20,7 @@
                  [venantius/accountant "0.1.7"
                   :exclusions [org.clojure/tools.reader]]
                  [cljs-ajax "0.5.8"]
+                 [clj-time "0.12.2"]
 
                  [org.postgresql/postgresql "9.4-1201-jdbc41"]
                  [ragtime "0.6.3"]
@@ -28,7 +29,8 @@
                  [prismatic/schema "1.1.3"]
                  [cheshire "5.6.3"]
                  [re-frame "0.8.0"]
-                 [buddy "1.2.0"]]
+                 [buddy "1.2.0"]
+                 [org.clojars.freemarmoset/feedparser-clj "0.6.1"]]
 
   :plugins [[lein-environ "1.0.2"]
             [lein-cljsbuild "1.1.1"]

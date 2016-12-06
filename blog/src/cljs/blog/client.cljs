@@ -10,12 +10,15 @@
              :response-format :transit
              :handler handler}))
 
-(defn POST [url body handler]
-  (aPOST url {:error-handler #(js/alert %)
-              :format :transit
-              :response-format :transit
-              :handler handler
-              :params (or body {})}))
+(defn POST [url body handler file?]
+  (aPOST url (cond-> {:error-handler #(js/alert %)
+                      :format :transit
+                      :response-format :transit
+                      :handler handler
+                      (if file?
+                        :body
+                        :params) (or body {})}
+               file? (dissoc :format :response-format))))
 
 (defn PUT [url body handler]
   (aPUT url {:error-handler #(js/alert %)

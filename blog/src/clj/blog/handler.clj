@@ -10,6 +10,7 @@
             [blog.posts.routes :as post-r]
             [blog.login.routes :as login-routes]
             [blog.users.routes :as users]
+            [blog.importer.routes :as imp]
             [config.core :refer [env]]
             [blog.system.current :refer :all]
             [compojure.route :as route]
@@ -29,7 +30,8 @@
   (context "/api" []
            #'post-r/routes
            #'login-routes/routes
-           #'users/routes)
+           #'users/routes
+           #'imp/routes)
 
   (undocumented #_(route/resources "/css/")
                 
