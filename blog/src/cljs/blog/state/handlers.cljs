@@ -23,14 +23,15 @@
  (fn [{:keys [db]} [page page-size]]
    {:get {:url (str "/api/posts/page/" page "/page-size/" page-size)
           :dispatch-key :page-loaded}
-    :db db}))
+    :db (assoc db :page-nr page)}))
 
 (reg-event-db
  :page-loaded
  [trim-v]
- (fn [db [result]]
-   (assoc db
-          :page {:type :recent-posts
-                 :posts result}
-          :show-devtool? false))) 
+ (fn [{:keys [page-nr] :as db} [result]]
+   (-> db
+       (dissoc :page-nr)
+       (assoc :page {:posts result
+                     :nr page-nr}
+              :show-devtool? false))))
 

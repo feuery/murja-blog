@@ -1,26 +1,34 @@
 (ns blog.core
-    (:require [reagent.core :as reagent :refer [atom]]
-              [reagent.session :as session]
-              [re-frame.core :refer [dispatch dispatch-sync subscribe]]
-              [re-frame.db :refer [app-db]]
-              [secretary.core :as secretary :include-macros true]
-              [accountant.core :as accountant]
+  (:require [reagent.core :as reagent :refer [atom]]
+            [reagent.session :as session]
+            [re-frame.core :refer [dispatch dispatch-sync subscribe]]
+            [re-frame.db :refer [app-db]]
+            [secretary.core :as secretary :include-macros true]
+            [accountant.core :as accountant]
+            [goog.events :as events]
+            [goog.history.EventType :as EventType]
 
-              [blog.settings :refer [settings]]
-              [blog.devtool :refer [devtool]]
-              [blog.state.handlers]
-              [blog.state.devtool-subs]
-              [blog.main.post-widget :refer [default-post-widget]]
-              [blog.main.single-post :refer [single-post-widget]]
-              [blog.main.editor :refer [editor-container editor-sidebar-container]]
-              [blog.main.user-editor :refer [user-editor]]
-              [blog.main.register-view :refer [register]]
-              blog.state.editor-subs
-              blog.state.single-post-handlers
-              blog.state.single-post-subs
-              [blog.loginview :refer [loginview]]
-              blog.state.login-subs
-              [blog.main.importer :refer [import-gui]]))
+            
+            [blog.settings :refer [settings]]
+            [blog.devtool :refer [devtool]]
+            [blog.state.handlers]
+            [blog.state.devtool-subs]
+            [blog.main.post-widget :refer [default-post-widget]]
+            [blog.main.single-post :refer [single-post-widget]]
+            [blog.main.editor :refer [editor-container editor-sidebar-container]]
+            [blog.main.user-editor :refer [user-editor]]
+            [blog.main.register-view :refer [register]]
+            blog.state.editor-subs
+            blog.state.single-post-handlers
+            blog.state.single-post-subs
+            [blog.loginview :refer [loginview]]
+            blog.state.login-subs
+            [blog.main.importer :refer [import-gui]])
+  (:import goog.History))
+
+(let [h (History.)]
+  (goog.events/listen h EventType/NAVIGATE #(secretary/dispatch! (.-token %)))
+  (doto h (.setEnabled true)))
 
 ;; -------------------------
 ;; Views
@@ -28,20 +36,29 @@
 (defn current-page []
   (let [devtool-vis? (subscribe [:devtool-visible?])]
     (fn []
-      [:div
-       [:div#container
-        [:div#page
-         [(session/get :current-main)]]
-        [:div#sidebar
-         [(session/get :current-sidebar)]]]
-       [devtool @app-db @devtool-vis?]])))
+      (let [current-main [(session/get :current-main)]
+            current-bar [(session/get :current-sidebar)]]
+        (js/window.scrollTo 0 0)
+        (if (first current-main)
+          [:div
+           [:div#container
+            [:div#page
+             current-main]
+            [:div#sidebar
+             (if (first current-bar)
+               current-bar
+               [loginview])]]
+           [devtool @app-db @devtool-vis?]]
+          [:div])))))
 
 ;; -------------------------
 ;; Routes
 
-(secretary/defroute "/blog/" []
+
+(secretary/defroute "/blog/page/:nr" {:keys [nr]}
   (dispatch [:is-empty?])
-  (dispatch [:load-page 1 (:recent-post-count settings)])
+  (dispatch [:load-page (js/parseInt nr) (:recent-post-count settings)])
+  (println "Loading page " (js/parseInt nr))
   (session/put! :current-sidebar #'loginview)
   (session/put! :current-main #'default-post-widget))
 
@@ -65,7 +82,7 @@
   (session/put! :current-main #'import-gui))
 
 (secretary/defroute "/" []
-  (secretary/dispatch! "/blog/"))
+  (accountant/navigate! "/blog/page/1"))
 
 ;; -------------------------
 ;; Initialize app
@@ -83,7 +100,7 @@
      :path-exists?
      (fn [path]
        (secretary/locate-route path))})
-  (accountant/dispatch-current!)
+  (secretary/dispatch! (.-pathname (.-location js/window)))
   (mount-root)
   (js/console.log "init!"))
 

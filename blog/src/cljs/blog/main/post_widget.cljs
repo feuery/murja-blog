@@ -3,6 +3,7 @@
             [blog.state.post-subs]
             [re-frame.core :refer [subscribe dispatch]]
             [secretary.core :as secretary :include-macros true]
+            [accountant.core :as accountant]
             [blog.main.register-view :refer [register]]
 
             [blog.util :refer [in?]]
@@ -32,6 +33,7 @@
 
 (defn post-widget [{:keys [id title content creator created_at tags amount-of-comments comments]} can-edit? can-delete?]
   (let [{:keys [nickname img_location]} creator]
+    ^{:key (rand-int 9999)}
     [:div.post
      [:h2 [:a.blog-title {:href (str "/blog/post/" id)} title]]
      [:div.meta-actions
@@ -56,17 +58,22 @@
 ;; this sets up the state
 (defn default-post-widget []
   (let [page (subscribe [:current-page])
+        page-nr (subscribe [:page-nr])
         user (subscribe [:current-user])
         is-empty? (subscribe [:is-empty?])]
     (fn []
       (if-not @is-empty?
         (let [{:keys [posts]} @page]
-          (into [:div
-                 [:div#title-actions (if (in? (:permissions @user) "create-post")
-                                       [:a {:href "/blog/create-post"}
-                                        "Create post!"])]]
-                (mapv post-widget
-                      posts
-                      (repeat (in? (:permissions @user) "edit-post"))
-                      (repeat (in? (:permissions @user) "delete-post")))))
+          [:div
+           [:div#title-actions (if (in? (:permissions @user) "create-post")
+                                 [:a {:href "/blog/create-post"}
+                                  "Create post!"])]
+           (map post-widget
+                 posts
+                 (repeat (in? (:permissions @user) "edit-post"))
+                 (repeat (in? (:permissions @user) "delete-post")))
+           [:div
+            [:a {:href (str "/blog/page/" (inc @page-nr))} "Older posts"]
+            (if-not (= @page-nr 1)
+              [:a#newer-post {:href (str "/blog/page/" (dec @page-nr))} "Newer posts"])]])
         [register]))))

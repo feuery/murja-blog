@@ -109,3 +109,15 @@ textarea {
 #import-form input {
     display: block;
 }
+
+#newer-post {
+    float: right;
+}
+
+a {
+    color: #FFFF00;
+}
+
+a:visited {
+    color: #888800;;
+}

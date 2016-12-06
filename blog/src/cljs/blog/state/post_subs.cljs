@@ -5,3 +5,7 @@
          (fn [db _]
            (or (get db :page)
                [])))
+
+(reg-sub :page-nr
+         (fn [db _]
+           (get-in db [:page :nr])))
