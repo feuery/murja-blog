@@ -6,18 +6,16 @@
  :upload-atom-feed-file
  [trim-v]
  (fn [{:keys [db]} _]
-   ;; (let [form (js/document.getElementById "upload-file")
-   ;;       _ (println (pr-str (.-files form)))
-   ;;       file (aget (.-files form) 0)
-   ;;       form-data (doto (js/FormData.)
-   ;;                   (.append "file.xml" file))]
-   (let [data {:file (js/FormData. (js/document.getElementById "import-form"))}]
-     (js/alert (pr-str data)
+   (let [data (js/FormData.)
+         files (.-files (js/document.getElementById "upload-file"))]
+     (doseq [fk (.keys js/Object files)]
+       (.append data "file" (aget files fk)))
      {:post {:url "/api/importer/atom"
              :body data
              :file? true
              :dispatch-key :imported}
-      :db db}))));)
+      :alert "Sent the file!"
+      :db db})))
 
 (reg-event-fx
  :imported

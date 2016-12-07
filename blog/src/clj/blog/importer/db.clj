@@ -13,8 +13,6 @@
   (:import [java.io ByteArrayInputStream]
            [org.postgresql.util PGobject]))
 
-(tf/unparse (tf/formatter "yyyy-MM-dd") (t/now))
-
 (extend-protocol j/ISQLValue
   java.util.Date
   (sql-value [val]
@@ -30,8 +28,7 @@
 (s/defn ^:always-validate
   parse-atom! :- [sc/Imported-Post]
   [atom-xml :- s/Str
-   importer-user]
-  
+   importer-user]  
   (let [data (parse-feed (ByteArrayInputStream. (.getBytes atom-xml)))]
     (mapv
      (fn [{:keys [categories contents title published-date]}]
@@ -45,14 +42,10 @@
      (:entries data))))
 
 (defn import-atom! [{:keys [db-spec] :as sys} atom-xml]
+  (println "Starting import!")
   (let [blogdata (parse-atom! atom-xml (get-importer-user-id! sys ))]
-    ;; (doseq [{:keys [title created_at tags creator-id content]} blogdata]
+    (println "Found " (count blogdata) " posts")
+    ;; yool-blog-specific value
+    (assert (> (count blogdata) 250))
     (j/insert-multi! db-spec :blog.Post
                      blogdata)))
-
-;; (def xmldoc
-;;   (memoize (fn [] (xml->doc -data))))
-
-;; (-> ($x "/feed/entry" (xmldoc))
-;;     first)
-

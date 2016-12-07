@@ -33,9 +33,7 @@
            #'users/routes
            #'imp/routes)
 
-  (undocumented #_(route/resources "/css/")
-                
-                (route/resources "/")
+  (undocumented (route/resources "/")
                 (GET "*" []
                      (ok
                       (html5 [:head
