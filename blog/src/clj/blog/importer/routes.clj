@@ -19,14 +19,17 @@
            (POST "/atom" []
                  :multipart-params [file :- upload/TempFileUpload]
                  :middleware [upload/wrap-multipart-params]
+                 :return {:success? s/Bool}
                  (destructure-db [sys]
                                  ;; #dbg
                                  (let [filedata (get file :tempfile)]
                                    (try
                                      (println "Trying to import!")
                                      (if (db/import-atom! db (slurp filedata))
-                                       (ok)
-                                       (internal-server-error))
+                                       (do
+                                         (println "Done!")
+                                         (ok {:success? true}))
+                                       (internal-server-error {:success? false}))
                                      (catch Exception ex
                                        (pprint ex)
-                                       (internal-server-error))))))))
+                                       (internal-server-error {:success? false}))))))))

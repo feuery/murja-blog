@@ -1,11 +1,12 @@
 (ns blog.importer.db
   (:require [clojure.java.jdbc :as j]
+            [clojure.pprint :refer :all]
+            [clojure.xml :as xml]
+            [clojure.string :as str]
             [schema.core :as s]
             [blog.posts.schemas :as sc]
             [blog.util :refer :all]
-            [clojure.pprint :refer :all]
             [cheshire.core :as ch]
-            [clojure.xml :as xml]
             [feedparser-clj.core :refer :all]
             [clj-time.core :as t]
             [clj-time.format :as tf]
@@ -39,13 +40,17 @@
         :Content (->> contents
                       (map :value)
                       (reduce str))})
-     (:entries data))))
+     ;; Google puts a lot of rubbish in their atom "backup" feeds
+     (filter (fn [{:keys [uri categories] :as aaaa}]
+               ;; #dbg
+               (let [category (first categories)]
+                 (and (not (.contains (:name category) "comment"))
+                      (.contains uri "post"))))
+             (:entries data)))))
 
 (defn import-atom! [{:keys [db-spec] :as sys} atom-xml]
   (println "Starting import!")
   (let [blogdata (parse-atom! atom-xml (get-importer-user-id! sys ))]
     (println "Found " (count blogdata) " posts")
-    ;; yool-blog-specific value
-    (assert (> (count blogdata) 250))
     (j/insert-multi! db-spec :blog.Post
                      blogdata)))
