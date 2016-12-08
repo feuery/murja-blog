@@ -60,7 +60,8 @@
   (let [page (subscribe [:current-page])
         page-nr (subscribe [:page-nr])
         user (subscribe [:current-user])
-        is-empty? (subscribe [:is-empty?])]
+        is-empty? (subscribe [:is-empty?])
+        last-page? (subscribe [:last-page?])]
     (fn []
       (if-not @is-empty?
         (let [{:keys [posts]} @page]
@@ -73,7 +74,9 @@
                  (repeat (in? (:permissions @user) "edit-post"))
                  (repeat (in? (:permissions @user) "delete-post")))
            [:div
-            [:a {:href (str "/blog/page/" (inc @page-nr))} "Older posts"]
+            (if-not @last-page?
+              [:a {:href (str "/blog/page/" (inc @page-nr))} "Older posts"])
             (if-not (= @page-nr 1)
-              [:a#newer-post {:href (str "/blog/page/" (dec @page-nr))} "Newer posts"])]])
+              [:a#newer-post {:href (str "/blog/page/" (dec @page-nr))} "Newer posts"])
+            [:p @last-page?]]])
         [register]))))

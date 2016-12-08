@@ -31,7 +31,8 @@
  (fn [{:keys [page-nr] :as db} [result]]
    (-> db
        (dissoc :page-nr)
-       (assoc :page {:posts result
+       (assoc :page {:posts (:posts result)
                      :nr page-nr}
-              :show-devtool? false))))
+              :show-devtool? false
+              :last-page? (:last-page? result)))))
 
