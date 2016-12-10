@@ -24,13 +24,13 @@
 
                  [org.postgresql/postgresql "9.4-1201-jdbc41"]
                  [ragtime "0.6.3"]
-                 [hikari-cp "1.7.5"]
                  [metosin/compojure-api "1.1.9"]
                  [prismatic/schema "1.1.3"]
                  [cheshire "5.6.3"]
                  [re-frame "0.8.0"]
                  [buddy "1.2.0"]
-                 [org.clojars.freemarmoset/feedparser-clj "0.6.1"]]
+                 [org.clojars.freemarmoset/feedparser-clj "0.6.1"]
+                 [clout "2.1.2"]]
 
   :plugins [[lein-environ "1.0.2"]
             [lein-cljsbuild "1.1.1"]
@@ -45,7 +45,7 @@
 
   :uberjar-name "blog.jar"
 
-  :main blog.server
+  :main blog.system
 
   :clean-targets ^{:protect false}
   [:target-path
@@ -118,5 +118,6 @@
                        :source-paths ["env/prod/clj"]
                        :prep-tasks ["compile" ["cljsbuild" "once" "min"]]
                        :env {:production true}
-                       :aot :all
-                       :omit-source true}})
+                       ;; :aot :all
+                       ;; :omit-source true
+                       }})

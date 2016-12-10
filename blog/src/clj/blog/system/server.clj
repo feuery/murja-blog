@@ -1,6 +1,5 @@
 (ns blog.system.server
-  (:require [com.stuartsierra.component :as c]
-            [blog.server :refer :all]))
+  (:require [blog.server :refer :all]))
 
 (defn start-server! [port]
   (run-server! port))

@@ -1,5 +1,5 @@
-(ns blog.middleware
-  (:require [ring.middleware.defaults :refer [site-defaults wrap-defaults]]))
+;; (ns blog.middleware
+;;   (:require [ring.middleware.defaults :refer [site-defaults wrap-defaults]]))
 
-(defn wrap-middleware [handler]
-  (wrap-defaults handler site-defaults))
+;; (defn wrap-middleware [handler]
+;;   (wrap-defaults handler site-defaults))

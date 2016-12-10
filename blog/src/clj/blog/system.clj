@@ -1,7 +1,8 @@
 (ns blog.system
   (:require [blog.system.server :refer :all]
             [blog.ragtime :refer :all]
-            [blog.system.current :refer :all]))
+            [blog.system.current :refer :all])
+  (:gen-class))
 
 (defn go
   ([port db-passwd]
@@ -17,3 +18,9 @@
 (defn reset []
   (stop)
   (go))
+
+(defn -main [& _]
+  (go)
+  (println "System running!")
+  (migrate)
+  (println "Migrated!"))

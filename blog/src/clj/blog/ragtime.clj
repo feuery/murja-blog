@@ -4,6 +4,7 @@
             [clojure.pprint :refer :all]
             [blog.system.current :refer :all]))
 
+;; TODO Load these from a configuration
 (defn start-db [passu]
   (let [db {:user "blogiadmin"
             :password passu

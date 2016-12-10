@@ -1,3 +1,4 @@
 /Vagrantfile~
 .vagrant/*
 *~
+/blog/resources/public/css/site.min.css
