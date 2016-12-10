@@ -31,7 +31,8 @@
      [:p.meta "Written at " (pr-str created_at)] ;; TODO add user-configurable formatting
      [:article.content {:dangerouslySetInnerHTML {:__html (clean-html content)}}]]))
 
-(defn post-widget [{:keys [id title content creator created_at tags amount-of-comments comments]} can-edit? can-delete?]
+(defn post-widget [{:keys [id title content creator created_at tags amount-of-comments comments next-post-id prev-post-id]} can-edit? can-delete?]
+  
   (let [{:keys [nickname img_location]} creator]
     ^{:key (rand-int 9999)}
     [:div.post
@@ -48,7 +49,14 @@
      [:article.content {:dangerouslySetInnerHTML {:__html (if (:xss-filter-posts? settings)
                                                             (clean-html content)
                                                             content)}}]
+     
      ;; TODO make a link to the post-and-its-comments view
+     (if (or next-post-id prev-post-id)
+       [:div
+        (if prev-post-id
+          [:a {:href (str "/blog/post/" prev-post-id)} "Previous post"])
+        (if next-post-id
+          [:a.newer-post {:href (str "/blog/post/" next-post-id)} "Next post"])])
      [:p amount-of-comments " comments"]
      (if comments
        (into [:div
@@ -77,6 +85,6 @@
             (if-not @last-page?
               [:a {:href (str "/blog/page/" (inc @page-nr))} "Older posts"])
             (if-not (= @page-nr 1)
-              [:a#newer-post {:href (str "/blog/page/" (dec @page-nr))} "Newer posts"])
+              [:a.newer-post {:href (str "/blog/page/" (dec @page-nr))} "Newer posts"])
             [:p @last-page?]]])
         [register]))))

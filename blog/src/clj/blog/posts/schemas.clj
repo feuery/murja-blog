@@ -41,4 +41,7 @@
   
 
 (s/defschema Commented-Post
-  (assoc Post :comments [Comment]))
+  (assoc Post
+         :comments [Comment]
+         :next-post-id (s/maybe s/Num)
+         :prev-post-id (s/maybe s/Num)))

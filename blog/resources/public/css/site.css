@@ -110,7 +110,7 @@ textarea {
     display: block;
 }
 
-#newer-post {
+.newer-post {
     float: right;
 }
 
