@@ -1,0 +1,9 @@
+[Unit]
+Description=MURJA-blog system
+
+[Service]
+ExecStart=/usr/bin/java -jar /usr/bin/murja/murja.jar
+Restart=on-abort
+
+[Install]
+WantedBy=multi-user.target
