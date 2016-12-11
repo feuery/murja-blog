@@ -48,7 +48,8 @@
              (if (first current-bar)
                current-bar
                [loginview])]]
-           [devtool @app-db @devtool-vis?]]
+           ;; [devtool @app-db @devtool-vis?]
+           ]
           [:div])))))
 
 ;; -------------------------
