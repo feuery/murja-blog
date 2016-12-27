@@ -10,6 +10,7 @@
             [blog.posts.routes :as post-r]
             [blog.login.routes :as login-routes]
             [blog.users.routes :as users]
+            [blog.settings.routes :as settings]
             [blog.importer.routes :as imp]
             [config.core :refer [env]]
             [blog.system.current :refer :all]
@@ -26,12 +27,15 @@
                                      {:name "login"
                                       :description "Routes for logging in and managing sessions"}
                                      {:name "users"
-                                      :description "Routes for persisting user records"}]}}}
+                                      :description "Routes for persisting user records"}
+                                     {:name "settings"
+                                      :description "Returns settings for the cljs client"}]}}}
   (context "/api" []
            #'post-r/routes
            #'login-routes/routes
            #'users/routes
-           #'imp/routes)
+           #'imp/routes
+           #'settings/routes)
 
   (undocumented (route/resources "/")
                 (GET "*" []

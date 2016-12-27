@@ -1,5 +1,5 @@
 (ns blog.main.post-widget
-  (:require [blog.settings :refer [settings]]
+  (:require ;; [blog.settings :refer [settings]]
             [blog.state.post-subs]
             [re-frame.core :refer [subscribe dispatch]]
             [secretary.core :as secretary :include-macros true]
@@ -31,8 +31,7 @@
      [:p.meta "Written at " (pr-str created_at)] ;; TODO add user-configurable formatting
      [:article.content {:dangerouslySetInnerHTML {:__html (clean-html content)}}]]))
 
-(defn post-widget [{:keys [id title content creator created_at tags amount-of-comments comments next-post-id prev-post-id]} can-edit? can-delete?]
-  
+(defn post-widget [{:keys [id title content creator created_at tags amount-of-comments comments next-post-id prev-post-id]} can-edit? can-delete? settings]
   (let [{:keys [nickname img_location]} creator]
     ^{:key (rand-int 9999)}
     [:div.post
@@ -69,7 +68,8 @@
         page-nr (subscribe [:page-nr])
         user (subscribe [:current-user])
         is-empty? (subscribe [:is-empty?])
-        last-page? (subscribe [:last-page?])]
+        last-page? (subscribe [:last-page?])
+        settings (subscribe [:settings])]
     (fn []
       (if-not @is-empty?
         (let [{:keys [posts]} @page]
@@ -77,10 +77,12 @@
            [:div#title-actions (if (in? (:permissions @user) "create-post")
                                  [:a {:href "/blog/create-post"}
                                   "Create post!"])]
+           ;; [:div [:p (pr-str posts)]]
            (map post-widget
                  posts
                  (repeat (in? (:permissions @user) "edit-post"))
-                 (repeat (in? (:permissions @user) "delete-post")))
+                 (repeat (in? (:permissions @user) "delete-post"))
+                 (repeat @settings))
            [:div
             (if-not @last-page?
               [:a {:href (str "/blog/page/" (inc @page-nr))} "Older posts"])

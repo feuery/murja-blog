@@ -2,19 +2,12 @@
   (:require [ragtime.jdbc :as jdbc]
             [ragtime.repl :as rag]
             [clojure.pprint :refer :all]
-            [blog.system.current :refer :all]))
+            [blog.system.current :refer :all]
+            [blog.config :refer [config]]))
 
 ;; TODO Load these from a configuration
 (defn start-db [passu]
-  (let [db {:user "blogiadmin"
-            :password passu
-            :host "localhost"
-            :port "5432"
-            :db "blogdb"
-            :dbname "blogdb"
-            :classname "org.postgresql.Driver"
-            :dbtype "postgresql"
-            }]
+  (let [db (:db @config)]
     {:db
      {:datastore (jdbc/sql-database db)
       :migrations (jdbc/load-resources "migrations")}

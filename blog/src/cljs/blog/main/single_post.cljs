@@ -1,6 +1,5 @@
 (ns blog.main.single-post
-  (:require [blog.settings :refer [settings]]
-            [blog.state.post-subs]
+  (:require [blog.state.post-subs]
             [re-frame.core :refer [subscribe dispatch]]
             [reagent.core :as r]
 

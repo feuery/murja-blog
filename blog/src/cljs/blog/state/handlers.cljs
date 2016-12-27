@@ -25,6 +25,22 @@
           :dispatch-key :page-loaded}
     :db (assoc db :page-nr page)}))
 
+(reg-event-fx
+ :load-settings
+ [trim-v]
+ (fn [{:keys [db]} [nr]]
+   {:db (assoc db :page-nr nr)
+    :get {:url "/api/settings/client-settings"
+          :dispatch-key :settings-loaded}}))
+
+(reg-event-db :settings-loaded
+              [trim-v]
+              (fn [{:keys [page-nr] :as db} [settings]]
+                (dispatch [:load-page page-nr (:recent-post-count settings)])
+                (-> db
+                    (assoc :settings settings)
+                    (dissoc :page-nr))))
+
 (reg-event-db
  :page-loaded
  [trim-v]
