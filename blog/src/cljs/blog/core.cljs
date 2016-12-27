@@ -8,8 +8,6 @@
             [goog.events :as events]
             [goog.history.EventType :as EventType]
 
-            
-            [blog.settings :refer [settings]]
             [blog.devtool :refer [devtool]]
             [blog.state.handlers]
             [blog.state.devtool-subs]
@@ -19,6 +17,7 @@
             [blog.main.user-editor :refer [user-editor]]
             [blog.main.register-view :refer [register]]
             blog.state.editor-subs
+            blog.state.subs 
             blog.state.single-post-handlers
             blog.state.single-post-subs
             [blog.loginview :refer [loginview]]
@@ -58,8 +57,7 @@
 
 (secretary/defroute "/blog/page/:nr" {:keys [nr]}
   (dispatch [:is-empty?])
-  (dispatch [:load-page (js/parseInt nr) (:recent-post-count settings)])
-  (println "Loading page " (js/parseInt nr))
+  (dispatch [:load-settings (js/parseInt nr)])
   (session/put! :current-sidebar #'loginview)
   (session/put! :current-main #'default-post-widget))
 

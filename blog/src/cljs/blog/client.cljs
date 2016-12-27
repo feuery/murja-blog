@@ -5,13 +5,13 @@
                                                              DELETE aDELETE}]))
 
 (defn GET [url handler]
-  (aGET url {:error-handler #(js/alert %)
+  (aGET url {:error-handler #(js/alert (str "Error on " url " \n\n" %))
              :format :transit
              :response-format :transit
              :handler handler}))
 
 (defn POST [url body handler file?]
-  (aPOST url (cond-> {:error-handler #(js/alert %)
+  (aPOST url (cond-> {:error-handler #(js/alert (str "Error on " url " \n\n" %))
                       :format :transit
                       :response-format :transit
                       :handler handler
@@ -21,14 +21,14 @@
                file? (dissoc :format :response-format))))
 
 (defn PUT [url body handler]
-  (aPUT url {:error-handler #(js/alert %)
+  (aPUT url {:error-handler #(js/alert (str "Error on " url " \n\n" %))
              :format :transit
              :response-format :transit
              :handler handler
              :params (or body {})}))
 
 (defn DELETE [url handler]
-  (aDELETE url {:error-handler #(js/alert %)
+  (aDELETE url {:error-handler #(js/alert (str "Error on " url " \n\n" %))
                 :handler handler
                 :format :transit
                 :response-format :transit})) 
