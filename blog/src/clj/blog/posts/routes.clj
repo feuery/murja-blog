@@ -7,18 +7,28 @@
             [blog.posts.schemas :as post-sc]
             [blog.posts.db :as pdb]
             [blog.util :refer [destructure-db]]
-            [blog.access :refer [can?]]))
+            [blog.access :refer [can?]]
+            [blog.date-schemas :refer [Timed-Title]]))
 
 (def routes
   (context "/posts" []
            :sys sys
            :tags ["posts"]
+
+           (GET "/titles" []
+                :return [Timed-Title]
+                :summary "Returns titles, months and years for the title-widget"
+                (destructure-db [sys]
+                                (ok
+                                 (pdb/get-titles-by-year db))))
+
            (GET "/:id" []
                 :path-params [id :- s/Int]
                 :return post-sc/Commented-Post
                 :summary "Returns a post per its id"
                 (destructure-db [sys]
                                 (ok (pdb/get-by-id db id))))
+           
            (DELETE "/:id" []
                    :path-params [id :- s/Int]
                    :return s/Int

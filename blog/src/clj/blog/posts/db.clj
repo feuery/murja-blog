@@ -1,10 +1,13 @@
 (ns blog.posts.db
   (:require [clojure.java.jdbc :as j]
+            [clj-time.coerce :as c]
+            [clj-time.core :as t]
             [schema.core :as s]
             [blog.posts.schemas :as sc]
             [blog.util :refer :all]
             [clojure.pprint :refer :all]
-            [cheshire.core :as ch])
+            [cheshire.core :as ch]
+            [blog.date-schemas :refer [Timed-Title int->month]])
   (:import [org.postgresql.util PGobject]))
 
 (extend-protocol j/ISQLValue
@@ -78,7 +81,22 @@ ORDER BY c.created_at", post-id])
         (->Comment comment)))
      root-comments)))
 
-   
+(s/defn ^:always-validate
+  get-titles-by-year :- [Timed-Title]
+  [{:keys [db-spec]}]
+  (j/query db-spec
+           ["SELECT p.Title, p.created_at
+FROM blog.Post p
+ORDER BY p.created_at DESC"] :row-fn (fn [{:keys [title created_at]}]
+                                       (let [created_at (c/from-sql-time created_at)
+                                             year (t/year created_at)
+                                             month (int->month
+                                                    (t/month created_at))]
+                                         {:Title title
+                                          :Year year
+                                          :Month month}))
+           :result-set-fn vec))
+                                       
    
 (defn ->Post [{:keys [username nickname img_location] :as db-row}]
   (-> db-row
