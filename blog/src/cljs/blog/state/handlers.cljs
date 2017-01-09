@@ -1,5 +1,6 @@
 (ns blog.state.handlers
   (:require [re-frame.core :refer [dispatch reg-event-db reg-event-fx trim-v]]
+            [blog.date-schemas :refer [month->int]]
             [blog.state.effects]))
 
 ;; https://github.com/Day8/re-frame/blob/master/docs/Interceptors.md#wrapping-handlers
@@ -52,3 +53,22 @@
               :show-devtool? false
               :last-page? (:last-page? result)))))
 
+(reg-event-fx :load-grouper
+              [trim-v]
+              (fn [{:keys [db]} _]
+                {:db db
+                 :get {:url "/api/posts/titles"
+                       :dispatch-key :grouper-loaded}}))
+
+(reg-event-db
+ :grouper-loaded
+ [trim-v]
+ (fn [db [result]]
+   (->> result
+        (group-by :Year)
+        (map (fn [[year year-group]]
+               [year
+                (into (sorted-map-by <)
+                      (group-by (comp month->int :Month) year-group))]))
+        (into {})        
+        (assoc db :grouper-titles))))

@@ -85,18 +85,18 @@ ORDER BY c.created_at", post-id])
   get-titles-by-year :- [Timed-Title]
   [{:keys [db-spec]}]
   (j/query db-spec
-           ["SELECT p.Title, p.created_at
+           ["SELECT p.Title, p.created_at, p.id
 FROM blog.Post p
-ORDER BY p.created_at DESC"] :row-fn (fn [{:keys [title created_at]}]
+ORDER BY p.created_at DESC"] :row-fn (fn [{:keys [title created_at id]}]
                                        (let [created_at (c/from-sql-time created_at)
                                              year (t/year created_at)
                                              month (int->month
                                                     (t/month created_at))]
                                          {:Title title
                                           :Year year
+                                          :Id id
                                           :Month month}))
-           :result-set-fn vec))
-                                       
+           :result-set-fn vec))                                       
    
 (defn ->Post [{:keys [username nickname img_location] :as db-row}]
   (-> db-row

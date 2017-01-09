@@ -58,26 +58,31 @@
 (secretary/defroute "/blog/page/:nr" {:keys [nr]}
   (dispatch [:is-empty?])
   (dispatch [:load-settings (js/parseInt nr)])
+  (dispatch [:load-grouper])
   (session/put! :current-sidebar #'loginview)
   (session/put! :current-main #'default-post-widget))
 
 (secretary/defroute "/blog/post/:id" {:keys [id]}
   (dispatch [:load-post-full (js/parseInt id)])
+  (dispatch [:load-grouper])
   (session/put! :current-main #'single-post-widget))
 
 (secretary/defroute "/blog/user-editor" []
+  (dispatch [:load-grouper])
   (session/put! :current-main #'user-editor))
 
 (secretary/defroute "/blog/register" []
-  (println "moi?")
+  (dispatch [:load-grouper])
   (session/put! :current-main #'register))
 
 (secretary/defroute "/blog/create-post" []
   (dispatch [:start-new-post])
+  (dispatch [:load-grouper])
   (session/put! :current-main #'editor-container)
   (session/put! :current-sidebar #'editor-sidebar-container))
 
 (secretary/defroute "/blog/import/atom" []
+  (dispatch [:load-grouper])
   (session/put! :current-main #'import-gui))
 
 (secretary/defroute "/" []

@@ -119,5 +119,13 @@ a {
 }
 
 a:visited {
-    color: #888800;;
+    color: #888800;
+}
+
+#grouper * {
+    list-style: none;
+}
+
+.title-list li {
+    margin: 10px;
 }
