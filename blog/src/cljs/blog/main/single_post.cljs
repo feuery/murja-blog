@@ -23,13 +23,15 @@
 
 (defn single-post-widget []
   (let [selected-post (subscribe [:selected-post])
-        user (subscribe [:current-user])]
+        user (subscribe [:current-user])
+        settings (subscribe [:settings])]
     (fn []
       (if @selected-post
         [:div
          [post-widget @selected-post
           (in? (:permissions @user) "edit-post")
-          (in? (:permissions @user) "delete-post")]
+          (in? (:permissions @user) "delete-post")
+          @settings]
           
          [comment-box (:id @selected-post)
                       (:title @selected-post)

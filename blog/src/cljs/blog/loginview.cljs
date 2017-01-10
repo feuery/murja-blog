@@ -19,7 +19,8 @@
   (let [default {:username ""
                  :password ""}
         login-state (r/atom default)
-        user (subscribe [:current-user])]
+        user (subscribe [:current-user])
+        settings (subscribe [:settings])]
     (fn []
       (if-not @user
         [:div
