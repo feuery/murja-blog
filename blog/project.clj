@@ -21,6 +21,7 @@
                   :exclusions [org.clojure/tools.reader]]
                  [cljs-ajax "0.5.8"]
                  [clj-time "0.12.2"]
+                 [com.andrewmcveigh/cljs-time "0.4.0"]
 
                  [org.postgresql/postgresql "9.4-1201-jdbc41"]
                  [ragtime "0.6.3"]

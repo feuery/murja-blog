@@ -2,6 +2,8 @@
   (:require ;; [blog.settings :refer [settings]]
             [blog.state.post-subs]
             [re-frame.core :refer [subscribe dispatch]]
+            [cljs-time.format :as f]
+            [cljs-time.coerce :as c]
             [secretary.core :as secretary :include-macros true]
             [accountant.core :as accountant]
             [blog.main.register-view :refer [register]]
@@ -17,19 +19,28 @@
       (.replace (js/RegExp. "<\\s*/?\\s*script\\s*>" "i") "&lt;script&gt;")
       (.replace (js/RegExp. "<\\s*/?\\s*style\\s*>" "i") "&lt;style&gt;")))
 
-(defn comment-widget [can-edit? can-delete? {:keys [creator content created_at id]}]
-  (let [{:keys [nickname img_location]} creator]
-    [:div.post
-     [:div.meta-actions
-      (if can-edit?
-        [:button "edit"])
-      (if can-delete?
-        [:button {:on-click #(if (js/confirm (str "Are you sure you want to delete the comment?"))
-                               (dispatch [:delete-comment id]))} "delete"])]
-     [:p.meta [:img.user_avatar
-               {:src img_location}] "By " nickname]
-     [:p.meta "Written at " (pr-str created_at)] ;; TODO add user-configurable formatting
-     [:article.content {:dangerouslySetInnerHTML {:__html (clean-html content)}}]]))
+(defn format-date [format d]
+  (if (and format
+           d)
+    (let [formatter (f/formatter format)
+          d (c/from-date d)]
+      (f/unparse formatter d))
+    ""))
+
+(defn comment-widget [can-edit? can-delete? settings {:keys [creator content created_at id]}]
+      (let [{:keys [nickname img_location]} creator]
+        [:div.post
+         [:div.meta-actions
+          (if can-edit?
+            [:button "edit"])
+          (if can-delete?
+            [:button {:on-click #(if (js/confirm (str "Are you sure you want to delete the comment?"))
+                                   (dispatch [:delete-comment id]))} "delete"])]
+         [:p.meta [:img.user_avatar
+                   {:src img_location}] "By " nickname]
+         [:p.meta "Written at " (format-date (:time-format settings) created_at)] 
+         [:article.content {:dangerouslySetInnerHTML {:__html (clean-html content)}}]]))
+  
 
 (defn post-widget [{:keys [id title content creator created_at tags amount-of-comments comments next-post-id prev-post-id]} can-edit? can-delete? settings]
   (let [{:keys [nickname img_location]} creator]
@@ -44,7 +55,7 @@
                                (dispatch [:delete-post id]))} "delete"])]
      [:p.meta [:img.user_avatar
                {:src img_location}] "By " nickname]
-     [:p.meta "Written at " (pr-str created_at)] ;; TODO add user-configurable formatting
+     [:p.meta "Written at " (format-date (:time-format settings) created_at)]
      [:article.content {:dangerouslySetInnerHTML {:__html (if (:xss-filter-posts? settings)
                                                             (clean-html content)
                                                             content)}}]
@@ -60,7 +71,7 @@
      (if comments
        (into [:div
               [:h1 "Comments: "]]
-             (map (partial comment-widget can-edit? can-delete?) comments)))]))
+             (map (partial comment-widget can-edit? can-delete? settings) comments)))]))
 
 ;; this sets up the state
 (defn default-post-widget []
