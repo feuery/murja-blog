@@ -1,0 +1,38 @@
+Summary: A blogging system
+name: murja
+Version: 1.0
+Release: 1
+License: GPL
+Group: System Environment/Daemons
+Source: https://github.com/feuery/murja-blog/archive/RPM-testitagi.tar.gz
+Url: https://github.com/feuery/murja-blog
+Vendor: Feuer
+Packager: Feuer <feuer@feuerx.net>
+
+%description
+A blog engine written in clojure
+
+%prep
+%setup
+# curl -O https://github.com/feuery/murja-blog/archive/RPM-testitagi.tar.gz
+
+%build
+ls -la
+cd $RPM_SOURCE_DIR/blog
+lein uberjar
+
+%install
+cd $RPM_SOURCE_DIR/blog
+if [! -d /usr/bin/murja ]; then
+   sudo mkdir /usr/bin/murja/
+fi
+
+if [ -f /usr/bin/murja/murja.jar ]; then
+   sudo rm /usr/bin/murja/murja.jar
+fi
+sudo cp ./target/blog.jar /usr/bin/murja/murja.jar;
+sudo cp ../systemd/unitfile.service /etc/systemd/system/murja.service;
+
+%files
+# "$RPM_BUILD_ROOT/murja$(date +%d%m%Y)/blog/target/blog.jar"
+# "$RPM_BUILD_ROOT/murja$(date +%d%m%Y)/systemd/untifile.service"

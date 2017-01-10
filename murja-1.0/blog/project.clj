@@ -34,10 +34,26 @@
                  [clout "2.1.2"]]
 
   :plugins [[lein-environ "1.0.2"]
+            #_[lein-rpm "0.0.6"]
             [lein-cljsbuild "1.1.1"]
             [lein-asset-minifier "0.2.7"
              :exclusions [org.clojure/clojure]]
             [cider/cider-nrepl "0.14.0"]]
+
+  ;; :rpm {:name "murja-blog"
+  ;;       :summary "Murja blogging system"
+  ;;       :copyright "Feuer <feuer@feuerx.net>"
+  ;;       :workarea "target"
+  ;;       :mappings [{:directory "/usr/bin/murja"
+  ;;                   :filemode "440"
+  ;;                   :username "murja"
+  ;;                   :groupname "murjagroup"
+  ;;                   ;; There are also postinstall, preremove and postremove
+  ;;                   ;; :sources {:source [{:location "target/classes"}
+  ;;                   ;;                    {:location "src"}]
+  ;;                   ;;           :softlinkSource [{:location "/usr/local/bin/new.sh"
+  ;;                   ;;                             :destination "old.sh"}]}
+  ;;                   }]}
 
   :ring {:handler blog.handler/app
          :uberwar-name "blog.war"}
