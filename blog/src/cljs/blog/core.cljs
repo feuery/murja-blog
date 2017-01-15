@@ -33,13 +33,16 @@
 ;; Views
 
 (defn current-page []
-  (let [devtool-vis? (subscribe [:devtool-visible?])]
+  (let [devtool-vis? (subscribe [:devtool-visible?])
+        settings (subscribe [:settings])]
     (fn []
       (let [current-main [(session/get :current-main)]
             current-bar [(session/get :current-sidebar)]]
         (js/window.scrollTo 0 0)
         (if (first current-main)
           [:div
+           [:header [:a {:href "/"}
+                     (:blog-title @settings)]]
            [:div#container
             [:div#page
              current-main]

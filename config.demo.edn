@@ -8,5 +8,6 @@
       :classname "org.postgresql.Driver"
       :dbtype "postgresql"}
  :client-config {:time-format "dd.MM.yyyy HH:mm"
+                 :blog-title "YOOL - feuerx.net"
                  :recent-post-count 6
                  :xss-filter-posts? false}}

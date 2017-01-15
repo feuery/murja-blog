@@ -129,3 +129,11 @@ a:visited {
 .title-list li {
     margin: 10px;
 }
+
+header {
+    font-size: 3em;
+    color: #FFFF00;
+    display: table;
+    margin: 0 auto;
+    max-widht: 70%;
+}
