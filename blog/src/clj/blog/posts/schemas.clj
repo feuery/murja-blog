@@ -1,5 +1,6 @@
 (ns blog.posts.schemas
-  (:require [schema.core :as s])
+  (:require [schema.core :as s]
+            [blog.schema.macros :refer [allow-empty]])
   (:import [java.util Date]))
 
 (s/defschema User
@@ -8,14 +9,14 @@
    :img_location s/Str})
 
 (s/defschema Post
-  {:title s/Str     ;; title
-   :id s/Num        ;; autoincrement
-   :content s/Str   ;; contents
-   :creator User    ;; user-id 1
-   :created_at Date ;; published-date
-   :tags [s/Str]    ;; categories
-   :amount-of-comments s/Num ;; 0
-   })
+   {:title s/Str     ;; title
+    :id s/Num        ;; autoincrement
+    :content s/Str   ;; contents
+    :creator User    ;; user-id 1
+    :created_at Date ;; published-date
+    :tags [s/Str]    ;; categories
+    :amount-of-comments s/Num ;; 0
+    })
 
 (s/defschema Imported-Post
   {:Title s/Str
@@ -41,7 +42,9 @@
   
 
 (s/defschema Commented-Post
-  (assoc Post
-         :comments [Comment]
-         :next-post-id (s/maybe s/Num)
-         :prev-post-id (s/maybe s/Num)))
+  (s/conditional empty? {}
+                 :else
+                 (assoc Post
+                        :comments [Comment]
+                        :next-post-id (s/maybe s/Num)
+                        :prev-post-id (s/maybe s/Num))))

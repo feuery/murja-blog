@@ -33,12 +33,6 @@
         :else (do
                 (println "Type " type " not recognized")
                 value)))))
-(comment "INSERT INTO blog.Users(Username, Password, Nickname, Img_location) VALUES ('feuer', '0e8e646b38387254e1f677d4df3ca290b03318440b87f4d45d67fe7b7c76a6316cf616fb155a61bb489c8eae829b837ae460421c31c450bddc02daee1ee3d609', 'Feuer', 'http://3.bp.blogspot.com/_z3wgxCQrDJY/S6CgYhXSkyI/AAAAAAAAAAg/0Vv0ffa871g/S220-s80/imagex100x100.jpeg');
-INSERT INTO blog.Post (Title, Content, creator_id, tags) VALUES ('Hello World!', 'Minä olen maailman ensimmäinen teksti', 1, '["eka teksti"]'::jsonb);
-         INSERT INTO blog.comment (parent_post_id, Content, creator_id) VALUES (1, 'HEIMOI', 1)
-         INSERT INTO blog.GroupMapping VALUES(1,1,true);
-         INSERT INTO blog.GroupMapping VALUES(1,2,false);"
-         )
 
 (defn add-user [row username nickname img_location]   
      (assoc row :creator {:username username
@@ -87,6 +81,7 @@ ORDER BY c.created_at", post-id])
   (j/query db-spec
            ["SELECT p.Title, p.created_at, p.id
 FROM blog.Post p
+WHERE NOT p.tags ?? 'hidden'
 ORDER BY p.created_at DESC"] :row-fn (fn [{:keys [title created_at id]}]
                                        (let [created_at (c/from-sql-time created_at)
                                              year (t/year created_at)
@@ -106,11 +101,11 @@ ORDER BY p.created_at DESC"] :row-fn (fn [{:keys [title created_at id]}]
 (s/defn get-next-prev-postids [{:keys [db-spec]} id]
   (let [next-id (j/query db-spec ["SELECT p.ID 
 FROM blog.Post p
-WHERE p.ID < ? 
+WHERE p.ID < ? AND NOT p.tags ?? 'hidden'
 LIMIT 1" id] :row-fn :id :result-set-fn first)
         prev-id (j/query db-spec ["SELECT p.ID 
 FROM blog.Post p
-WHERE p.ID > ? 
+WHERE p.ID > ? AND NOT p.tags ?? 'hidden'
 LIMIT 1" id] :row-fn :id :result-set-fn first)]
     {:next next-id :prev prev-id}))
            
@@ -121,31 +116,37 @@ LIMIT 1" id] :row-fn :id :result-set-fn first)]
 FROM blog.Post p
 JOIN blog.Users u ON u.ID = p.creator_id
 LEFT JOIN blog.Comment c ON c.parent_post_id = p.ID
-WHERE p.ID = ?
+WHERE p.ID = ? AND NOT p.tags ?? 'hidden'
 GROUP BY p.ID, u.ID" id] :result-set-fn first
-                        :row-fn #(change-key % :amount_of_comments :amount-of-comments))
-        {:keys [next prev]} (get-next-prev-postids db id)]
-    (-> db-row ->Post
-        (assoc :comments (post-comments db-spec id)
-               :next-post-id next
-               :prev-post-id prev))))
+                        :row-fn #(change-key % :amount_of_comments :amount-of-comments))]
+    (if-not (empty? db-row)
+      (let [{:keys [next prev]} (get-next-prev-postids db id)]
+        (-> db-row ->Post
+            (assoc :comments (post-comments db-spec id)
+                   :next-post-id next
+                   :prev-post-id prev)))
+      {})))
 
-(s/defn ^:always-validate get-all :- [sc/Post]
+(s/defn  ^:always-validate
+  get-all :- [sc/Post]
   [{:keys [db-spec]} limit :- (s/maybe s/Int)]
   (let [sql-vec (if limit
-                  ["SELECT p.Title, p.Content, p.created_at, p.tags, u.Username, u.Nickname, u.Img_location, COUNT(c.ID) AS amount_of_comments
+                  ["SELECT p.id, p.Title, p.Content, p.created_at, p.tags, u.Username, u.Nickname, u.Img_location, COUNT(c.ID) AS amount_of_comments
 FROM blog.Post p
 JOIN blog.Users u ON u.ID = p.creator_id
 LEFT JOIN blog.Comment c ON c.parent_post_id = p.ID
+WHERE NOT p.tags ?? 'hidden'
 GROUP BY p.ID, u.ID
 ORDER BY p.created_at DESC
 LIMIT ?" limit]
-                  ["SELECT p.Title, p.Content, p.created_at, p.tags, u.Username, u.Nickname, u.Img_location, COUNT(c.ID) AS amount_of_comments
+                  ["SELECT p.Id, p.Title, p.Content, p.created_at, p.tags, u.Username, u.Nickname, u.Img_location, COUNT(c.ID) AS amount_of_comments
 FROM blog.Post p
 JOIN blog.Users u ON u.ID = p.creator_id
 LEFT JOIN blog.Comment c ON c.parent_post_id = p.ID
+WHERE NOT p.tags ?? 'hidden'
 GROUP BY p.ID, u.ID
-ORDER BY p.created_at DESC"])]
+ORDER BY p.created_at DESC
+"])]
     (j/query db-spec sql-vec :row-fn (comp #(change-key % :amount_of_comments :amount-of-comments)
                                            ->Post))))
 
@@ -157,6 +158,7 @@ ORDER BY p.created_at DESC"])]
 FROM blog.Post p
 JOIN blog.Users u ON u.ID = p.creator_id
 LEFT JOIN blog.Comment c ON c.parent_post_id = p.ID
+WHERE NOT p.tags ?? 'hidden'
 GROUP BY p.ID, u.ID
 ORDER BY p.created_at DESC
 LIMIT ?
