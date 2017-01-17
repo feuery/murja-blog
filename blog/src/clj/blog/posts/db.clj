@@ -192,3 +192,23 @@ OFFSET ?" page-size (* (dec page) page-size)] :row-fn (comp #(change-key % :amou
     (j/insert! db-spec :blog.Comment
                [:parent_post_id :parent_comment_id :content :creator_id]
                [parent-post-id parent-comment-id content _id])))
+
+(s/defn ^:always-validate
+  get-landing-page :- sc/Post
+  [{:keys [db-spec]}]
+  (j/query db-spec ["SELECT p.ID, p.Title, p.created_at, p.Content, p.tags, u.Username, u.Nickname, u.Img_location, COUNT(c.ID) AS \"amount-of-comments\"
+FROM blog.Post p
+JOIN blog.Users u ON u.ID = p.creator_id
+LEFT JOIN blog.Comment c ON c.parent_post_id = p.ID
+WHERE p.tags ?? 'landing-page' AND NOT p.tags ?? 'hidden'
+GROUP BY p.ID, u.ID"] :result-set-fn #(or (first %) {})
+           :row-fn ->Post))
+
+(s/defn get-landing-page-title :- s/Str
+  [{:keys [db-spec]}]
+  (or (j/query db-spec ["SELECT p.Title 
+FROM blog.Post p
+WHERE p.tags ?? 'landing-page' AND NOT p.tags ?? 'hidden'"]
+               :row-fn :title
+               :result-set-fn first)
+      ""))

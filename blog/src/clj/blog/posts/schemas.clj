@@ -9,6 +9,7 @@
    :img_location s/Str})
 
 (s/defschema Post
+  (allow-empty
    {:title s/Str     ;; title
     :id s/Num        ;; autoincrement
     :content s/Str   ;; contents
@@ -16,7 +17,7 @@
     :created_at Date ;; published-date
     :tags [s/Str]    ;; categories
     :amount-of-comments s/Num ;; 0
-    })
+    }))
 
 (s/defschema Imported-Post
   {:Title s/Str

@@ -22,6 +22,18 @@
                                 (ok
                                  (pdb/get-titles-by-year db))))
 
+           (GET "/landing-page" []
+                :return post-sc/Post
+                :summary "Returns the landing page"
+                (destructure-db [sys]
+                                (ok (pdb/get-landing-page db))))
+
+           (GET "/existing-landing-page-title" []
+                :return s/Str
+                :summary "Returns either an empty string or the title of already existing landing page"
+                (destructure-db [sys]
+                                (ok (pdb/get-landing-page-title db))))
+
            (GET "/:id" []
                 :path-params [id :- s/Int]
                 :return post-sc/Commented-Post
