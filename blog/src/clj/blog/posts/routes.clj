@@ -28,8 +28,8 @@
                 (destructure-db [sys]
                                 (ok (pdb/get-landing-page db))))
 
-           (GET "/existing-landing-page-title" []
-                :return s/Str
+           (GET "/existing-landing-page" []
+                :return post-sc/Landing-page-result
                 :summary "Returns either an empty string or the title of already existing landing page"
                 (destructure-db [sys]
                                 (ok (pdb/get-landing-page-title db))))

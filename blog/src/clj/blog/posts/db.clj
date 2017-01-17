@@ -204,11 +204,10 @@ WHERE p.tags ?? 'landing-page' AND NOT p.tags ?? 'hidden'
 GROUP BY p.ID, u.ID"] :result-set-fn #(or (first %) {})
            :row-fn ->Post))
 
-(s/defn get-landing-page-title :- s/Str
+(s/defn get-landing-page-title :- sc/Landing-page-result
   [{:keys [db-spec]}]
-  (or (j/query db-spec ["SELECT p.Title 
+  (or (j/query db-spec ["SELECT p.Title, p.Id
 FROM blog.Post p
 WHERE p.tags ?? 'landing-page' AND NOT p.tags ?? 'hidden'"]
-               :row-fn :title
-               :result-set-fn first)
-      ""))
+               :result-set-fn  first)
+      {}))

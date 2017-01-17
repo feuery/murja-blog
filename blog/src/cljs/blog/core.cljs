@@ -20,6 +20,7 @@
             blog.state.subs 
             blog.state.single-post-handlers
             blog.state.single-post-subs
+            blog.state.landing-page-handlers
             [blog.loginview :refer [loginview]]
             blog.state.login-subs
             [blog.main.importer :refer [import-gui]])
@@ -93,7 +94,7 @@
   (session/put! :current-main #'import-gui))
 
 (secretary/defroute "/" []
-  (accountant/navigate! "/blog/page/1"))
+  (dispatch [:query-landing-page]))
 
 ;; -------------------------
 ;; Initialize app
