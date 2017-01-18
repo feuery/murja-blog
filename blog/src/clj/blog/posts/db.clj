@@ -165,13 +165,45 @@ LIMIT ?
 OFFSET ?" page-size (* (dec page) page-size)] :row-fn (comp #(change-key % :amount_of_comments :amount-of-comments)
                                                             ->Post)))
 
+(defn landing-page-ids [db-c]
+  (j/query db-c ["SELECT id
+FROM blog.Post 
+WHERE tags ?? 'landing-page' AND NOT tags ?? 'hidden'"]
+           :row-fn :id
+           :result-set-fn vec))
+
+(defn remove-tag! [{:keys [db-spec]} tag id]
+  (try
+    (if (string? id)
+      (println "Id on näköjään string?!"))
+    (if-let [tags (j/query db-spec ["SELECT tags FROM blog.Post WHERE id = ?" id] :row-fn :tags :result-set-fn first)]
+    (let [new-tags (filterv (complement #(= % tag)) tags)]
+      (j/update! db-spec :blog.Post
+                 {:tags new-tags}
+                 ["id = ?" id])))
+    (catch Exception ex
+      ;; #dbg
+      ;; #break
+      (println "Täää?")
+      (pprint ex)
+      (throw ex))))
+
 (s/defn ^:always-validate save-post!
   [{:keys [db-spec]}
    {:keys [_id] :as user}
    {:keys[title content tags] :as post} :- sc/New-post]
-  (j/insert! db-spec :blog.post
-             [:Title :Content :creator_id :tags ]
-             [title content _id tags]))
+  (try
+    (j/with-db-transaction [c db-spec]
+      (if (in? tags "landing-page")
+        (let [ids (landing-page-ids c)]
+          (mapv (partial remove-tag! {:db-spec c} "landing-page")
+                ids)))
+      (j/insert! c :blog.post
+                 [:Title :Content :creator_id :tags ]
+                 [title content _id tags]))
+    (catch Exception ex
+      (pprint ex)
+      (throw ex))))
 
 (defn delete-by-id
   [{:keys [db-spec]}
