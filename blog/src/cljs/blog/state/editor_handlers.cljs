@@ -38,11 +38,31 @@
                                               (fn [tags]
                                                 (str/split tags #",\s*")))
                                    (update :edited-post dissoc :status))]
-     (println (pr-str edited-post))
-     {:post {:url "/api/posts/post/post"
-             :body edited-post
-             :dispatch-key :post-published}
-      :db db})))
+     (if-not (contains? (apply hash-set (:tags edited-post)) "landing-page")
+       {:post {:url "/api/posts/post/post"
+               :body edited-post
+               :dispatch-key :post-published}
+        :db db}
+       {:get {:url "/api/posts/existing-landing-page"
+              :dispatch-key :publishing-landing-page-query}
+        :db (assoc db :post-to-publish edited-post)}))))
+
+(reg-event-fx
+ :publishing-landing-page-query
+ (fn [{:keys [db]} landing-page-result]
+   (let [{:keys [title]} (second landing-page-result)
+         {:keys [post-to-publish]} db
+         db (dissoc db :post-to-publish)]
+     (if (and (not (empty? landing-page-result))
+              (js/confirm (str "There is already a landing page with title \"" title "\". Do you want to set this new post as the new landing page?")))
+       {:post {:url "/api/posts/post/post"
+               :body post-to-publish
+               :dispatch-key :post-published}
+        :db db}
+       {:db db
+        :alert "Post wasn't published. If you want to publish it without setting a new landing page, remove the landing-page tag"}))))
+   
+
 
 (reg-event-fx
  :post-published

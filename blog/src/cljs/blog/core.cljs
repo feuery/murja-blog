@@ -57,6 +57,8 @@
 ;; -------------------------
 ;; Routes
 
+(secretary/defroute "/blog/" []
+  (secretary/dispatch! "/blog/page/1"))
 
 (secretary/defroute "/blog/page/:nr" {:keys [nr]}
   (dispatch [:is-empty?])
