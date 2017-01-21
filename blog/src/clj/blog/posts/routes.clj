@@ -17,10 +17,18 @@
 
            (GET "/titles" []
                 :return [Timed-Title]
-                :summary "Returns titles, months and years for the title-widget"
+                :summary "Returns titles, tags, months and years for the title-widget"
                 (destructure-db [sys]
                                 (ok
                                  (pdb/get-titles-by-year db))))
+           (GET "/all-titles" []
+                :return [Timed-Title]
+                :summary "Same as /titles, but auths that requester has edit-post - permission"
+                :current-user user
+                :auth-rules (partial can? "edit-post")
+                (destructure-db [sys]
+                                (ok (pdb/get-titles-by-year db :show-hidden? true))))
+                
            (GET "/existing-landing-page" []
                 :return post-sc/Landing-page-result
                 :summary "Returns either an empty string or the title of already existing landing page"

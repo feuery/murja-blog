@@ -75,14 +75,19 @@ ORDER BY c.created_at", post-id])
         (->Comment comment)))
      root-comments)))
 
-(s/defn ^:always-validate
-  get-titles-by-year :- [Timed-Title]
-  [{:keys [db-spec]}]
+(defn ;; ^:always-validate
+  get-titles-by-year ;; :- [Timed-Title]
+  [{:keys [db-spec]} & {:keys [show-hidden?]
+                        :or {show-hidden? false}}]
   (j/query db-spec
-           ["SELECT p.Title, p.created_at, p.id
+           [(if-not show-hidden?
+              "SELECT p.Title, p.created_at, p.id, p.Tags
 FROM blog.Post p
 WHERE NOT p.tags ?? 'hidden'
-ORDER BY p.created_at DESC"] :row-fn (fn [{:keys [title created_at id]}]
+ORDER BY p.created_at DESC"
+              "SELECT p.Title, p.created_at, p.id, p.Tags
+FROM blog.Post p
+ORDER BY p.created_at DESC")] :row-fn (fn [{:keys [title created_at id tags]}]
                                        (let [created_at (c/from-sql-time created_at)
                                              year (t/year created_at)
                                              month (int->month
@@ -90,8 +95,9 @@ ORDER BY p.created_at DESC"] :row-fn (fn [{:keys [title created_at id]}]
                                          {:Title title
                                           :Year year
                                           :Id id
-                                          :Month month}))
-           :result-set-fn vec))                                       
+                                          :Month month
+                                          :Tags tags}))
+           :result-set-fn vec))
    
 (defn ->Post [{:keys [username nickname img_location] :as db-row}]
   (-> db-row

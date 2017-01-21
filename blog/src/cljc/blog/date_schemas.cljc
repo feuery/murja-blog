@@ -17,4 +17,5 @@
 (s/defschema Timed-Title {:Title s/Str
                           :Id s/Num
                           :Year s/Num
-                          :Month Month})
+                          :Month Month
+                          :Tags [s/Str]})
