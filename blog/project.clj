@@ -96,7 +96,8 @@
 
 
 
-  :profiles {:dev {:repl-options {:init-ns user}
+  :profiles {:dev {:repl-options {:init-ns user
+                                  :nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
 
                    :dependencies [[ring/ring-mock "0.3.0"]
                                   [ring/ring-devel "1.5.0"]
