@@ -5,14 +5,11 @@
 (require 'widget)
 (require 'request)
 (require 'tabulated-list)
+(require 'murja-post-mode)
 
 (defvar murja-logged-in-user nil)
 (defvar murja-url nil)
 (defvar loaded-murja-titles nil)
-
-(defvar murja-error-handler (cl-function (lambda (&rest args &key error-thrown response &allow-other-keys)
-				   (setq murja-url nil)
-				   (message "Got error: %S - %S" error-thrown))))
 
 (defun murja-title-entry (title)
   (list title
@@ -20,8 +17,30 @@
 	  ,(capitalize (assoc-default 'Month title))
 	  ,(prin1-to-string (assoc-default 'Year title))]))
 
+(defvar murja-title-mode-map
+  (let ((map (make-sparse-keymap)))
+    (set-keymap-parent map tabulated-list-mode-map)
+    (define-key map "RET" (lambda ()
+			    (message "You pressed return!")))
+    map))
+
 (define-derived-mode murja-title-mode tabulated-list-mode "Murja titles"
-  "Major mode for browsing a list of titles in a murja blog instance")	
+  "Major mode for browsing a list of titles in a murja blog instance")
+
+(defun murja-selected-post-id ()
+  (cdr
+   (assoc 'Id
+	  (car
+	   (assoc (tabulated-list-get-id) tabulated-list-entries)))))
+
+(defun open-murja-post ()
+  (interactive)
+  (message "Opening murja-post-buffer!")
+  (open-murja-post-buffer (murja-selected-post-id)))
+
+(define-key murja-title-mode-map (kbd "RET") #'open-murja-post)
+
+
   
 (defun murja-titles ()
   (interactive)
@@ -35,7 +54,7 @@
 			   (setq loaded-murja-titles data)
 			   (murja-title-mode)
 			   (setq tabulated-list-format
-				 [("Title" 20 t)
+				 [("Title" 40 t)
 				  ("Month" 9 t)
 				  ("Year" 4 t)])
 			   (setq tabulated-list-entries (mapcar #'murja-title-entry loaded-murja-titles))
