@@ -6,7 +6,6 @@
 (require 'request)
 
 (defvar murja-error-handler (cl-function (lambda (&rest args &key error-thrown response &allow-other-keys)
-				   (setq murja-url nil)
 				   (message "Got error: %S - %S" error-thrown))))
 
 (defun murja-xml-pretty-print (begin end)
@@ -24,7 +23,50 @@ Copypasted from http://stackoverflow.com/a/570049"
       (while (search-forward-regexp "\>[ \\t]*\<" nil t) 
         (backward-char) (insert "\n"))
       (indent-region begin end))
-    (message "Ah, much better!"))
+  (message "Ah, much better!"))
+
+(defun murja-save-post-buffer (murja-title murja-id murja-tags)
+  (interactive)
+  ;; POST /api/posts/post/post
+  ;;  {
+  ;;   "title": "string",
+  ;;   "content": "string",
+  ;;   "tags": [
+  ;;     "string"
+  ;;   ]
+  ;; }
+  (let ((url (concat murja-url "/api/posts/post/edit")))
+    (message (concat "Connecting to url " url))
+    (request url
+	     :type "POST"
+	     :data (json-encode `((title . ,murja-title)
+				  (content . ,(buffer-substring-no-properties (point-min) (point-max)))
+				  (tags . ,murja-tags)))
+	     :parser 'json-read
+	     :success (cl-function
+		       (lambda (&key data &allow-other-keys)
+			 (message (concat "Post saved? \n\n"
+					  (prin1-to-string data)))))
+	     :error murja-error-handler)))
+					
+
+(defun opening-murja-post-buffer (data)
+  (save-excursion
+    (let ((title (cdr (assoc 'title data)))
+	  (id (cdr (assoc 'id data)))
+	  (tags (cdr (assoc 'tags data))))
+      (switch-to-buffer (get-buffer-create title))
+      
+      (erase-buffer)
+      (insert (cdr
+	       (assoc 'content
+		      data)))
+
+      (murja-xml-pretty-print (point-min) (point-max))
+      (html-mode)
+      (local-set-key (kbd "C-x C-s") (lambda ()
+					(interactive)
+					(murja-save-post-buffer title (prin1-to-string id) tags))))))
 
 (defun open-murja-post-buffer (id)
   (if murja-url
@@ -34,18 +76,7 @@ Copypasted from http://stackoverflow.com/a/570049"
 		 :parser 'json-read
 		 :success (cl-function
 			   (lambda (&key data &allow-other-keys)
-			     (save-excursion
-
-			       (let ((title (cdr (assoc 'title data))))
-				 (switch-to-buffer (get-buffer-create title))
-				 (erase-buffer)			       
-
-				 (insert (cdr
-					  (assoc 'content
-						 data)))
-
-				 (murja-xml-pretty-print (point-min) (point-max))
-				 (html-mode)))))
+			     (opening-murja-post-buffer data)))
 		 :error murja-error-handler))
     (message "murja-url is nil, did you call murja-main?")))
 

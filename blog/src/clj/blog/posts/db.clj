@@ -197,7 +197,7 @@ WHERE tags ?? 'landing-page' AND NOT tags ?? 'hidden'"]
 (s/defn ^:always-validate save-post!
   [{:keys [db-spec]}
    {:keys [_id] :as user}
-   {:keys[title content tags] :as post} :- sc/New-post]
+   {:keys [title content tags] :as post} :- sc/New-post]
   (try
     (j/with-db-transaction [c db-spec]
       (if (in? tags "landing-page")
@@ -207,6 +207,24 @@ WHERE tags ?? 'landing-page' AND NOT tags ?? 'hidden'"]
       (j/insert! c :blog.post
                  [:Title :Content :creator_id :tags ]
                  [title content _id tags]))
+    (catch Exception ex
+      (pprint ex)
+      (throw ex))))
+
+(s/defn ^:always-validate edit-post! [{:keys [db-spec]}
+                                      {:keys [_id] :as user}
+                                      {:keys [title content tags id]} :- sc/edited-post]
+  (try
+    (j/with-db-transaction [c db-spec]
+      (if (in? tags "landing-page")
+        (let [ids (landing-page-ids c)]
+          (mapv (partial remove-tag! {:db-spec c} "landing-page")
+                ids)))
+      (j/update! c :blog.Post
+                 {:title title
+                  :content content
+                  :tags tags}
+                 ["id = ?" id]))
     (catch Exception ex
       (pprint ex)
       (throw ex))))

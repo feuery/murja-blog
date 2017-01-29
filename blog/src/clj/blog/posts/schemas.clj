@@ -26,6 +26,7 @@
    :tags [s/Str]})
 
 (s/defschema New-post (dissoc Post :creator :created_at :amount-of-comments :id))
+(s/defschema edited-post (assoc New-post :id s/Num))
 
 (s/defschema Comment
   {:content s/Str

@@ -91,6 +91,14 @@
                           (destructure-db [sys]
                                           (pdb/save-post! db user post)
                                           (ok (first (pdb/get-page db 1 1)))))
+                    (POST "/edit" []
+                          :body [post post-sc/edited-post]
+                          :auth-rules (partial can? "edit-post")
+                          :summary "Edits a post"
+                          (destructure-db [sys]
+                                          (pdb/edit-post! db user post)
+                                          (ok)))
+                          
                     (POST "/comment" []
                           :body [comment post-sc/New-comment]
                           :summary "Comments a post and returns it with the new comment appended"
