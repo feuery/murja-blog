@@ -25,6 +25,13 @@ Copypasted from http://stackoverflow.com/a/570049"
       (indent-region begin end))
   (message "Ah, much better!"))
 
+(defun murja-handle-edit-success (symbol-status title)
+  (message (concat "Saved. Status is " (prin1-to-string symbol-status)))
+  (if (string-equal (symbol-name symbol-status) "success")
+      (message (concat title " saved successfully to " murja-url))
+    (message (concat "There was a problem saving " title " to " murja-url ". Status is " (prin1-to-string symbol-status)))))
+    
+
 (defun murja-save-post-buffer (murja-title murja-id murja-tags)
   (interactive)
   ;; POST /api/posts/post/post
@@ -35,18 +42,19 @@ Copypasted from http://stackoverflow.com/a/570049"
   ;;     "string"
   ;;   ]
   ;; }
-  (let ((url (concat murja-url "/api/posts/post/edit")))
-    (message (concat "Connecting to url " url))
+  (let ((url (concat murja-url "/api/posts/post/edit"))
+	(data (json-encode `((title . ,murja-title)
+			     (content . ,(buffer-substring-no-properties (point-min) (point-max)))
+			     (tags . ,murja-tags)
+			     (id . ,(string-to-number murja-id))))))
     (request url
 	     :type "POST"
-	     :data (json-encode `((title . ,murja-title)
-				  (content . ,(buffer-substring-no-properties (point-min) (point-max)))
-				  (tags . ,murja-tags)))
-	     :parser 'json-read
+	     :data data
+	     ;; :parser 'json-read
+	     :headers '(("Content-Type" . "application/json"))
 	     :success (cl-function
-		       (lambda (&key data &allow-other-keys)
-			 (message (concat "Post saved? \n\n"
-					  (prin1-to-string data)))))
+		       (lambda (&key data symbol-status &allow-other-keys)
+			 (murja-handle-edit-success symbol-status murja-title)))
 	     :error murja-error-handler)))
 					
 
