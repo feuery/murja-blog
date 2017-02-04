@@ -37,7 +37,7 @@ Copypasted from http://stackoverflow.com/a/570049"
 (defvar murja-title "")
     
 
-(defun murja-save-post-buffer (murja-title murja-id murja-tags)
+(defun murja-save-post-buffer (murja-title murja-id)
   (interactive)
   ;; POST /api/posts/post/post
   ;;  {
@@ -64,7 +64,7 @@ Copypasted from http://stackoverflow.com/a/570049"
 
 (defun murja-edit-tags ()
   (interactive)
-  (murja-tag-buffer murja-title murja-tags))
+  (murja-tag-buffer murja-title))
 
 (define-minor-mode murja-post-edit
   "Defines a few keybindings for communicating with a murja instance"
@@ -97,8 +97,8 @@ Copypasted from http://stackoverflow.com/a/570049"
       (murja-post-edit)
       (local-set-key (kbd "C-x C-s") (lambda ()
 				       (interactive)
-				       (murja-save-post-buffer title (prin1-to-string id) tags)))
-      (setq murja-tags tags)
+				       (murja-save-post-buffer title (prin1-to-string id))))
+      (setq murja-tags (mapcar (lambda (x) x) tags))
       (setq murja-title title))))
 
 (defun open-murja-post-buffer (id)
