@@ -5,6 +5,8 @@
 (require 'widget)
 (require 'request)
 
+(require 'murja-tags)
+
 (defvar murja-error-handler (cl-function (lambda (&rest args &key error-thrown response &allow-other-keys)
 				   (message "Got error: %S - %S" error-thrown))))
 
@@ -30,6 +32,9 @@ Copypasted from http://stackoverflow.com/a/570049"
   (if (string-equal (symbol-name symbol-status) "success")
       (message (concat title " saved successfully to " murja-url))
     (message (concat "There was a problem saving " title " to " murja-url ". Status is " (prin1-to-string symbol-status)))))
+
+(defvar murja-tags '())
+(defvar murja-title "")
     
 
 (defun murja-save-post-buffer (murja-title murja-id murja-tags)
@@ -56,9 +61,26 @@ Copypasted from http://stackoverflow.com/a/570049"
 		       (lambda (&key data symbol-status &allow-other-keys)
 			 (murja-handle-edit-success symbol-status murja-title)))
 	     :error murja-error-handler)))
+
+(defun murja-edit-tags ()
+  (interactive)
+  (murja-tag-buffer murja-title murja-tags))
+
+(define-minor-mode murja-post-edit
+  "Defines a few keybindings for communicating with a murja instance"
+  :lighter " murja "
+  :keymap (let ((map (make-sparse-keymap)))
+	    ;; TODO: Come up with a less stupid system for keychords
+	    (define-key map (kbd "C-x C-m t") #'murja-edit-tags)
+	    map)
+  (make-local-variable 'murja-tags)
+  (make-local-variable 'murja-title))
+	    
+	    
 					
 
 (defun opening-murja-post-buffer (data)
+  (message (prin1-to-string data))
   (save-excursion
     (let ((title (cdr (assoc 'title data)))
 	  (id (cdr (assoc 'id data)))
@@ -72,9 +94,12 @@ Copypasted from http://stackoverflow.com/a/570049"
 
       (murja-xml-pretty-print (point-min) (point-max))
       (html-mode)
+      (murja-post-edit)
       (local-set-key (kbd "C-x C-s") (lambda ()
-					(interactive)
-					(murja-save-post-buffer title (prin1-to-string id) tags))))))
+				       (interactive)
+				       (murja-save-post-buffer title (prin1-to-string id) tags)))
+      (setq murja-tags tags)
+      (setq murja-title title))))
 
 (defun open-murja-post-buffer (id)
   (if murja-url
@@ -83,8 +108,11 @@ Copypasted from http://stackoverflow.com/a/570049"
 	(request url
 		 :parser 'json-read
 		 :success (cl-function
-			   (lambda (&key data &allow-other-keys)
-			     (opening-murja-post-buffer data)))
+			   (lambda (&key data symbol-status &allow-other-keys)
+			     (if data
+				 (opening-murja-post-buffer data)
+			       (message (concat "Data is invalid: " (prin1-to-string data) " - "
+						(prin1-to-string symbol-status))))))
 		 :error murja-error-handler))
     (message "murja-url is nil, did you call murja-main?")))
 

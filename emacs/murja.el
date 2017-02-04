@@ -58,7 +58,6 @@
 				  ("Month" 9 t)
 				  ("Year" 4 t)])
 			   (setq tabulated-list-entries (mapcar #'murja-title-entry loaded-murja-titles))
-			   (message (concat "Tabulated list entries: " (prin1-to-string tabulated-list-entries)))
 			   (tabulated-list-print)))
 	       :error murja-error-handler))))
 
