@@ -8,7 +8,7 @@
             [ring.swagger.upload :as upload]
             [clojure.pprint :refer :all]
             [blog.util :refer [destructure-db]]
-            [blog.access :as access]
+            [blog.access :as access :refer [can?]]
             [blog.importer.db :as db]
             [ring.swagger.upload :as upload]))
 
@@ -16,6 +16,8 @@
   (context "/importer" []
            :sys sys
            :tags ["importer"]
+           :current-user user
+           :auth-rules (partial can? "can-import")
            (POST "/atom" []
                  :multipart-params [file :- upload/TempFileUpload]
                  :middleware [upload/wrap-multipart-params]
