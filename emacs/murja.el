@@ -5,7 +5,7 @@
 (require 'widget)
 (require 'request)
 (require 'tabulated-list)
-(require 'murja-post-mode)
+(require 'murja-new-post)
 
 (defvar murja-logged-in-user nil)
 (defvar murja-url nil)
@@ -20,8 +20,8 @@
 (defvar murja-title-mode-map
   (let ((map (make-sparse-keymap)))
     (set-keymap-parent map tabulated-list-mode-map)
-    (define-key map "RET" (lambda ()
-			    (message "You pressed return!")))
+    (define-key map (kbd "RET") #'open-murja-post)
+    (define-key map (kbd "c") #'murja-new-post)
     map))
 
 (define-derived-mode murja-title-mode tabulated-list-mode "Murja titles"
@@ -37,9 +37,6 @@
   (interactive)
   (message "Opening murja-post-buffer!")
   (open-murja-post-buffer (murja-selected-post-id)))
-
-(define-key murja-title-mode-map (kbd "RET") #'open-murja-post)
-
 
   
 (defun murja-titles ()

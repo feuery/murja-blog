@@ -95,9 +95,10 @@
                           :body [post post-sc/edited-post]
                           :auth-rules (partial can? "edit-post")
                           :summary "Edits a post"
+                          :return {:success? s/Bool}
                           (destructure-db [sys]
                                           (pdb/edit-post! db user post)
-                                          (ok)))
+                                          (ok {:success? true})))
                           
                     (POST "/comment" []
                           :body [comment post-sc/New-comment]
