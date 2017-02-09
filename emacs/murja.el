@@ -6,6 +6,7 @@
 (require 'request)
 (require 'tabulated-list)
 (require 'murja-new-post)
+(require 'json)
 
 (defvar murja-logged-in-user nil)
 (defvar murja-url nil)
@@ -76,3 +77,5 @@
 			 (setq murja-logged-in-user data)
 			 (murja-titles)))
 	     :error murja-error-handler)))
+
+(provide 'murja)
