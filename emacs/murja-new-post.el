@@ -117,7 +117,7 @@ Copypasted from http://stackoverflow.com/a/570049"
 
 (defun open-murja-post-buffer (id)
   (if murja-url
-      (let ((url (concat murja-url "/api/posts/" (prin1-to-string id))))
+      (let ((url (concat murja-url "/api/posts/" (prin1-to-string id) "/allow-hidden/true")))
 	(message (concat "Requesting " url))
 	(request url
 		 :parser 'json-read

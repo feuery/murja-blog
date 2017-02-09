@@ -41,6 +41,16 @@
                 :summary "Returns a post per its id"
                 (destructure-db [sys]
                                 (ok (pdb/get-by-id db id))))
+
+           (GET "/:id/allow-hidden/:allow-hidden" []
+                :path-params [id :- s/Int
+                              allow-hidden :- s/Bool]
+                :return post-sc/Commented-Post
+                :summary "Returns a post per its id. Can return also hidden posts if edit-post permission is held"
+                :current-user user
+                :auth-rules (partial can? "edit-post")
+                (destructure-db [sys]
+                                (ok (pdb/get-by-id db id :allow-hidden? allow-hidden))))
            
            (DELETE "/:id" []
                    :path-params [id :- s/Int]
