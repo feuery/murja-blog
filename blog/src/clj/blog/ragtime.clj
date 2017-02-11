@@ -5,7 +5,6 @@
             [blog.system.current :refer :all]
             [blog.config :refer [config]]))
 
-;; TODO Load these from a configuration
 (defn start-db [passu]
   (let [db (:db @config)]
     {:db
