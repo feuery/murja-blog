@@ -45,7 +45,6 @@
 		(json-encode `((title . ,murja-title)
 			       (content . ,(buffer-substring-no-properties (point-min) (point-max)))
 			       (tags . ,murja-tags))))))
-    (message (concat "Data: " (prin1-to-string data)))
     (request url
 	     :type "POST"
 	     :data data
