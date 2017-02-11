@@ -78,9 +78,13 @@
  (fn [db [result]]
    (->> result
         (group-by :Year)
+        (sort-by first)
         (map (fn [[year year-group]]
                [year
-                (into (sorted-map-by <)
-                      (group-by (comp month->int :Month) year-group))]))
-        (into {})        
+                (->> year-group
+                     (group-by (comp month->int :Month))
+                     (into (sorted-map))
+                     reverse)]))
+        (into (sorted-map))
+        reverse
         (assoc db :grouper-titles))))
