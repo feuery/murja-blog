@@ -1,2 +1,5 @@
 ALTER TABLE blog.Post
 ADD COLUMN version INT NOT NULL DEFAULT 0;
+
+ALTER TABLE blog.Post DROP CONSTRAINT post_pkey;
+ALTER TABLE blog.Post ADD PRIMARY KEY (id, version);
