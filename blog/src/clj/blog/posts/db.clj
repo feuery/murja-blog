@@ -227,15 +227,11 @@ WHERE tags ?? 'landing-page' AND NOT tags ?? 'hidden'"]
         (let [ids (landing-page-ids c)]
           (mapv (partial remove-tag! {:db-spec c} "landing-page")
                 ids)))
-      (let [version (j/query db-spec ["SELECT version 
-FROM blog.Post
-WHERE id = ?
-ORDER BY version DESC
-LIMIT 1" id] :row-fn :version :result-set-fn first)]
-
-      (j/insert! c :blog.post
-                 [:Title :Content :creator_id :tags :version]
-                 [title content _id tags (inc version)])))
+      (j/update! c :blog.Post
+                 {:title title
+                  :content content
+                  :tags tags}
+                 ["id = ?" id]))
     (catch Exception ex
       (pprint ex)
       (throw ex))))
