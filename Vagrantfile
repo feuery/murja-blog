@@ -23,7 +23,7 @@ Vagrant.configure("2") do |config|
 
   config.vm.provision "shell", inline: <<-SHELL
     set -e
-    sudo pacman -Suy --noconfirm
+    # sudo pacman -Suy --noconfirm
     sudo pacman -S postgresql emacs-nox --noconfirm
     sudo systemctl enable postgresql
     if [ -f /var/lib/postgres/data/pg_hba.conf ]; then

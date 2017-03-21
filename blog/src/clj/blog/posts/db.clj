@@ -227,6 +227,14 @@ WHERE tags ?? 'landing-page' AND NOT tags ?? 'hidden'"]
         (let [ids (landing-page-ids c)]
           (mapv (partial remove-tag! {:db-spec c} "landing-page")
                 ids)))
+      ;; move the old post to the history table
+      (j/execute! db-spec ["
+INSERT INTO blog.Post_History(ID, Title, Content, creator_id, tags, created_at, version)
+SELECT p.ID, p.Title, p.Content, p.creator_id, p.tags, p.created_at, coalesce(MAX(ph.version), 0) + 1
+FROM blog.Post p
+LEFT JOIN blog.Post_History ph ON p.ID = ph.ID
+WHERE p.id = ?
+GROUP BY p.ID" id])
       (j/update! c :blog.Post
                  {:title title
                   :content content
