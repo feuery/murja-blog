@@ -35,12 +35,20 @@
                 (destructure-db [sys]
                                 (ok (pdb/get-landing-page-title db))))
 
+           (GET "/:id/version/:version" []
+                :path-params [id :- s/Int
+                              version :- s/Int]
+                :return post-sc/Commented-Post
+                :summary "Returns an old version of the post and the current comments"
+                (destructure-db [sys]
+                                (ok (pdb/get-versioned-by-id db id version))))
+
            (GET "/:id" []
                 :path-params [id :- s/Int]
                 :return post-sc/Commented-Post
                 :summary "Returns a post per its id"
                 (destructure-db [sys]
-                                (ok (pdb/get-by-id db id))))
+                                (ok (pdb/get-by-id db id))))          
 
            (GET "/:id/allow-hidden/:allow-hidden" []
                 :path-params [id :- s/Int
@@ -51,6 +59,12 @@
                 :auth-rules (partial can? "edit-post")
                 (destructure-db [sys]
                                 (ok (pdb/get-by-id db id :allow-hidden? allow-hidden))))
+
+           (GET "/:id/versions" []
+                :path-params [id :- s/Int]
+                :return [s/Int]
+                (destructure-db [sys]
+                                (ok (pdb/post-versions db id))))
            
            (DELETE "/:id" []
                    :path-params [id :- s/Int]

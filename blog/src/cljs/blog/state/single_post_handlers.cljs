@@ -9,6 +9,14 @@
     :get {:url (str "/api/posts/" post-id)
           :dispatch-key :post-loaded}}))
 
+(reg-event-fx
+ :load-versioned-post-full
+ [trim-v]
+ (fn [{:keys [db]} [post-id version]]
+   {:db db
+    :get {:url (str "/api/posts/" post-id "/version/" version)
+          :dispatch-key :post-loaded}}))
+
 (reg-event-db
  :post-loaded
  [trim-v]

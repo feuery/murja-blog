@@ -73,6 +73,12 @@
   (dispatch [:load-grouper])
   (session/put! :current-main #'single-post-widget))
 
+(secretary/defroute "/blog/post/:id/:version" {:keys [id version]}
+  (dispatch [:load-settings])
+  (dispatch [:load-versioned-post-full (js/parseInt id) (js/parseInt version)])
+  (dispatch [:load-grouper])
+  (session/put! :current-main #'single-post-widget))
+
 (secretary/defroute "/blog/user-editor" []
   (dispatch [:load-settings])
   (dispatch [:load-grouper])

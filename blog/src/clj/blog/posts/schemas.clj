@@ -16,6 +16,7 @@
    :created_at Date ;; published-date
    :tags [s/Str]    ;; categories
    :amount-of-comments s/Num ;; 0
+   :versions [s/Int]
    })
 
 (s/defschema Imported-Post
@@ -25,7 +26,7 @@
    :created_at Date
    :tags [s/Str]})
 
-(s/defschema New-post (dissoc Post :creator :created_at :amount-of-comments :id))
+(s/defschema New-post (dissoc Post :creator :created_at :amount-of-comments :id :versions))
 (s/defschema edited-post (assoc New-post :id s/Num))
 
 (s/defschema Comment

@@ -40,9 +40,11 @@
                    {:src img_location}] "By " nickname]
          [:p.meta "Written at " (format-date (:time-format settings) created_at)] 
          [:article.content {:dangerouslySetInnerHTML {:__html (clean-html content)}}]]))
-  
 
-(defn post-widget [{:keys [id title content creator created_at tags amount-of-comments comments next-post-id prev-post-id]} can-edit? can-delete? settings]
+(defn version-link [post-id version]
+  [:a {:href (str "/blog/post/" post-id "/" version)} (str version)])
+
+(defn post-widget [{:keys [id title content creator created_at tags amount-of-comments comments next-post-id prev-post-id versions]} can-edit? can-delete? settings]
   (let [{:keys [nickname img_location]} creator]
     ^{:key (rand-int 9999)}
     [:div.post
@@ -53,6 +55,7 @@
       (if can-delete?
         [:button {:on-click #(if (js/confirm (str "Are you sure you want to delete post titled " title "?"))
                                (dispatch [:delete-post id]))} "delete"])]
+     [:div.version-container (map (partial version-link id) versions)]
      [:p.meta [:img.user_avatar
                {:src img_location}] "By " nickname]
      [:p.meta "Written at " (format-date (:time-format settings) created_at)]

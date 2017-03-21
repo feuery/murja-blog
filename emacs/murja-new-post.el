@@ -45,6 +45,7 @@
 		(json-encode `((title . ,murja-title)
 			       (content . ,(buffer-substring-no-properties (point-min) (point-max)))
 			       (tags . ,murja-tags))))))
+    (message (concat "Trying to save post to " url))
     (request url
 	     :type "POST"
 	     :data data

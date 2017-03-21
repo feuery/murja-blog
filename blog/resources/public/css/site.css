@@ -137,3 +137,13 @@ header {
     margin: 0 auto;
     max-widht: 70%;
 }
+
+.version-container {
+    float: right;
+    position: relative;
+    right: 0px;
+}
+
+.version-container a {
+    padding-right: 5px;
+}
