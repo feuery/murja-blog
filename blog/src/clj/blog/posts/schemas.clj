@@ -17,7 +17,7 @@
    :tags [s/Str]    ;; categories
    :amount-of-comments s/Num ;; 0
    :versions [s/Int]
-   })
+   (s/optional-key :version) (s/maybe s/Int)})
 
 (s/defschema Imported-Post
   {:Title s/Str

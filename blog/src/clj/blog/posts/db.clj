@@ -108,10 +108,13 @@ ORDER BY version ASC" post-id]
            :result-fn vec))
    
 (defn ->Post [db {:keys [username id nickname img_location] :as db-row}]
-  (-> db-row
-      (add-user username nickname img_location)
-      (assoc :versions (post-versions db id))
-      (dissoc :username :nickname :img_location)))
+  (let [result (-> db-row
+                   (add-user username nickname img_location)
+                   (assoc :versions (post-versions db id))
+                   (dissoc :username :nickname :img_location))]
+    (if-not (:version result)
+      (assoc result :version nil)
+      result)))
 
 (s/defn get-next-prev-postids [{:keys [db-spec] :as db} id]
   (let [next-id (j/query db-spec ["SELECT p.ID 
@@ -151,12 +154,12 @@ GROUP BY p.ID, u.ID")
 
 (defn get-versioned-by-id
   [{:keys [db-spec] :as db} post-id post-version]
-  (let [db-row (j/query db-spec ["SELECT p.ID, p.Title, p.created_at, p.Content, p.tags, u.Username, u.Nickname, u.Img_location, COUNT(c.ID) AS amount_of_comments
+  (let [db-row (j/query db-spec ["SELECT p.ID, p.Title, p.created_at, p.Content, p.tags, u.Username, u.Nickname, u.Img_location, p.version, COUNT(c.ID) AS amount_of_comments
 FROM blog.Post_History p
 JOIN blog.Users u ON u.ID = p.creator_id
 LEFT JOIN blog.Comment c ON c.parent_post_id = p.ID
 WHERE p.ID = ? AND p.version = ? AND not tags ?? 'hidden'
-GROUP BY p.ID, u.ID, p.title, p.created_at, p.Content, p.tags, u.Username, u.Nickname, u.Img_location" post-id post-version]
+GROUP BY p.ID, u.ID, p.title, p.created_at, p.Content, p.tags, u.Username, u.Nickname, u.Img_location, p.version" post-id post-version]
                         :result-set-fn first
                         :row-fn #(change-key % :amount_of_comments :amount-of-comments))]
     (if-not (empty? db-row)
@@ -275,9 +278,13 @@ GROUP BY p.ID" id])
       (throw ex))))
 
 (defn delete-by-id
-  [{:keys [db-spec] :as db}
+  ([{:keys [db-spec] :as db}
    post-id]
-  (j/delete! db-spec :blog.Post ["ID = ?" post-id]))
+   (j/delete! db-spec :blog.Post ["ID = ?" post-id]))
+  ([{:keys [db-spec] :as db}
+    post-id
+    post-version]
+   (j/delete! db-spec :blog.Post_History ["ID = ? AND version = ?" post-id post-version])))
 
 (defn delete-comment-by-id
   [{:keys [db-spec] :as db}

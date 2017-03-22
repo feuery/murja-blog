@@ -65,9 +65,19 @@
                 :return [s/Int]
                 (destructure-db [sys]
                                 (ok (pdb/post-versions db id))))
+
+           (DELETE "/:id/:version" []
+                   :path-params [id :- s/Int
+                                 version :- s/Int]
+                   :summary "Deletes a version of a post"
+                   :auth-rules (partial can? "delete-post")
+                   :return s/Int
+                   (destructure-db [sys]
+                                   (pdb/delete-by-id db id version)
+                                   (ok id)))
            
            (DELETE "/:id" []
-                   :path-params [id :- s/Int]
+                   :path-params [id :- s/Int]         
                    :return s/Int
                    :summary "Deletes a post and returns its id"
                    :auth-rules (partial can? "delete-post")

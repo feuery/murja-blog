@@ -57,3 +57,23 @@
  (fn [db [id]]
    (update-in db [:selected-post :comments] (fn [comments]
                                               (filterv #(not= (:id %) id) comments)))))
+
+(reg-event-fx
+ :delete-post
+ [trim-v]
+ (fn [{:keys [db]} [post-id post-version]]
+   (let [url (str "/api/posts/" post-id (if post-version
+                                          (str "/" post-version)
+                                          ""))]
+   {:delete {:url url
+             :dispatch-key :post-deleted}
+    :db db})))
+
+
+(reg-event-fx
+ :post-deleted
+ [trim-v]
+ (fn [db _]
+   {:alert "Success!"
+    :redirect-to "/"
+    :db db}))
