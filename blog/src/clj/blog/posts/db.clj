@@ -102,7 +102,7 @@ ORDER BY p.created_at DESC")] :row-fn (fn [{:keys [title created_at id tags]}]
 (defn post-versions [{:keys [db-spec] :as db} post-id]
   (j/query db-spec ["SELECT version 
 FROM blog.Post_History 
-WHERE ID = ?
+WHERE ID = ? AND NOT tags ?? 'hidden' 
 ORDER BY version ASC" post-id]
            :row-fn :version
            :result-fn vec))
@@ -155,7 +155,7 @@ GROUP BY p.ID, u.ID")
 FROM blog.Post_History p
 JOIN blog.Users u ON u.ID = p.creator_id
 LEFT JOIN blog.Comment c ON c.parent_post_id = p.ID
-WHERE p.ID = ? AND p.version = ?
+WHERE p.ID = ? AND p.version = ? AND not tags ?? 'hidden'
 GROUP BY p.ID, u.ID, p.title, p.created_at, p.Content, p.tags, u.Username, u.Nickname, u.Img_location" post-id post-version]
                         :result-set-fn first
                         :row-fn #(change-key % :amount_of_comments :amount-of-comments))]
