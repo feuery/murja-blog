@@ -37,16 +37,16 @@
            #'imp/routes
            #'settings/routes)
 
-  (undocumented (route/resources "/")
+  (undocumented (route/resources "/blog/")
                 (GET "*" []
                      (ok
                       (html5 [:head
-                              (include-css (if (env :dev) "/css/site.css" "/css/site.min.css"))]
+                              (include-css (if (env :dev) "/blog/css/site.css" "/blog/css/site.min.css"))]
                              [:body
                               [:div#app
                                [:p "This site requires js (at least until the lazy developer makes a server-side version of this clojurescript site"]
                                [:p "If you're dev, run `lein figwheel` in the project dir"]]
-                              (include-js "/js/app.js")])))))
+                              (include-js "/blog/js/app.js")])))))
 
 (def app
   (-> app-
