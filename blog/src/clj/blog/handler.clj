@@ -1,6 +1,7 @@
 (ns blog.handler
   (:require [blog.server-conf :refer :all]
             [clojure.pprint :refer [pprint]]
+            [blog.config :refer [config]]
             [compojure.api.api :as api :refer [defapi api]]
             [compojure.api.sweet :as sw :refer [context undocumented]]
             [compojure.api.core :as c :refer [GET POST PUT DELETE]]
@@ -39,14 +40,15 @@
 
   (undocumented (route/resources "/blog/")
                 (GET "*" []
+                     (let [{:keys [css-route]} @config]
                      (ok
                       (html5 [:head
-                              (include-css (if (env :dev) "/blog/css/site.css" "/blog/css/site.min.css"))]
+                              (include-css css-route)]
                              [:body
                               [:div#app
                                [:p "This site requires js (at least until the lazy developer makes a server-side version of this clojurescript site"]
                                [:p "If you're dev, run `lein figwheel` in the project dir"]]
-                              (include-js "/blog/js/app.js")])))))
+                              (include-js "/blog/js/app.js")]))))))
 
 (def app
   (-> app-
