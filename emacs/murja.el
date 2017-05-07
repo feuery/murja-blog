@@ -62,10 +62,10 @@
 
 (defun murja-main (url username)
   (interactive "sURL to murja instance: \nsUsername: \n")
-  (setq murja-url url)
   (let* ((passwd (read-passwd "Password: "))
 	 (login-url (concat url "/api/login/login")))
     (setq murja-url url)
+    (message (concat "Trying to log in to " login-url))
     (request login-url
 	     :data (json-encode
 		    `(("username" . ,username)
@@ -76,6 +76,7 @@
 		       (lambda (&key data &allow-other-keys)
 			 (setq murja-logged-in-user data)
 			 (murja-titles)))
-	     :error murja-error-handler)))
+	     :error (cl-function (lambda (&rest args &key error-thrown &allow-other-keys)
+                (message "Got error: %S" error-thrown))))))
 
 (provide 'murja)
