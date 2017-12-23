@@ -43,7 +43,8 @@
                      (let [{:keys [css-route]} @config]
                      (ok
                       (html5 [:head
-                              (include-css css-route)]
+                              (include-css css-route)
+                              [:meta {:charset "UTF-8"}]]
                              [:body
                               [:div#app
                                [:p "This site requires js (at least until the lazy developer makes a server-side version of this clojurescript site"]
