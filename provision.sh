@@ -1,9 +1,9 @@
 set -e
 sudo pacman -Syy
-sudo pacman -S postgresql emacs-nox --noconfirm
+sudo pacman -S postgresql emacs-nox nginx git --noconfirm
 sudo pacman -Suy --noconfirm
 
-sudo systemctl enable postgresql
+sudo systemctl enable postgresql nginx
 if [ -f /var/lib/postgres/data/pg_hba.conf ]; then
     echo Db exists already
 else 
@@ -28,8 +28,9 @@ else
     echo "$HOST_ALL" >> $HBA_FILE
 fi
 
+sudo systemctl start postgresql nginx
 
-sudo systemctl start postgresql
+# Setting up postgresql
 if sudo su postgres -c "cd ~; psql -lqt" | cut -d \| -f 1 | grep -qw blogdb; then
     echo Database blogdb exists
 else 
@@ -42,6 +43,14 @@ if [[ $(sudo su postgres -c "cd ~; psql -tAc \"SELECT 1 FROM pg_roles WHERE roln
 else
     echo Creating db user blogiadmin
     su - postgres -c "createuser -d -l -r -s blogiadmin"
+fi
+
+# Setting up nginx
+WWW_ROOT=/usr/share/nginx/html
+
+if [ ! -f  $WWW_ROOT/hacks.html ]; then
+    rm -rf $WWW_ROOT
+    git clone https://github.com/feuery/feuerx_frontpage.git $WWW_ROOT
 fi
 
 echo Done
