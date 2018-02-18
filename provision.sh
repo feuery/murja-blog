@@ -30,7 +30,7 @@ else
     echo "$HOST_ALL" >> $HBA_FILE
 fi
 
-sudo systemctl start postgresql nginx
+sudo systemctl start postgresql
 
 # Setting up postgresql
 if sudo su postgres -c "cd ~; psql -lqt" | cut -d \| -f 1 | grep -qw blogdb; then
@@ -50,10 +50,14 @@ fi
 # Setting up nginx
 WWW_ROOT=/usr/share/nginx/html
 
+cp /projektikansio/nginx.conf  /etc/nginx/nginx.conf
+
 if [ ! -f  $WWW_ROOT/hacks.html ]; then
     rm -rf $WWW_ROOT
     git clone https://github.com/feuery/feuerx_frontpage.git $WWW_ROOT
 fi
+
+sudo systemctl start nginx
 
 echo Done
 exit

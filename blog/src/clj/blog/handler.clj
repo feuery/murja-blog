@@ -38,6 +38,8 @@
            #'imp/routes
            #'settings/routes)
 
+  (route/resources "/js")
+
   (undocumented (route/resources "/blog/")
                 (GET "*" []
                      (let [{:keys [css-route]} @config]
