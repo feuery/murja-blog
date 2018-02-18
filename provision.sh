@@ -52,12 +52,11 @@ WWW_ROOT=/usr/share/nginx/html
 
 cp /projektikansio/nginx.conf  /etc/nginx/nginx.conf
 
-if [ ! -f  $WWW_ROOT/hacks.html ]; then
-    rm -rf $WWW_ROOT
-    git clone https://github.com/feuery/feuerx_frontpage.git $WWW_ROOT
-fi
+# Reinstalling nginx craps our $WWW_ROOT
+rm -rf $WWW_ROOT
+git clone https://github.com/feuery/feuerx_frontpage.git $WWW_ROOT
 
-sudo systemctl start nginx
+sudo systemctl restart nginx
 
 echo Done
 exit

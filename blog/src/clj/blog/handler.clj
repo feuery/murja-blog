@@ -38,7 +38,7 @@
            #'imp/routes
            #'settings/routes)
 
-  (route/resources "/js")
+  ;; (route/resources "/js/")
 
   (undocumented (route/resources "/blog/")
                 (GET "*" []

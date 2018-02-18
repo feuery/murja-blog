@@ -69,10 +69,11 @@
               :optimizations :advanced
               :pretty-print  false}}
             :app
+            
             {:source-paths ["src/cljs" "src/cljc" "env/dev/cljs"]
              :compiler
              {:main "blog.dev"
-              :asset-path "/js/out"
+              :asset-path "/blog/js/out"
               :output-to "target/cljsbuild/public/js/app.js"
               :output-dir "target/cljsbuild/public/js/out"
               :source-map true
