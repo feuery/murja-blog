@@ -8,7 +8,7 @@ Vagrant.configure("2") do |config|
   # accessing "localhost:8080" will access port 80 on the guest machine.
   # config.vm.network "forwarded_port", guest: 80, host: 8080
 
-  config.vm.network "public_network"
+  config.vm.network "private_network", ip: "192.168.50.4"
   config.vm.network "forwarded_port", guest: 5432, host: 5432
   config.vm.synced_folder ".", "/projektikansio"
   config.vm.provider :virtualbox do |v|

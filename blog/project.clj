@@ -37,7 +37,7 @@
             [lein-cljsbuild "1.1.1"]
             [lein-asset-minifier "0.2.7"
              :exclusions [org.clojure/clojure]]
-            [cider/cider-nrepl "0.14.0"]]
+            #_[cider/cider-nrepl "0.14.0"]]
 
   :ring {:handler blog.handler/app
          :uberwar-name "blog.war"}

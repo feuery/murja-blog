@@ -16,7 +16,8 @@ PG_CONF_FILE=/var/lib/postgres/data/postgresql.conf
 if sudo grep -q "$LISTEN_ALL" $PG_CONF_FILE; then
     echo Already listening
 else
-    echo "$LISTEN_ALL"  >> $PG_CONF_FILE
+    echo "$LISTEN_ALL"  > $PG_CONF_FILE
+    echo "Listening set up"
 fi
 
 HOST_ALL="host    all             all             10.0.2.2/32                trust"
@@ -25,6 +26,7 @@ HBA_FILE=/var/lib/postgres/data/pg_hba.conf
 if sudo grep -q "$HOST_ALL" $HBA_FILE; then
     echo HBA file configured
 else
+    echo Configuring HBA file
     echo "$HOST_ALL" >> $HBA_FILE
 fi
 
