@@ -2,3 +2,5 @@
 .vagrant/*
 *~
 /blog/resources/public/css/site.min.css
+/new_devenv/.vagrant
+/kantadumppi.sql

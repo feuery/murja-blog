@@ -124,7 +124,7 @@
                           :summary "Writes a new post into the db"                          
                           (destructure-db [sys]
                                           (pdb/save-post! db user post)
-                                          (ok (first (pdb/get-page db 1 1)))))
+                                          (ok (first (pdb/get-page db 1 1 :allow-hidden? true)))))
                     (POST "/edit" []
                           :body [post post-sc/edited-post]
                           :auth-rules (partial can? "edit-post")

@@ -37,7 +37,7 @@
             [lein-cljsbuild "1.1.1"]
             [lein-asset-minifier "0.2.7"
              :exclusions [org.clojure/clojure]]
-            [cider/cider-nrepl "0.14.0"]]
+            #_[cider/cider-nrepl "0.14.0"]]
 
   :ring {:handler blog.handler/app
          :uberwar-name "blog.war"}
@@ -69,10 +69,11 @@
               :optimizations :advanced
               :pretty-print  false}}
             :app
+            
             {:source-paths ["src/cljs" "src/cljc" "env/dev/cljs"]
              :compiler
              {:main "blog.dev"
-              :asset-path "/js/out"
+              :asset-path "/blog/js/out"
               :output-to "target/cljsbuild/public/js/app.js"
               :output-dir "target/cljsbuild/public/js/out"
               :source-map true

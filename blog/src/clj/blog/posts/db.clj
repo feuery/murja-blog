@@ -194,20 +194,22 @@ ORDER BY p.created_at DESC
     (j/query db-spec sql-vec :row-fn (comp #(change-key % :amount_of_comments :amount-of-comments)
                                            (partial ->Post db)))))
 
-(s/defn ^:always-validate get-page :- [sc/Post]
+(defn get-page 
   [{:keys [db-spec] :as db}
-   page :- s/Num
-   page-size :- s/Num]
+   page 
+   page-size 
+   & {:keys [allow-hidden?]
+      :or [allow-hidden? false]}]            
   (j/query db-spec ["SELECT p.ID, p.Title, p.Content, p.created_at, p.tags, u.Username, u.Nickname, u.Img_location, COUNT(c.ID) AS amount_of_comments
 FROM blog.Post p
 JOIN blog.Users u ON u.ID = p.creator_id
 LEFT JOIN blog.Comment c ON c.parent_post_id = p.ID
-WHERE NOT p.tags ?? 'hidden'
+WHERE (NOT p.tags ?? 'hidden') OR ?
 GROUP BY p.ID, u.ID
 ORDER BY p.created_at DESC
 LIMIT ?
-OFFSET ?" page-size (* (dec page) page-size)] :row-fn (comp #(change-key % :amount_of_comments :amount-of-comments)
-                                                            (partial ->Post db))))
+OFFSET ?" allow-hidden? page-size (* (dec page) page-size)] :row-fn (comp #(change-key % :amount_of_comments :amount-of-comments)
+                                                                          (partial ->Post db))))
         
     
 
