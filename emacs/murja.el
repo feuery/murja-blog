@@ -1,12 +1,12 @@
 ;; -*- lexical-binding: t -*-
-;;
-;; Depends on https://github.com/tkf/emacs-request
+
+;; depends on https://github.com/rejeep/f.el
 
 (require 'widget)
-(require 'request)
 (require 'tabulated-list)
 (require 'murja-new-post)
 (require 'json)
+(require 'f)
 
 (defvar murja-logged-in-user nil)
 (defvar murja-url nil)
@@ -39,44 +39,46 @@
   (message "Opening murja-post-buffer!")
   (open-murja-post-buffer (murja-selected-post-id)))
 
+(defun murja-json-read (str)
+  (with-temp-buffer
+    (insert str)
+    (goto-char (point-min))
+    (json-read)))
   
 (defun murja-titles ()
   (interactive)
+  (message (concat "murja-titles called with url " murja-url))
   (when murja-url
-    (let ((title-url (concat murja-url "/api/posts/all-titles")))
-      (request title-url
-	       :parser 'json-read
-	       :success (cl-function
-			 (lambda (&key data &allow-other-keys)
-			   (switch-to-buffer (get-buffer-create (concat "Murja: " murja-url)))
-			   (setq loaded-murja-titles data)
-			   (murja-title-mode)
-			   (setq tabulated-list-format
-				 [("Title" 40 t)
-				  ("Month" 9 t)
-				  ("Year" 4 t)])
-			   (setq tabulated-list-entries (mapcar #'murja-title-entry loaded-murja-titles))
-			   (tabulated-list-print)))
-	       :error murja-error-handler))))
+    (let* ((title-url (concat murja-url "/api/posts/all-titles"))
+	   (cmd-result (shell-command-to-string
+			(concat "./murja-client.sh GET " title-url "")))
+	   (data (murja-json-read cmd-result)))
+      (switch-to-buffer (get-buffer-create (concat "Murja: " murja-url)))
+      (setq loaded-murja-titles data)
+      (murja-title-mode)
+      (setq tabulated-list-format
+	    [("Title" 40 t)
+	     ("Month" 9 t)
+	     ("Year" 4 t)])
+      (setq tabulated-list-entries (mapcar #'murja-title-entry loaded-murja-titles))
+      (tabulated-list-print))))
 
 
 (defun murja-main (url username)
   (interactive "sURL to murja instance: \nsUsername: \n")
   (let* ((passwd (read-passwd "Password: "))
-	 (login-url (concat url "/api/login/login")))
-    (setq murja-url url)
-    (message (concat "Trying to log in to " login-url))
-    (request login-url
-	     :data (json-encode
-		    `(("username" . ,username)
-		      ("password" . ,passwd)))
-	     :headers '(("Content-Type" . "application/json"))
-	     :parser 'json-read
-	     :success (cl-function
-		       (lambda (&key data &allow-other-keys)
-			 (setq murja-logged-in-user data)
-			 (murja-titles)))
-	     :error (cl-function (lambda (&rest args &key error-thrown &allow-other-keys)
-                (message "Got error: %S" error-thrown))))))
+	 (login-url (concat url "/api/login/login"))
+	 (json (json-encode
+		`(("username" . ,username)
+		  ("password" . ,passwd)))))
+    (f-write-text json 'utf-8 "./input.json")
+    (let ((cmd-result (shell-command-to-string
+		       (concat "./murja-client.sh POST " login-url " ./input.json" ))))
+      (setq murja-url url)
+      (f-delete "./input.json")
+      (let ((data (murja-json-read cmd-result)))
+	(message "Logged in!")
+	(setq murja-logged-in-user data)
+	(murja-titles)))))
 
 (provide 'murja)

@@ -9,14 +9,11 @@
 (defvar murja-title "")
 (defvar murja-id nil)
 
-(defun murja-handle-edit-success (data symbol-status title)
+(defun murja-handle-edit-success (data title)
   (let ((id (cdr (assoc 'id data))))
     (if id
 	(setq murja-id id))
-    (message (concat "Saved. Status is " (prin1-to-string symbol-status)))
-    (if (string-equal (symbol-name symbol-status) "success")
-	(message (concat title " saved successfully to " murja-url))
-      (message (concat "There was a problem saving " title " to " murja-url ". Status is " (prin1-to-string symbol-status))))))
+    (message (concat title " saved successfully to " murja-url))))
 
 (defun murja-edit-tags ()
   (interactive)
@@ -46,18 +43,14 @@
 			       (content . ,(buffer-substring-no-properties (point-min) (point-max)))
 			       (tags . ,murja-tags))))))
     (message (concat "Trying to save post to " url))
-    (request url
-	     :type "POST"
-	     :data data
-	     :parser 'json-read
-	     :headers '(("Content-Type" . "application/json"))
-			;; ("Accept" .  "application/json")
-	     :success (cl-function
-		       (lambda (&key data symbol-status &allow-other-keys)
-			 (if data
-			     (murja-handle-edit-success data symbol-status murja-title)
-			   (message "Lol, data on nil"))))
-	     :error murja-error-handler)))
+
+    (f-write-text data 'utf-8 "./input.json")    
+    (let* ((cmd-result (shell-command-to-string (concat "./murja-client.sh POST " url " ./input.json")))
+	   (data (murja-json-read cmd-result)))
+      (if data
+	  (murja-handle-edit-success data murja-title)
+	(message "data is nil")))))
+
 
 (define-derived-mode murja-post-mode html-mode " murja-post "
   "Mode for writing and editing murja posts"
@@ -119,15 +112,11 @@ Copypasted from http://stackoverflow.com/a/570049"
   (if murja-url
       (let ((url (concat murja-url "/api/posts/" (prin1-to-string id) "/allow-hidden/true")))
 	(message (concat "Requesting " url))
-	(request url
-		 :parser 'json-read
-		 :success (cl-function
-			   (lambda (&key data symbol-status &allow-other-keys)
-			     (if data
-				 (opening-murja-post-buffer data)
-			       (message (concat "Data is invalid: " (prin1-to-string data) " - "
-						(prin1-to-string symbol-status))))))
-		 :error murja-error-handler))
+	(let* ((cmd-result (shell-command-to-string (concat "./murja-client.sh GET " url)))
+	       (data (murja-json-read cmd-result)))
+	  (if data
+	      (opening-murja-post-buffer data)
+	    (message (concat "Data is invalid: " (prin1-to-string data))))))
     (message "murja-url is nil, did you call murja-main?")))
 
 
