@@ -328,8 +328,8 @@ WHERE p.tags ?? 'landing-page' AND NOT p.tags ?? 'hidden'"]
   (apply str (take n s)))
 
 (defn Meta [prop contents]
-  [:meta {:property prop
-          :contents contents}])
+  [:meta {:content contents
+          :property prop}])
 
 (defn make-fb-meta-tags [{:keys [db-spec] :as db} post-id]
   (let [post-id (if (string? post-id)
