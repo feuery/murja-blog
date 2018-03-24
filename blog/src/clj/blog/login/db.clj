@@ -45,6 +45,20 @@ WHERE u.Username = ? AND u.Password = ?" username (sha-512 passwd)])]
              :primary-group-name groupname
              :permissions (user-permissions db :username username)}))))))
 
+(defn get-user-view-data [{:keys [db-spec] :as db} user-id]
+  (j/query db-spec ["SELECT u.Username, u.Nickname, u.Img_location, ug.Name as GroupName, gm.PrimaryGroup, u.ID as UserID
+FROM blog.Users u
+JOIN blog.GroupMapping gm ON u.ID = gm.UserID
+JOIN blog.UserGroup ug ON ug.ID = gm.GroupID
+where u.ID = ?" user-id]
+           :row-fn (fn [{:keys [nickname username groupname img_location userid] :as user}]
+                     {:nickname nickname
+                      :img_location img_location
+                      :userid userid
+                      :primary-group-name groupname
+                      :permissions (user-permissions db :username username)})
+           :result-set-fn first))
+
 (defn user-groups
   [{:keys [db-spec]} username]
   (j/query db-spec ["SELECT ug.ID, ug.Name, ug.Description

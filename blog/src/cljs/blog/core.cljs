@@ -64,32 +64,38 @@
   (dispatch [:is-empty?])
   (dispatch [:load-settings-with-page-nr (js/parseInt nr)])
   (dispatch [:load-grouper])
+  (dispatch [:load-session])
   (session/put! :current-sidebar #'loginview)
   (session/put! :current-main #'default-post-widget))
 
 (secretary/defroute "/blog/post/:id" {:keys [id]}
+  (dispatch [:load-session])
   (dispatch [:load-settings])
   (dispatch [:load-post-full (js/parseInt id)])
   (dispatch [:load-grouper])
   (session/put! :current-main #'single-post-widget))
 
 (secretary/defroute "/blog/post/:id/:version" {:keys [id version]}
+  (dispatch [:load-session])
   (dispatch [:load-settings])
   (dispatch [:load-versioned-post-full (js/parseInt id) (js/parseInt version)])
   (dispatch [:load-grouper])
   (session/put! :current-main #'single-post-widget))
 
 (secretary/defroute "/blog/user-editor" []
+  (dispatch [:load-session])
   (dispatch [:load-settings])
   (dispatch [:load-grouper])
   (session/put! :current-main #'user-editor))
 
 (secretary/defroute "/blog/register" []
+  (dispatch [:load-session])
   (dispatch [:load-settings])
   (dispatch [:load-grouper])
   (session/put! :current-main #'register))
 
 (secretary/defroute "/blog/create-post" []
+  (dispatch [:load-session])
   (dispatch [:load-settings])
   (dispatch [:load-grouper])
   (dispatch [:start-new-post])
@@ -97,6 +103,7 @@
   (session/put! :current-sidebar #'editor-sidebar-container))
 
 (secretary/defroute "/blog/import/atom" []
+  (dispatch [:load-session])
   (dispatch [:load-settings])
   (dispatch [:load-grouper])
   (session/put! :current-main #'import-gui))

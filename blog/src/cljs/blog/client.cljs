@@ -10,6 +10,11 @@
              :response-format :transit
              :handler handler}))
 
+(defn silent-get [url handler]
+  (aGET url {:format :transit
+             :response-format :transit
+             :handler handler}))
+
 (defn POST [url body handler file?]
   (aPOST url (cond-> {:error-handler #(js/alert (str "Error on " url " \n\n" %))
                       :format :transit

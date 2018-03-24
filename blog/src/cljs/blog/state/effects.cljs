@@ -1,11 +1,15 @@
 (ns blog.state.effects
   (:require [re-frame.core :refer [dispatch reg-fx]]
             [secretary.core :as secretary :include-macros true]
-            [blog.client :refer [GET PUT POST DELETE]]))
+            [blog.client :refer [silent-get GET PUT POST DELETE]]))
 
 (reg-fx :get
         (fn [{:keys [url dispatch-key]}]
           (GET url #(dispatch [dispatch-key %]))))
+
+(reg-fx :silent-get
+        (fn [{:keys [url dispatch-key]}]
+          (silent-get url #(dispatch [dispatch-key %]))))
 
 (reg-fx :post
         (fn [{:keys [url dispatch-key body file?] :or {file? false}}]

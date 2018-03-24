@@ -34,3 +34,16 @@
  :logout-succeeded
  (fn [db _]
    (assoc db :current-user nil)))
+
+(reg-event-fx
+ :load-session
+ (fn [{:keys [db]}]
+   {:db db
+    :silent-get {:url "/api/login/session"
+                 :dispatch-key :session-loaded}}))
+
+(reg-event-db
+ :session-loaded
+ [trim-v]
+ (fn [db [result session]]
+   (assoc db :current-user result)))

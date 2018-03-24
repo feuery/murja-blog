@@ -33,4 +33,6 @@
            (GET "/session" []
                 :auth-rules access/authenticated
                 :current-user user
-                (ok user))))
+                :return (s/maybe login-response)
+                (destructure-db [sys]
+                                (ok (db/get-user-view-data db (:_id user)))))))
