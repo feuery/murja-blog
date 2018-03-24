@@ -1,5 +1,6 @@
 (ns blog.posts.db
   (:require [clojure.java.jdbc :as j]
+            [clojure.string :as str]
             [clj-time.coerce :as c]
             [blog.config :as con]
             [clj-time.core :as t]
@@ -336,6 +337,6 @@ WHERE p.tags ?? 'landing-page' AND NOT p.tags ?? 'hidden'"]
                   post-id)
         {:keys [content title] :as post} (get-by-id db post-id)]
 
-    [(Meta "og:description" (strtake 200 content))
+    [(Meta "og:description" (str/replace (strtake 200 content) #"\n" ""))
      (Meta "og:title" title)
      (Meta "og:site_name" (get-in @con/config [:client-config :blog-title]))]))
