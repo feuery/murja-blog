@@ -57,7 +57,9 @@
                        (pprint {:metapost post-meta})
                        
                        (ok
-                        (html5 (into [:head
+                        (html5 {:xmlns:og "http://ogp.me/ns#"
+                                :xmlns:fb "http://www.facebook.com/2008/fbml"}
+                               (into [:head
                                       (include-css css-route)
                                       [:meta {:charset "UTF-8"}]]
                                      post-meta)
