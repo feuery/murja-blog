@@ -1,6 +1,7 @@
 (ns blog.posts.db
   (:require [clojure.java.jdbc :as j]
             [clj-time.coerce :as c]
+            [blog.config :as con]
             [clj-time.core :as t]
             [schema.core :as s]
             [blog.posts.schemas :as sc]
@@ -321,3 +322,20 @@ FROM blog.Post p
 WHERE p.tags ?? 'landing-page' AND NOT p.tags ?? 'hidden'"]
                :result-set-fn  first)
       {}))
+
+(defn strtake [n s]
+  (apply str (take n s)))
+
+(defn Meta [prop contents]
+  [:meta {:property prop
+          :contents contents}])
+
+(defn make-fb-meta-tags [{:keys [db-spec] :as db} post-id]
+  (let [post-id (if (string? post-id)
+                  (Long/parseLong post-id)
+                  post-id)
+        {:keys [content title] :as post} (get-by-id db post-id)]
+
+    [(Meta "og:description" (strtake 200 content))
+     (Meta "og:title" title)
+     (Meta "og:site_name" (get-in @con/config [:client-config :blog-title]))]))

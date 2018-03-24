@@ -1,6 +1,8 @@
 (ns blog.handler
   (:require [blog.server-conf :refer :all]
             [clojure.pprint :refer [pprint]]
+            [blog.util :refer [destructure-db]]
+            [schema.core :as s]
             [blog.config :refer [config]]
             [compojure.api.api :as api :refer [defapi api]]
             [compojure.api.sweet :as sw :refer [context undocumented]]
@@ -9,6 +11,7 @@
             [hiccup.page :refer [include-js include-css html5]]
             [ring.middleware.params :refer [wrap-params]]
             [blog.posts.routes :as post-r]
+            [blog.posts.db :as post-db]
             [blog.login.routes :as login-routes]
             [blog.users.routes :as users]
             [blog.settings.routes :as settings]
@@ -18,6 +21,9 @@
             [compojure.route :as route]
             [blog.session :refer [wrap-app-session]]
             [blog.access :as access]))
+
+(defn get-path [{:keys [params] :as rq}]
+  (:* params))
 
 (defapi app- {:swagger {:ui "/api-docs"
                        :spec "/swagger.json"
@@ -41,19 +47,27 @@
   ;; (route/resources "/js/")
 
   (undocumented (route/resources "/blog/")
-                (GET "*" []
-                     (let [{:keys [css-route]} @config]
-                     (ok
-                      (html5 [:head
-                              (include-css css-route)
-                              [:meta {:charset "UTF-8"}]]
-                             [:body
-                              [:div#app
-                               [:p "This site requires js (at least until the lazy developer makes a server-side version of this clojurescript site"]
-                               [:p "If you're dev, run `lein figwheel` in the project dir"]]
-                              (include-js "/blog/js/app.js")]))))))
+                (GET "*" rq
+                     :sys sys
+                     (let [{:keys [css-route]} @config
+                           path (get-path rq)
+                           post-meta (destructure-db [sys]
+                                                     (if-let [[_ id] (re-matches #"/blog/post/(\d+)" path)]
+                                                       (post-db/make-fb-meta-tags db id)))]
+                       (pprint {:metapost post-meta})
+                       
+                       (ok
+                        (html5 (into [:head
+                                      (include-css css-route)
+                                      [:meta {:charset "UTF-8"}]]
+                                     post-meta)
+                               [:body
+                                [:div#app
+                                 [:p "This site requires js (at least until the lazy developer makes a server-side version of this clojurescript site"]
+                                 [:p "If you're dev, run `lein figwheel` in the project dir"]]
+                                (include-js "/blog/js/app.js")]))))))
 
 (def app
-  (-> app-
+  (-> #'app-
       wrap-params
       wrap-app-session))
