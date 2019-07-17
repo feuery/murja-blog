@@ -44,14 +44,16 @@
     (insert str)
     (goto-char (point-min))
     (json-read)))
-  
+
+(defvar script-directory (file-name-directory load-file-name))
+
 (defun murja-titles ()
   (interactive)
   (message (concat "murja-titles called with url " murja-url))
   (when murja-url
     (let* ((title-url (concat murja-url "/api/posts/all-titles"))
 	   (cmd-result (shell-command-to-string
-			(concat "./murja-client.sh GET " title-url "")))
+			(concat script-directory "/murja-client.sh GET " title-url "")))
 	   (data (murja-json-read cmd-result)))
       (switch-to-buffer (get-buffer-create (concat "Murja: " murja-url)))
       (setq loaded-murja-titles data)
@@ -71,11 +73,12 @@
 	 (json (json-encode
 		`(("username" . ,username)
 		  ("password" . ,passwd)))))
-    (f-write-text json 'utf-8 "./input.json")
+    (f-write-text json 'utf-8 (concat script-directory "/input.json"))
     (let ((cmd-result (shell-command-to-string
-		       (concat "./murja-client.sh POST " login-url " ./input.json" ))))
+		       (concat script-directory "/murja-client.sh POST " login-url " " skript-directory "/input.json" ))))
+      ;; (message "CMD-result %s" cmd-result)
       (setq murja-url url)
-      (f-delete "./input.json")
+      (f-delete (concat script-directory "/input.json"))
       (let ((data (murja-json-read cmd-result)))
 	(message "Logged in!")
 	(setq murja-logged-in-user data)
