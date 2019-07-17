@@ -3,7 +3,7 @@
 (require 'murja-tags)
 
 (defvar murja-error-handler (cl-function (lambda (&rest args &key error-thrown response &allow-other-keys)
-				   (message "Got error: %S - %S" error-thrown))))
+					   (message "Got error: %S - %S" error-thrown))))
 
 (defvar murja-tags '())
 (defvar murja-title "")
@@ -44,8 +44,8 @@
 			       (tags . ,murja-tags))))))
     (message (concat "Trying to save post to " url))
 
-    (f-write-text data 'utf-8 "./input.json")    
-    (let* ((cmd-result (shell-command-to-string (concat "./murja-client.sh POST " url " ./input.json")))
+    (f-write-text data 'utf-8 (concat murja-script-directory "/input.json"))    
+    (let* ((cmd-result (shell-command-to-string (concat murja-script-directory "/murja-client.sh POST " url " "murja-script-directory "/input.json")))
 	   (data (murja-json-read cmd-result)))
       (if data
 	  (murja-handle-edit-success data murja-title)
@@ -90,7 +90,7 @@ Copypasted from http://stackoverflow.com/a/570049"
   (message "Ah, much better!"))
 
 (defun opening-murja-post-buffer (data)
-  (message (prin1-to-string data))
+  ;; (message (prin1-to-string data))
   (save-excursion
     (let ((title (cdr (assoc 'title data)))
 	  (id (cdr (assoc 'id data)))
@@ -112,7 +112,7 @@ Copypasted from http://stackoverflow.com/a/570049"
   (if murja-url
       (let ((url (concat murja-url "/api/posts/" (prin1-to-string id) "/allow-hidden/true")))
 	(message (concat "Requesting " url))
-	(let* ((cmd-result (shell-command-to-string (concat "./murja-client.sh GET " url)))
+	(let* ((cmd-result (shell-command-to-string (concat murja-script-directory "/murja-client.sh GET " url)))
 	       (data (murja-json-read cmd-result)))
 	  (if data
 	      (opening-murja-post-buffer data)
