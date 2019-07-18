@@ -101,7 +101,7 @@ Copypasted from http://stackoverflow.com/a/570049"
       (insert (cdr
 	       (assoc 'content
 		      data)))
-      (murja-xml-pretty-print (point-min) (point-max))
+      ;; (murja-xml-pretty-print (point-min) (point-max))
       (murja-post-mode)
       
       (setq murja-tags (mapcar (lambda (x) x) tags))
