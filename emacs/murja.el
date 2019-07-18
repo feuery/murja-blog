@@ -75,7 +75,7 @@
 		  ("password" . ,passwd)))))
     (f-write-text json 'utf-8 (concat murja-script-directory "/input.json"))
     (let ((cmd-result (shell-command-to-string
-		       (concat murja-script-directory "/murja-client.sh POST " login-url " " skript-directory "/input.json" ))))
+		       (concat murja-script-directory "/murja-client.sh POST " login-url " " murja-script-directory "/input.json" ))))
       ;; (message "CMD-result %s" cmd-result)
       (setq murja-url url)
       (f-delete (concat murja-script-directory "/input.json"))
