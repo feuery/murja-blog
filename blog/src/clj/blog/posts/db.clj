@@ -201,7 +201,7 @@ ORDER BY p.created_at DESC
    page 
    page-size 
    & {:keys [allow-hidden?]
-      :or [allow-hidden? false]}]            
+      :or {allow-hidden? false}}]
   (j/query db-spec ["SELECT p.ID, p.Title, p.Content, p.created_at, p.tags, u.Username, u.Nickname, u.Img_location, COUNT(c.ID) AS amount_of_comments
 FROM blog.Post p
 JOIN blog.Users u ON u.ID = p.creator_id
@@ -210,8 +210,8 @@ WHERE (NOT p.tags ?? 'hidden') OR ?
 GROUP BY p.ID, u.ID
 ORDER BY p.created_at DESC
 LIMIT ?
-OFFSET ?" allow-hidden? page-size (* (dec page) page-size)] :row-fn (comp #(change-key % :amount_of_comments :amount-of-comments)
-                                                                          (partial ->Post db))))
+OFFSET ?" allow-hidden? page-size (* (dec page) page-size)] {:row-fn (comp #(change-key % :amount_of_comments :amount-of-comments)
+                                                                          (partial ->Post db))}))
         
     
 

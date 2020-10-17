@@ -1,13 +1,15 @@
 ;; Copy this file to /etc/murja/config.edn
-{:db {:user "blogiadmin"
-      :password "db_password_here"
+{:db {;; same auth details as in the docker-compose.yml
+      :user "blogadmin"
+      :password "blog"
       :host "localhost"
       :port "5432"
       :db "blogdb"
       :dbname "blogdb"
       :classname "org.postgresql.Driver"
       :dbtype "postgresql"}
+ :css-route "/site.css"
  :client-config {:time-format "dd.MM.yyyy HH:mm"
-                 :blog-title "YOOL - feuerx.net"
+                 :blog-title "Murja.dev @ $HOSTNAME"
                  :recent-post-count 6
                  :xss-filter-posts? false}}

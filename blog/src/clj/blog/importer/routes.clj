@@ -10,7 +10,7 @@
             [blog.util :refer [destructure-db]]
             [blog.access :as access :refer [can?]]
             [blog.importer.db :as db]
-            [ring.swagger.upload :as upload]))
+            #_[ring.swagger.upload :as upload]))
 
 (def routes
   (context "/importer" []
@@ -18,7 +18,7 @@
            :tags ["importer"]
            :current-user user
            :auth-rules (partial can? "can-import")
-           (POST "/atom" []
+           #_(POST "/atom" []
                  :multipart-params [file :- upload/TempFileUpload]
                  :middleware [upload/wrap-multipart-params]
                  :return {:success? s/Bool}
