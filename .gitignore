@@ -5,3 +5,6 @@
 /new_devenv/.vagrant
 /kantadumppi.sql
 TAGS
+/elm-frontti/elm-stuff
+elm-frontti/*.html
+elm-frontti/*.js
