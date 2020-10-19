@@ -4,6 +4,7 @@ import Browser
 import Html exposing (Html, Attribute, div, input, text)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
+import Http
 
 import Article as A
 import Creator as C
@@ -13,23 +14,41 @@ import DateTime exposing (DateTime)
 
 -- MAIN
 
-
+main : Program () Model Msg
 main =
-  Browser.sandbox { init = init, update = update, view = view }
+    Browser.element { init = init 
+                    , update = update
+                    , subscriptions = \_ -> Sub.none
+                    , view = view }
+    -- Browser.sandbox { init = init, update = update, view = view }
 
 
 
 -- MODEL
 
+-- Frontin tilat:
 
-type alias Model =
-  { content : String
-  }
+--   PageView [List Post]
+-- | PostView Post
 
 
-init : Model
-init =
-  { content = "" }
+
+-- Tuetaan aluksi vain kaikkia lukuoperaatioita mitä nykyinen frontti (ts. postinäkymä ml. kommentit joita backend sattuu palauttamaan, sivunäkymä, otsikkopuu) tukee. Ei tehdä mitään editoria, pohditaan sitä sit joskus. 
+type LoadableType
+    = Post Int
+    | Page Int 
+      
+type Model
+    = PageView (List A.Article)
+    | PostView A.Article
+    | Loading LoadableType
+    | ShowString String
+
+
+init : () -> (Model, Cmd Msg)
+init _ =
+  ( Loading (Page 1)
+  , getPage )
 
 
 
@@ -37,14 +56,26 @@ init =
 
 
 type Msg
-  = Change String
+  = SendHttpRequest
+  | DataReceived (Result Http.Error String)
 
+getPage : Cmd Msg
+getPage =
+    Http.get
+        { url = "/api/posts/page/1/page-size/6"
+        , expect = Http.expectString DataReceived}
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
-  case msg of
-    Change newContent ->
-      { model | content = newContent }
+    case msg of
+        SendHttpRequest ->
+            (model, getPage)
+        DataReceived result ->
+            case result of
+                Ok page_json ->
+                    (ShowString page_json, Cmd.none)
+                Err http_error ->
+                    (ShowString "ERROR", Cmd.none)
 
 
 
@@ -53,13 +84,12 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    let
-        creator = C.Creator "feuer" "Feuer" "https://feuerx.net/etc/feuer.jpeg"
-        article = A.Article creator [] "TESTI KONTENTTIA" [] 0 "TITLE" Nothing 0 [] 0 Nothing Nothing
-    in 
-        div []
-            [ div [] [ text "Terveisiä tiedostosta Main.elm"]
-            , div [] [ text "Tää on murjan mahdollisesti tuleva elm-frontti"]
-            , div [] [ text "Testiartikkeli: "] 
-            , A.view article
-            ]
+        case model of
+            Loading type_ ->
+                div [] [text "LOADING"]
+            PostView articles ->
+                div [] [text "ARTICLE"]
+            PageView article ->
+                div [] [text "PAGE"]
+            ShowString str -> 
+                div [] [text ("Showing a string of " ++ str)]
