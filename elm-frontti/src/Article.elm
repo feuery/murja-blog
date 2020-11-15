@@ -7,7 +7,6 @@ import Json.Decode.Pipeline exposing (required)
 import Json.Decode.Extra as Extra
 import Time
 
-
 -- {
 --   "tags": [],
 --   "creator": {
@@ -70,3 +69,4 @@ articleDecoder =
         versionsDecoder
         versionDecoder
         created_atDecoder
+

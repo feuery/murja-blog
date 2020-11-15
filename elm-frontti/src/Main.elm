@@ -1,9 +1,13 @@
 module Main exposing (..)
 
 import Browser
-import Html exposing (Html, Attribute, div, input, text, pre)
+import Html exposing (Html, Attribute, div, input, text, pre, p, h2)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
+
+import Html.Parser
+import Html.Parser.Util
+
 import Http
 
 import Article as A
@@ -89,6 +93,13 @@ update msg model =
 
 -- VIEW
 
+articleView : A.Article -> Html Msg
+articleView article = div [] (List.concat [[ h2 [] [ text article.title ]],
+                                          case (Html.Parser.run article.content) of 
+                                              Ok content ->
+                                                  Html.Parser.Util.toVirtualDom content
+                                              Err error ->
+                                                  [ p [] [text "VIRHE"]]])
 
 view : Model -> Html Msg
 view model =
@@ -98,7 +109,7 @@ view model =
             PostView articles ->
                 div [] [text "ARTICLE"]
             PageView page ->
-                div [] [text "PAGE" ]
+                div [] (List.map articleView page.posts)
             ShowError err ->
                 pre [] [text err]
             -- ShowString str -> 
