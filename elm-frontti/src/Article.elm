@@ -34,34 +34,35 @@ type alias Article =
     , tags : List String
     , content : String
     -- TODO make a comment type
-    , comments : List String
+    , comments : Maybe (List String)
     -- , amount_of_comments : Int
     , title : String
     -- , pre_post_id : Maybe Int
     -- , id : Int
     , versions: List Int
-    , version : Int
+    , version : Maybe Int
     -- , next_post_id: Maybe Int
     , created_at: Maybe Time.Posix
     }
-                  
 
+    
 tagsDecoder = Decode.field "tags" (Decode.list Decode.string)
 contentDecoder = Decode.field "content" Decode.string
-commentsDecoder = Decode.field "comments" (Decode.list Decode.string)
+commentsDecoder = Decode.maybe (Decode.field "comments" (Decode.list Decode.string))
 -- amount_of_commentsDecoder = Decode.field "amount-of-comments" Decode.int                  
 titleDecoder = Decode.field "title" Decode.string
 -- pre_post_idDecoder = Decode.field "prev-post-id" (Decode.maybe Decode.int)
 -- idDecoder = Decode.field "id" Decode.int
 versionsDecoder = Decode.field "versions" (Decode.list Decode.int)
-versionDecoder = Decode.field "version" Decode.int
+versionDecoder = Decode.maybe (Decode.field "version" Decode.int)
 -- next_post_idDecoder = Decode.field "next-post-id" (Decode.maybe Decode.int)
 created_atDecoder = Decode.field "created_at" (Decode.maybe Extra.datetime)
+creator_Decoder = Decode.field "creator" creatorDecoder                    
 
 articleDecoder : Decoder Article                    
 articleDecoder =
     Decode.map8 Article
-        Creator.creatorDecoder
+        creator_Decoder
         tagsDecoder
         contentDecoder
         commentsDecoder

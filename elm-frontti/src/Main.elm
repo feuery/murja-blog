@@ -1,14 +1,17 @@
 module Main exposing (..)
 
 import Browser
-import Html exposing (Html, Attribute, div, input, text)
+import Html exposing (Html, Attribute, div, input, text, pre)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
 import Http
 
 import Article as A
 import Creator as C
+import Page as P
 import DateTime exposing (DateTime)
+
+import Json.Decode as Decode
 
 
 
@@ -39,10 +42,11 @@ type LoadableType
     | Page Int 
       
 type Model
-    = PageView (List A.Article)
+    = PageView P.Page
     | PostView A.Article
     | Loading LoadableType
-    | ShowString String
+    | ShowError String
+      
 
 
 init : () -> (Model, Cmd Msg)
@@ -73,9 +77,13 @@ update msg model =
         DataReceived result ->
             case result of
                 Ok page_json ->
-                    (ShowString page_json, Cmd.none)
+                    case (Decode.decodeString P.pageDecoder page_json) of
+                        Ok page -> 
+                            (PageView page, Cmd.none)
+                        Err error ->
+                            (ShowError (Decode.errorToString error), Cmd.none)
                 Err http_error ->
-                    (ShowString "ERROR", Cmd.none)
+                    (ShowError "ERROR", Cmd.none)
 
 
 
@@ -89,7 +97,9 @@ view model =
                 div [] [text "LOADING"]
             PostView articles ->
                 div [] [text "ARTICLE"]
-            PageView article ->
-                div [] [text "PAGE"]
-            ShowString str -> 
-                div [] [text ("Showing a string of " ++ str)]
+            PageView page ->
+                div [] [text "PAGE" ]
+            ShowError err ->
+                pre [] [text err]
+            -- ShowString str -> 
+            --     div [] [text ("Showing a string of " ++ str)]
