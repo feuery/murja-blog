@@ -47,6 +47,9 @@
                 ;; (route/resources "/js/")
 
                 (undocumented (route/resources "/blog/")
+                              (GET "/test-site.css" rq
+                                (ok 
+                                 (slurp (clojure.java.io/resource "public/css/site.css"))))
                               (GET "*" rq
                                 :sys sys
                                 (try
