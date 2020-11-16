@@ -13,6 +13,8 @@ import Http
 import Article as A
 import Creator as C
 import Page as P
+import Settings
+
 import DateTime exposing (DateTime)
 
 import Json.Decode as Decode
@@ -43,20 +45,25 @@ main =
 -- Tuetaan aluksi vain kaikkia lukuoperaatioita mitä nykyinen frontti (ts. postinäkymä ml. kommentit joita backend sattuu palauttamaan, sivunäkymä, otsikkopuu) tukee. Ei tehdä mitään editoria, pohditaan sitä sit joskus. 
 type LoadableType
     = Post Int
-    | Page Int 
+    | Page Int      
       
-type Model
+type ViewState
     = PageView P.Page
     | PostView A.Article
     | Loading LoadableType
     | ShowError String
+
+type alias Model =
+    { view : ViewState
+    , settings : Maybe Settings.Settings
+    }
       
 
 
 init : () -> (Model, Cmd Msg)
 init _ =
-  ( Loading (Page 1)
-  , getPage )
+  ( Model (Loading (Page 1)) Nothing
+  , getSettings)
 
 
 
@@ -64,30 +71,48 @@ init _ =
 
 
 type Msg
-  = SendHttpRequest
-  | DataReceived (Result Http.Error String)
+  = LoadPage
+  -- | LoadSettings
+  | PageReceived (Result Http.Error String)
+  | SettingsReceived (Result Http.Error String)
 
 getPage : Cmd Msg
 getPage =
     Http.get
         { url = "/api/posts/page/1/page-size/6"
-        , expect = Http.expectString DataReceived}
+        , expect = Http.expectString PageReceived}
+
+getSettings : Cmd Msg
+getSettings =
+    Http.get
+        { url = "/api/settings/client-settings"
+        , expect = Http.expectString SettingsReceived}
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
-        SendHttpRequest ->
-            (model, getPage)
-        DataReceived result ->
+        LoadPage ->
+            (model, getPage) 
+        SettingsReceived result ->
+            case result of
+                Ok settings_json ->
+                    case (Decode.decodeString Settings.settingsDecoder settings_json) of
+                        Ok settings ->
+                            ({model | settings = Just settings}, getPage)
+                        Err error ->
+                            ({model | view = ShowError (Decode.errorToString error)}, Cmd.none)
+                Err http_error -> 
+                    ({model | view = ShowError "Http error while loading settings"}, Cmd.none)
+        PageReceived result ->
             case result of
                 Ok page_json ->
                     case (Decode.decodeString P.pageDecoder page_json) of
                         Ok page -> 
-                            (PageView page, Cmd.none)
+                            ({model | view = PageView page}, Cmd.none)
                         Err error ->
-                            (ShowError (Decode.errorToString error), Cmd.none)
+                            ({model | view = ShowError (Decode.errorToString error)}, Cmd.none)
                 Err http_error ->
-                    (ShowError "ERROR", Cmd.none)
+                    ({model | view = ShowError "ERROR"}, Cmd.none)
 
 
 
@@ -103,14 +128,20 @@ articleView article = div [] (List.concat [[ h2 [] [ text article.title ]],
 
 view : Model -> Html Msg
 view model =
-        case model of
-            Loading type_ ->
-                div [] [text "LOADING"]
-            PostView articles ->
-                div [] [text "ARTICLE"]
-            PageView page ->
-                div [] (List.map articleView page.posts)
-            ShowError err ->
-                pre [] [text err]
+    case model.settings of
+        Just settings ->
+            case model.view of
+                Loading type_ ->
+                    div [] [text "LOADING"]
+                PostView articles ->
+                    div [] [text "ARTICLE"]
+                PageView page ->
+                    div [] (List.concat [
+                                 [div [] [text ("blog title: " ++ settings.blog_title)]],
+                                 (List.map articleView page.posts)])
+                ShowError err ->
+                    pre [] [text err]
             -- ShowString str -> 
             --     div [] [text ("Showing a string of " ++ str)]
+        Nothing ->
+            div [] [text "Couldn't load settings"]
