@@ -1,7 +1,7 @@
 module Main exposing (..)
 
 import Browser
-import Html exposing (Html, Attribute, div, input, text, pre, p, h2)
+import Html exposing (Html, Attribute, div, input, text, pre, p, h2, article, header, a)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
 
@@ -119,29 +119,26 @@ update msg model =
 -- VIEW
 
 articleView : A.Article -> Html Msg
-articleView article = div [] (List.concat [[ h2 [] [ text article.title ]],
-                                          case (Html.Parser.run article.content) of 
-                                              Ok content ->
-                                                  Html.Parser.Util.toVirtualDom content
-                                              Err error ->
-                                                  [ p [] [text "VIRHE"]]])
+articleView the_actual_post = div [class "post"] [ a [href ("/blog/post/" ++ String.fromInt the_actual_post.id)] [ text the_actual_post.title ],
+                                                   article [class "content"] (case (Html.Parser.run the_actual_post.content) of 
+                                                                                  Ok content ->
+                                                                                      Html.Parser.Util.toVirtualDom content
+                                                                                  Err error ->
+                                                                                      [ p [] [text "VIRHE"]])]
 
 view : Model -> Html Msg
 view model =
     case model.settings of
         Just settings ->
-            case model.view of
-                Loading type_ ->
-                    div [] [text "LOADING"]
-                PostView articles ->
-                    div [] [text "ARTICLE"]
-                PageView page ->
-                    div [] (List.concat [
-                                 [div [] [text ("blog title: " ++ settings.blog_title)]],
-                                 (List.map articleView page.posts)])
-                ShowError err ->
-                    pre [] [text err]
-            -- ShowString str -> 
-            --     div [] [text ("Showing a string of " ++ str)]
+            div [] [ header [] [a [href "/"] [text settings.blog_title]],
+                     case model.view of
+                         Loading type_ ->
+                             div [] [text "LOADING"]
+                         PostView articles ->
+                             div [] [text "ARTICLE"]
+                         PageView page ->
+                             div [id "container"] (List.map articleView page.posts)
+                         ShowError err ->
+                             pre [] [text err]]
         Nothing ->
             div [] [text "Couldn't load settings"]

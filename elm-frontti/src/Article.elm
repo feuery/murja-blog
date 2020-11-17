@@ -28,6 +28,11 @@ import Time
 
 import Creator exposing (Creator, creatorDecoder)
 
+decodeApply : Decode.Decoder a -> Decode.Decoder (a -> b) -> Decode.Decoder b
+decodeApply value partial =
+    Decode.andThen (\p -> Decode.map p value) partial
+
+
 type alias Article =
     { creator : Creator
     , tags : List String
@@ -36,8 +41,8 @@ type alias Article =
     , comments : Maybe (List String)
     -- , amount_of_comments : Int
     , title : String
-    -- , pre_post_id : Maybe Int
-    -- , id : Int
+    , pre_post_id : Maybe Int
+    , id : Int
     , versions: List Int
     , version : Maybe Int
     -- , next_post_id: Maybe Int
@@ -50,8 +55,8 @@ contentDecoder = Decode.field "content" Decode.string
 commentsDecoder = Decode.maybe (Decode.field "comments" (Decode.list Decode.string))
 -- amount_of_commentsDecoder = Decode.field "amount-of-comments" Decode.int                  
 titleDecoder = Decode.field "title" Decode.string
--- pre_post_idDecoder = Decode.field "prev-post-id" (Decode.maybe Decode.int)
--- idDecoder = Decode.field "id" Decode.int
+pre_post_idDecoder = Decode.maybe (Decode.field "prev-post-id"  Decode.int)
+idDecoder = Decode.field "id" Decode.int
 versionsDecoder = Decode.field "versions" (Decode.list Decode.int)
 versionDecoder = Decode.maybe (Decode.field "version" Decode.int)
 -- next_post_idDecoder = Decode.field "next-post-id" (Decode.maybe Decode.int)
@@ -60,13 +65,27 @@ creator_Decoder = Decode.field "creator" creatorDecoder
 
 articleDecoder : Decoder Article                    
 articleDecoder =
-    Decode.map8 Article
-        creator_Decoder
-        tagsDecoder
-        contentDecoder
-        commentsDecoder
-        titleDecoder
-        versionsDecoder
-        versionDecoder
-        created_atDecoder
+    Decode.succeed Article
+        |> decodeApply creator_Decoder
+        |> decodeApply tagsDecoder
+        |> decodeApply contentDecoder
+        |> decodeApply commentsDecoder
+        |> decodeApply titleDecoder
+        |> decodeApply pre_post_idDecoder
+        |> decodeApply idDecoder
+        |> decodeApply versionsDecoder
+        |> decodeApply versionDecoder
+        |> decodeApply created_atDecoder
+
+
+    -- Decode.map9 Article
+    --     creator_Decoder
+    --     tagsDecoder
+    --     contentDecoder
+    --     commentsDecoder
+    --     titleDecoder
+    --     idDecoder
+    --     versionsDecoder
+    --     versionDecoder
+    --     created_atDecoder
 
