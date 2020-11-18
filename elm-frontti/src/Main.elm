@@ -143,15 +143,20 @@ view : Model -> Html Msg
 view model =
     case model.settings of
         Just settings ->
-            div [] [ header [] [a [href "/"] [text settings.blog_title]],
-                     case model.view of
-                         Loading type_ ->
-                             div [] [text "LOADING"]
-                         PostView articles ->
-                             div [] [text "ARTICLE"]
-                         PageView page ->
-                             div [id "container"] (List.map (articleView settings) page.posts)
-                         ShowError err ->
-                             pre [] [text err]]
+            div [] [header [] [a [href "/"] [text settings.blog_title]],
+                        div [id "container"] (List.concat ([ 
+                                                   case model.view of
+                                                       Loading type_ ->
+                                                          [div [] [text "LOADING"]]
+                                                       PostView articles ->
+                                                          [div [] [text "ARTICLE"]]
+                                                       PageView page ->
+                                                          (List.map (articleView settings) page.posts)
+                                                       ShowError err ->
+                                                          [pre [] [text err]]
+                                               , [div [id "sidebar"]
+                                                   [ div [] [text "Meikä on sivupalkki :D"]]]
+                                                ]))]
+                                              
         Nothing ->
             div [] [text "Couldn't load settings"]
