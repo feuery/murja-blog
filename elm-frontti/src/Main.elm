@@ -1,7 +1,7 @@
 module Main exposing (..)
 
 import Browser
-import Html exposing (Html, Attribute, div, input, text, pre, p, h2, article, header, a)
+import Html exposing (Html, Attribute, div, input, text, pre, p, h2, article, header, img, a)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
 
@@ -16,8 +16,10 @@ import Page as P
 import Settings
 
 import DateTime exposing (DateTime)
-
 import Json.Decode as Decode
+import DateFormat as Df
+import Time
+import Task
 
 
 
@@ -55,26 +57,25 @@ type ViewState
 
 type alias Model =
     { view : ViewState
-    , settings : Maybe Settings.Settings
-    }
-      
+    , settings : Maybe Settings.Settings}
+    
+type Msg
+  = LoadPage
+  -- | LoadSettings
+  | PageReceived (Result Http.Error String)
+  | SettingsReceived (Result Http.Error String)
 
-
-init : () -> (Model, Cmd Msg)
+-- init : () -> (Model, Cmd Msg)
 init _ =
   ( Model (Loading (Page 1)) Nothing
-  , getSettings)
+  , getSettings
+  )
 
 
 
 -- UPDATE
 
 
-type Msg
-  = LoadPage
-  -- | LoadSettings
-  | PageReceived (Result Http.Error String)
-  | SettingsReceived (Result Http.Error String)
 
 getPage : Cmd Msg
 getPage =
@@ -92,13 +93,13 @@ update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
         LoadPage ->
-            (model, getPage) 
+            (model, getPage)
         SettingsReceived result ->
             case result of
                 Ok settings_json ->
                     case (Decode.decodeString Settings.settingsDecoder settings_json) of
-                        Ok settings ->
-                            ({model | settings = Just settings}, getPage)
+                        Ok new_settings ->
+                            ({model | settings = Just new_settings}, getPage)
                         Err error ->
                             ({model | view = ShowError (Decode.errorToString error)}, Cmd.none)
                 Err http_error -> 
@@ -114,12 +115,24 @@ update msg model =
                 Err http_error ->
                     ({model | view = ShowError "ERROR"}, Cmd.none)
 
-
+-- Everything's now in utc
+-- Getting user's local tz is fucking impossible due to static functional reasons
+-- Let someone who cares fix this
+formatDateTime formatString posixTime =
+    Df.format formatString Time.utc posixTime
+                        
 
 -- VIEW
 
-articleView : A.Article -> Html Msg
-articleView the_actual_post = div [class "post"] [ a [href ("/blog/post/" ++ String.fromInt the_actual_post.id)] [ text the_actual_post.title ],
+articleView : Settings.Settings -> A.Article -> Html Msg
+articleView settings the_actual_post = div [class "post"] [ a [href ("/blog/post/" ++ String.fromInt the_actual_post.id)] [ text the_actual_post.title ],
+                                                   div [class "meta"] [img [class "user_avatar", src the_actual_post.creator.img_location] [],
+                                                                       p [] [text ("By " ++ the_actual_post.creator.nickname)],
+                                                                           case the_actual_post.created_at of
+                                                                               Just writing_time ->
+                                                                                   p [] [text ("Written at " ++ (formatDateTime settings.time_format writing_time))]
+                                                                               Nothing ->
+                                                                                   p [] [text ("No idea when it's written")]],
                                                    article [class "content"] (case (Html.Parser.run the_actual_post.content) of 
                                                                                   Ok content ->
                                                                                       Html.Parser.Util.toVirtualDom content
@@ -137,7 +150,7 @@ view model =
                          PostView articles ->
                              div [] [text "ARTICLE"]
                          PageView page ->
-                             div [id "container"] (List.map articleView page.posts)
+                             div [id "container"] (List.map (articleView settings) page.posts)
                          ShowError err ->
                              pre [] [text err]]
         Nothing ->
