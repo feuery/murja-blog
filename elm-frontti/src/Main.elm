@@ -26,6 +26,8 @@ import String exposing (fromInt)
 import String.Extra exposing (toSentenceCase)
 
 import Browser.Navigation as Nav
+
+import RouteParser exposing (..)
 import Url
 
 
@@ -217,7 +219,7 @@ view model =
     , body = 
         [case model.settings of
              Just settings ->
-                 div [] [header [] [a [href "/"] [text settings.blog_title]],
+                 div [] [header [] [a [href "/"] [text (settings.blog_title ++ " - now at " ++ ( model.url  |> url_to_route |> route_to_string))]],
                          div [id "container"] (List.concat ([ 
                                                     case model.view of
                                                         Loading type_ ->
