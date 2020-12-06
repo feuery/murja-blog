@@ -1,7 +1,7 @@
 module Main exposing (..)
 
 import Browser
-import Html exposing (Html, Attribute, div, input, text, pre, p, h2, article, header, img, a)
+import Html exposing (Html, Attribute, div, input, text, pre, p, h2, article, header, img, a, ul, li, details, summary)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
 
@@ -20,7 +20,9 @@ import Json.Decode as Decode
 import DateFormat as Df
 import Time
 import Task
-
+import Dict.Extra exposing (groupBy)
+import Dict exposing (toList, keys, get)
+import String exposing (fromInt)
 
 
 -- MAIN
@@ -64,6 +66,7 @@ type Msg
   -- | LoadSettings
   | PageReceived (Result Http.Error String)
   | SettingsReceived (Result Http.Error String)
+  | TitlesReceived (Result Http.Error String)
 
 -- init : () -> (Model, Cmd Msg)
 init _ =
@@ -89,8 +92,13 @@ getSettings =
         { url = "/api/settings/client-settings"
         , expect = Http.expectString SettingsReceived}
 
+getTitles =
+    Http.get
+        { url = "/api/posts/titles"
+        , expect = Http.expectString TitlesReceived}
+
 update : Msg -> Model -> (Model, Cmd Msg)
-update msg model =
+update msg ({settings} as model) =
     case msg of
         LoadPage ->
             (model, getPage)
@@ -109,11 +117,25 @@ update msg model =
                 Ok page_json ->
                     case (Decode.decodeString P.pageDecoder page_json) of
                         Ok page -> 
-                            ({model | view = PageView page}, Cmd.none)
+                            ({model | view = PageView page}, getTitles)
                         Err error ->
                             ({model | view = ShowError (Decode.errorToString error)}, Cmd.none)
                 Err http_error ->
                     ({model | view = ShowError "ERROR"}, Cmd.none)
+        TitlesReceived result ->
+            case result of
+                Ok json ->
+                    case Decode.decodeString (Decode.list A.sidebarTitleDecoder) json of
+                        Ok decoded_titles ->
+                            case settings of
+                                Just unwrapped_settings ->
+                                    ({model | settings = Just {unwrapped_settings | titles = Just decoded_titles}}, Cmd.none)
+                                Nothing ->
+                                    (model, Cmd.none)
+                        Err error ->
+                            ({model | view = ShowError (Decode.errorToString error)}, Cmd.none)
+                Err error ->
+                    ({model | view = ShowError "Coudln't load titles"}, Cmd.none)
 
 -- Everything's now in utc
 -- Getting user's local tz is fucking impossible due to static functional reasons
@@ -124,6 +146,24 @@ formatDateTime formatString posixTime =
 
 -- VIEW
 
+
+
+sidebarHistory : List A.Title -> Html Msg
+sidebarHistory titles =
+    let grouped_by_year = groupBy .year titles in
+      div [id "grouper"]
+          [ul []
+               (List.concat (List.map (\year ->
+                                           case get year grouped_by_year of
+                                               Just per_year ->
+                                                   [li [] [details [] [summary [] [text (fromInt year)],
+                                                                        let grouped_by_month = groupBy .month per_year in
+                                                                          ul [] (List.concat (List.map (\month -> 
+                                                                                                           [li [] [text "LOL"]]) (keys grouped_by_month)))]]]
+
+                                               Nothing ->
+                                                        [li [] [text ("There's no year " ++ (fromInt year) ++ " in titles")]]) (keys grouped_by_year)))]
+              
 articleView : Settings.Settings -> A.Article -> Html Msg
 articleView settings the_actual_post = div [class "post"] [ a [href ("/blog/post/" ++ String.fromInt the_actual_post.id)] [ text the_actual_post.title ],
                                                    div [class "meta"] [img [class "user_avatar", src the_actual_post.creator.img_location] [],
@@ -154,9 +194,12 @@ view model =
                                                           (List.map (articleView settings) page.posts)
                                                        ShowError err ->
                                                           [pre [] [text err]]
-                                               , [div [id "sidebar"]
-                                                   [ div [] [text "Meikä on sivupalkki :D"]]]
-                                                ]))]
+                                               , [div [id "sidebar"] (
+                                                      case settings.titles of
+                                                          Just titles ->
+                                                              [ sidebarHistory titles ]
+                                                          Nothing ->
+                                                              [div [] [text "Loading history failed"]])]]))]
                                               
         Nothing ->
             div [] [text "Couldn't load settings"]

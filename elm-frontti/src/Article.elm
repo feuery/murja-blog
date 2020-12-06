@@ -77,15 +77,19 @@ articleDecoder =
         |> decodeApply versionDecoder
         |> decodeApply created_atDecoder
 
+type alias Title =
+    { titlte : String
+    , id : Int
+    , year : Int
+    , month: String
+    , tags: List String
+    }
+    
 
-    -- Decode.map9 Article
-    --     creator_Decoder
-    --     tagsDecoder
-    --     contentDecoder
-    --     commentsDecoder
-    --     titleDecoder
-    --     idDecoder
-    --     versionsDecoder
-    --     versionDecoder
-    --     created_atDecoder
-
+sidebarTitleDecoder =
+    Decode.succeed Title
+        |> decodeApply (Decode.field "Title" Decode.string)
+        |> decodeApply (Decode.field "Id" Decode.int)
+        |> decodeApply (Decode.field "Year" Decode.int)
+        |> decodeApply (Decode.field "Month" Decode.string)
+        |> decodeApply (Decode.field "Tags" (Decode.list Decode.string))
