@@ -88,16 +88,20 @@ type Msg
   | UrlChanged Url.Url
   | LinkClicked Browser.UrlRequest
 
--- init : () -> (Model, Cmd Msg)
-init flags url key =
-    let model = Model (case RouteParser.url_to_route url of
+
+viewStatePerUrl url =
+    case RouteParser.url_to_route url of
                            RouteParser.Page page_id -> (Loading (Page page_id))
                            RouteParser.Post post_id -> (Loading (Post post_id))
                            RouteParser.Home -> (Loading (Page 1))
-                           RouteParser.NotFound -> (ShowError ("Couldn't parser url " ++ (Url.toString url)))) Nothing key url
+                           RouteParser.NotFound -> (ShowError ("Couldn't parser url " ++ (Url.toString url)))
+    
+-- init : () -> (Model, Cmd Msg)
+init flags url key =
+    let model = Model (viewStatePerUrl url) Nothing key url
     in
-            ( model
-            , getSettings)
+        ( model
+        , getSettings)
 
 
 
@@ -185,7 +189,7 @@ update msg ({settings} as model) =
                 Err error ->
                     ({model | view = ShowError "Coudln't load titles"}, Cmd.none)
         UrlChanged url ->
-            ({model | url = url}, Cmd.none)
+            ({model | url = url, view = viewStatePerUrl url}, getSettings)
         LinkClicked urlRequest ->
             case urlRequest of
                 Browser.Internal url ->
