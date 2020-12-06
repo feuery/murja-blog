@@ -27,7 +27,7 @@ import String.Extra exposing (toSentenceCase)
 
 import Browser.Navigation as Nav
 
-import RouteParser exposing (..)
+import RouteParser
 import Url
 
 
@@ -79,9 +79,10 @@ type alias Model =
     , url : Url.Url}
     
 type Msg
-  = LoadPage
+  = PageReceived (Result Http.Error String)
+  -- | LoadPage 
   -- | LoadSettings
-  | PageReceived (Result Http.Error String)
+  | PostReceived (Result Http.Error String)
   | SettingsReceived (Result Http.Error String)
   | TitlesReceived (Result Http.Error String)
   | UrlChanged Url.Url
@@ -89,21 +90,30 @@ type Msg
 
 -- init : () -> (Model, Cmd Msg)
 init flags url key =
-  ( Model (Loading (Page 1)) Nothing key url
-  , getSettings
-  )
+    let model = Model (case RouteParser.url_to_route url of
+                           RouteParser.Page page_id -> (Loading (Page page_id))
+                           RouteParser.Post post_id -> (Loading (Post post_id))
+                           RouteParser.Home -> (Loading (Page 1))
+                           RouteParser.NotFound -> (ShowError ("Couldn't parser url " ++ (Url.toString url)))) Nothing key url
+    in
+            ( model
+            , getSettings)
 
 
 
 -- UPDATE
 
-
-
-getPage : Cmd Msg
-getPage =
+getPage : Int -> Cmd Msg
+getPage page_id =
     Http.get
-        { url = "/api/posts/page/1/page-size/6"
+        { url = "/api/posts/page/" ++ (fromInt page_id) ++ "/page-size/6"
         , expect = Http.expectString PageReceived}
+
+getPost : Int -> Cmd Msg
+getPost post_id =
+    Http.get
+        { url = "/api/posts/" ++ (fromInt post_id)
+        , expect = Http.expectString PostReceived}
 
 getSettings : Cmd Msg
 getSettings =
@@ -116,27 +126,46 @@ getTitles =
         { url = "/api/posts/titles"
         , expect = Http.expectString TitlesReceived}
 
+loadPageOrPost : Model -> Cmd Msg
+loadPageOrPost model =
+    case model.view of
+        Loading loadable_type ->
+            case loadable_type of
+                Post post_id ->
+                    getPost post_id
+                Page page_id ->
+                    getPage page_id
+        _ -> Cmd.none
+
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg ({settings} as model) =
     case msg of
-        LoadPage ->
-            (model, getPage)
+        -- LoadPage ->
+        --     (model, getPage)
         SettingsReceived result ->
             case result of
                 Ok settings_json ->
                     case (Decode.decodeString Settings.settingsDecoder settings_json) of
                         Ok new_settings ->
-                            ({model | settings = Just new_settings}, getPage)
+                            ({model | settings = Just new_settings}, getTitles)
                         Err error ->
                             ({model | view = ShowError (Decode.errorToString error)}, Cmd.none)
                 Err http_error -> 
+                    ({model | view = ShowError "Http error while loading settings"}, Cmd.none)
+        PostReceived result ->
+            case result of
+                Ok post_json ->
+                    case (Decode.decodeString A.articleDecoder post_json) of
+                        Ok post -> ({model | view = PostView post}, Cmd.none)
+                        Err error -> ({model | view = ShowError (Decode.errorToString error)}, Cmd.none)
+                Err http_error ->
                     ({model | view = ShowError "Http error while loading settings"}, Cmd.none)
         PageReceived result ->
             case result of
                 Ok page_json ->
                     case (Decode.decodeString P.pageDecoder page_json) of
                         Ok page -> 
-                            ({model | view = PageView page}, getTitles)
+                            ({model | view = PageView page}, Cmd.none)
                         Err error ->
                             ({model | view = ShowError (Decode.errorToString error)}, Cmd.none)
                 Err http_error ->
@@ -148,7 +177,7 @@ update msg ({settings} as model) =
                         Ok decoded_titles ->
                             case settings of
                                 Just unwrapped_settings ->
-                                    ({model | settings = Just {unwrapped_settings | titles = Just decoded_titles}}, Cmd.none)
+                                    ({model | settings = Just {unwrapped_settings | titles = Just decoded_titles}}, loadPageOrPost model)
                                 Nothing ->
                                     (model, Cmd.none)
                         Err error ->
@@ -219,13 +248,13 @@ view model =
     , body = 
         [case model.settings of
              Just settings ->
-                 div [] [header [] [a [href "/"] [text (settings.blog_title ++ " - now at " ++ ( model.url  |> url_to_route |> route_to_string))]],
+                 div [] [header [] [a [href "/"] [text settings.blog_title ]],
                          div [id "container"] (List.concat ([ 
                                                     case model.view of
                                                         Loading type_ ->
                                                           [div [] [text "LOADING"]]
-                                                        PostView articles ->
-                                                          [div [] [text "ARTICLE"]]
+                                                        PostView article ->
+                                                          [articleView settings article]
                                                         PageView page ->
                                                           (List.map (articleView settings) page.posts)
                                                         ShowError err ->
