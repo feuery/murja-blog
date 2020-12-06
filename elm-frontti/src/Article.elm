@@ -63,6 +63,7 @@ versionDecoder = Decode.maybe (Decode.field "version" Decode.int)
 created_atDecoder = Decode.field "created_at" (Decode.maybe Extra.datetime)
 creator_Decoder = Decode.field "creator" creatorDecoder                    
 
+-- |> == clojure's ->>
 articleDecoder : Decoder Article                    
 articleDecoder =
     Decode.succeed Article
@@ -78,7 +79,7 @@ articleDecoder =
         |> decodeApply created_atDecoder
 
 type alias Title =
-    { titlte : String
+    { title : String
     , id : Int
     , year : Int
     , month: String

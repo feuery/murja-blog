@@ -23,6 +23,7 @@ import Task
 import Dict.Extra exposing (groupBy)
 import Dict exposing (toList, keys, get)
 import String exposing (fromInt)
+import String.Extra exposing (toSentenceCase)
 
 
 -- MAIN
@@ -158,8 +159,15 @@ sidebarHistory titles =
                                                Just per_year ->
                                                    [li [] [details [] [summary [] [text (fromInt year)],
                                                                         let grouped_by_month = groupBy .month per_year in
-                                                                          ul [] (List.concat (List.map (\month -> 
-                                                                                                           [li [] [text "LOL"]]) (keys grouped_by_month)))]]]
+                                                                          ul [] (List.concat (List.map (\month ->
+                                                                                                            [li [] [details [] [summary [] [text (toSentenceCase month)],
+                                                                                                                                ul [class "title-list"] (titles
+                                                                                                                                      |> List.filter (\title ->
+                                                                                                                                                          title.year == year && title.month == month)
+                                                                                                                                      |> List.map (\title ->
+                                                                                                                                                       [li [class "title-list"]
+                                                                                                                                                            [a [href ("/blog/post/" ++ (fromInt title.id))] [text title.title]]])
+                                                                                                                                      |> List.concat)]]]) (keys grouped_by_month)))]]]
 
                                                Nothing ->
                                                         [li [] [text ("There's no year " ++ (fromInt year) ++ " in titles")]]) (keys grouped_by_year)))]
