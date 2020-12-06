@@ -248,26 +248,32 @@ articleView settings the_actual_post = div [class "post"] [ a [href ("/blog/post
 
 view : Model -> Browser.Document Msg
 view model =
-    { title = "Murja blog"      -- ¯\_(ツ)_/¯
-    , body = 
-        [case model.settings of
-             Just settings ->
-                 div [] [header [] [a [href "/"] [text settings.blog_title ]],
-                         div [id "container"] (List.concat ([ 
-                                                    case model.view of
-                                                        Loading type_ ->
-                                                          [div [] [text "LOADING"]]
-                                                        PostView article ->
-                                                          [articleView settings article]
-                                                        PageView page ->
-                                                          (List.map (articleView settings) page.posts)
-                                                        ShowError err ->
-                                                          [pre [] [text err]]
-                                                   , [div [id "sidebar"] (
-                                                                          case settings.titles of
-                                                                              Just titles ->
-                                                                                [ sidebarHistory titles ]
-                                                                              Nothing ->
-                                                                                [div [] [text "Loading history failed"]])]]))]
-             Nothing ->
-                 div [] [text "Couldn't load settings"]]}
+    case model.settings of
+        Nothing ->
+            { title = "Error loading murja"
+            , body = 
+                  [div [] [text "Couldn't load settings"]]}
+        Just settings ->
+            { title = settings.blog_title
+            , body = 
+                  [div [] [header [] [a [href "/"] [text settings.blog_title ]],
+                               div [id "container"] (List.concat ([ 
+                                                          case model.view of
+                                                              Loading type_ ->
+                                                                [div [] [text "LOADING"]]
+                                                              PostView article ->
+                                                                [articleView settings article]
+                                                              PageView page ->
+                                                                [div [] (List.concat [(List.map (articleView settings) page.posts),
+                                                                                          [footer [] (if page.id > 1 then [a [href ("/blog/page/" ++ fromInt (page.id + 1))] [text "Next page"],
+                                                                                                                               a [href ("/blog/page/" ++ fromInt (page.id - 1)), class "newer-post"] [text "Previous page"]]
+                                                                                                      else [a [href ("/blog/page/" ++ fromInt (page.id + 1))] [text "Next page"]])]])]
+                                                              
+                                                              ShowError err ->
+                                                                [pre [] [text err]]
+                                                         , [div [id "sidebar"] (
+                                                                                case settings.titles of
+                                                                                    Just titles ->
+                                                                                        [ sidebarHistory titles ]
+                                                                                    Nothing ->
+                                                                                        [div [] [text "Loading history failed"]])]]))]]}

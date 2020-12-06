@@ -101,6 +101,7 @@
                                 (pdb/get-all db limit)))
            (GET "/page/:page/page-size/:page-size" []
                 :return {:last-page? s/Bool
+                         :id s/Int
                          :posts [post-sc/Post]}
                 :path-params [page :- s/Int
                               page-size :- s/Int]
@@ -108,6 +109,7 @@
                 (destructure-db [sys]
                                 (ok
                                  {:posts (pdb/get-page db page page-size)
+                                  :id page
                                   :last-page? (zero? (count (pdb/get-page db (inc page) page-size)))})))
            (GET "/" []
                 :return [post-sc/Post]

@@ -11,10 +11,12 @@ import Json.Decode.Extra as Extra
 
 type alias Page =
     { last_page: Bool
+    , id : Int
     , posts: List A.Article}
 
 pageDecoder : Decoder Page
 pageDecoder =
-    Decode.map2 Page
+    Decode.map3 Page
         (Decode.field "last-page?" Decode.bool)
+        (Decode.field "id" Decode.int)
         (Decode.field "posts" (Decode.list A.articleDecoder))
