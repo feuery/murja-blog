@@ -1,7 +1,7 @@
 module Main exposing (..)
 
 import Browser
-import Html exposing (Html, Attribute, div, input, text, pre, p, h2, article, header, img, a, ul, li, details, summary)
+import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
 
@@ -25,17 +25,29 @@ import Dict exposing (toList, keys, get)
 import String exposing (fromInt)
 import String.Extra exposing (toSentenceCase)
 
+import Browser.Navigation as Nav
+import Url
+
 
 -- MAIN
 
 main : Program () Model Msg
 main =
-    Browser.element { init = init 
-                    , update = update
-                    , subscriptions = \_ -> Sub.none
-                    , view = view }
-    -- Browser.sandbox { init = init, update = update, view = view }
+  Browser.application
+    { init = init
+    , view = view
+    , update = update
+    , subscriptions = subscriptions
+    , onUrlChange = UrlChanged
+    , onUrlRequest = LinkClicked
+    }
 
+-- SUBSCRIPTIONS
+
+
+subscriptions : Model -> Sub Msg
+subscriptions _ =
+  Sub.none
 
 
 -- MODEL
@@ -60,7 +72,9 @@ type ViewState
 
 type alias Model =
     { view : ViewState
-    , settings : Maybe Settings.Settings}
+    , settings : Maybe Settings.Settings
+    , key : Nav.Key
+    , url : Url.Url}
     
 type Msg
   = LoadPage
@@ -68,10 +82,12 @@ type Msg
   | PageReceived (Result Http.Error String)
   | SettingsReceived (Result Http.Error String)
   | TitlesReceived (Result Http.Error String)
+  | UrlChanged Url.Url
+  | LinkClicked Browser.UrlRequest
 
 -- init : () -> (Model, Cmd Msg)
-init _ =
-  ( Model (Loading (Page 1)) Nothing
+init flags url key =
+  ( Model (Loading (Page 1)) Nothing key url
   , getSettings
   )
 
@@ -137,6 +153,14 @@ update msg ({settings} as model) =
                             ({model | view = ShowError (Decode.errorToString error)}, Cmd.none)
                 Err error ->
                     ({model | view = ShowError "Coudln't load titles"}, Cmd.none)
+        UrlChanged url ->
+            ({model | url = url}, Cmd.none)
+        LinkClicked urlRequest ->
+            case urlRequest of
+                Browser.Internal url ->
+                    (model, Nav.pushUrl model.key (Url.toString url))
+                Browser.External href ->
+                    (model, Nav.load href)
 
 -- Everything's now in utc
 -- Getting user's local tz is fucking impossible due to static functional reasons
@@ -187,27 +211,28 @@ articleView settings the_actual_post = div [class "post"] [ a [href ("/blog/post
                                                                                   Err error ->
                                                                                       [ p [] [text "VIRHE"]])]
 
-view : Model -> Html Msg
+view : Model -> Browser.Document Msg
 view model =
-    case model.settings of
-        Just settings ->
-            div [] [header [] [a [href "/"] [text settings.blog_title]],
-                        div [id "container"] (List.concat ([ 
-                                                   case model.view of
-                                                       Loading type_ ->
+    { title = "Murja blog"      -- ¯\_(ツ)_/¯
+    , body = 
+        [case model.settings of
+             Just settings ->
+                 div [] [header [] [a [href "/"] [text settings.blog_title]],
+                         div [id "container"] (List.concat ([ 
+                                                    case model.view of
+                                                        Loading type_ ->
                                                           [div [] [text "LOADING"]]
-                                                       PostView articles ->
+                                                        PostView articles ->
                                                           [div [] [text "ARTICLE"]]
-                                                       PageView page ->
+                                                        PageView page ->
                                                           (List.map (articleView settings) page.posts)
-                                                       ShowError err ->
+                                                        ShowError err ->
                                                           [pre [] [text err]]
-                                               , [div [id "sidebar"] (
-                                                      case settings.titles of
-                                                          Just titles ->
-                                                              [ sidebarHistory titles ]
-                                                          Nothing ->
-                                                              [div [] [text "Loading history failed"]])]]))]
-                                              
-        Nothing ->
-            div [] [text "Couldn't load settings"]
+                                                   , [div [id "sidebar"] (
+                                                                          case settings.titles of
+                                                                              Just titles ->
+                                                                                [ sidebarHistory titles ]
+                                                                              Nothing ->
+                                                                                [div [] [text "Loading history failed"]])]]))]
+             Nothing ->
+                 div [] [text "Couldn't load settings"]]}
