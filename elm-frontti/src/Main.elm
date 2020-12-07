@@ -229,7 +229,7 @@ sidebarHistory titles =
                                                                                                                                       |> List.concat)]]]) (keys grouped_by_month)))]]]
 
                                                Nothing ->
-                                                        [li [] [text ("There's no year " ++ (fromInt year) ++ " in titles")]]) (keys grouped_by_year)))]
+                                                        [li [] [text ("There's no year " ++ (fromInt year) ++ " in titles")]]) (keys grouped_by_year |> List.reverse)))]
               
 articleView : Settings.Settings -> A.Article -> Html Msg
 articleView settings the_actual_post = div [class "post"] [ a [href ("/blog/post/" ++ String.fromInt the_actual_post.id)] [ text the_actual_post.title ],
