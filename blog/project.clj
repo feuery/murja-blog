@@ -34,11 +34,7 @@
                  [clout "2.2.1"]]
 
   :plugins [[lein-environ "1.0.2"]
-            [lein-ancient "0.6.15"]
-            [lein-cljsbuild "1.1.1"]
-            [lein-asset-minifier "0.2.7"
-             :exclusions [org.clojure/clojure]]
-            #_[cider/cider-nrepl "0.14.0"]]
+            [lein-ancient "0.6.15"]]
 
   :ring {:handler blog.handler/app
          :uberwar-name "blog.war"}
@@ -49,79 +45,26 @@
 
   :main blog.system
 
-  :clean-targets ^{:protect false}
-  [:target-path
-   [:cljsbuild :builds :app :compiler :output-dir]
-   [:cljsbuild :builds :app :compiler :output-to]]
-
   :source-paths ["src/clj" "src/cljc"]
-  :resource-paths ["resources" "target/cljsbuild"]
-
-  :minify-assets
-  {:assets
-   {"resources/public/css/site.min.css" "resources/public/css/site.css"}}
-
-  :cljsbuild
-  {:builds {:min
-            {:source-paths ["src/cljs" "src/cljc" "env/prod/cljs"]
-             :compiler
-             {:output-to "target/cljsbuild/public/js/app.js"
-              :output-dir "target/uberjar"
-              :optimizations :advanced
-              :pretty-print  false}}
-            :app
-            
-            {:source-paths ["src/cljs" "src/cljc" "env/dev/cljs"]
-             :compiler
-             {:main "blog.dev"
-              :asset-path "/blog/js/out"
-              :output-to "target/cljsbuild/public/js/app.js"
-              :output-dir "target/cljsbuild/public/js/out"
-              :source-map true
-              :optimizations :none
-              :pretty-print  true}}
+  :resource-paths ["resources"]
 
 
 
-            }
-   }
-
-
-  :figwheel
-  {:http-server-root "public"
-   :server-port 3449
-   :nrepl-port 7002
-   ;; :nrepl-middleware ["cemerick.piggieback/wrap-cljs-repl"]
-   :css-dirs ["resources/public/css"]
-   :hawk-options {:watcher :polling}
-   :ring-handler blog.handler/app}
 
 
 
-  :profiles {:dev {:repl-options {:init-ns user
-                                  :nrepl-middleware [cider.piggieback/wrap-cljs-repl]}
+  :profiles {:dev {:repl-options {:init-ns user}
 
                    :dependencies [[ring/ring-mock "0.4.0"]
                                   [ring/ring-devel "1.8.2"]
                                   [prone "1.1.2"]
-                                  [figwheel-sidecar "0.5.20"]
-                                  #_[org.clojure/tools.nrepl "0.2.12"]
-                                  [cider/piggieback "0.5.1"]
                                   [pjstadig/humane-test-output "0.10.0"]
                                   ]
 
                    :source-paths ["env/dev/clj"]
-                   :plugins [[lein-figwheel "0.5.7"]]
-
-                   :injections [(require 'pjstadig.humane-test-output)
-                                (pjstadig.humane-test-output/activate!)]
 
                    :env {:dev true}}
 
-             :uberjar {:hooks [minify-assets.plugin/hooks]
-                       :source-paths ["env/prod/clj"]
-                       :prep-tasks ["compile" ["cljsbuild" "once" "min"]]
-                       :env {:production true}
-                       ;; :aot :all
-                       ;; :omit-source true
-                       }})
+             :uberjar {:source-paths ["env/prod/clj"]
+
+                       :env {:production true}}})

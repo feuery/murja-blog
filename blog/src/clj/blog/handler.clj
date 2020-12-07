@@ -1,6 +1,7 @@
 (ns blog.handler
   (:require [blog.server-conf :refer :all]
             [clojure.pprint :refer [pprint]]
+            [clojure.java.io :as io]
             [blog.util :refer [destructure-db]]
             [schema.core :as s]
             [blog.config :refer [config]]
@@ -57,16 +58,20 @@
                                         path (get-path rq)
                                         post-meta (destructure-db [sys]
                                                                   (if-let [[_ id] (re-matches #"/blog/post/(\d+)" path)]
-                                                                    (post-db/make-fb-meta-tags db id)))]
+                                                                    (post-db/make-fb-meta-tags db id)))
+                                        js (if (not-empty "")
+                                             (slurp js-route)
+                                             (slurp (io/resource "murja.js")))]
+
                                         ;(pprint {:metapost post-meta})
-                                    (assert js-route)
+
 
                                     (ok (html5 {:xmlns:og "http://ogp.me/ns#"
                                                 :xmlns:fb "http://www.facebook.com/2008/fbml"}
                                                (into [:head
                                                       (include-css css-route)
                                                       [:meta {:charset "UTF-8"}]
-                                                      [:script (slurp js-route)]]
+                                                      [:script js]]
                                                      post-meta)
                                                [:body
                                                 [:div#app]
@@ -83,3 +88,5 @@
   (-> #'app-
       wrap-params
       wrap-app-session))
+
+
