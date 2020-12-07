@@ -32,7 +32,7 @@
 body {
     background-color: #000000;
     font-family: 'Helvetica Neue', Verdana, Helvetica, Arial, sans-serif;
-    color: #FFFFFF;
+    color: #00CC00;
 }
 
 .meta {
@@ -115,11 +115,11 @@ textarea {
 }
 
 a {
-    color: #FFFF00;
+    color: #0DF;
 }
 
-a:visited {
-    color: #888800;
+a:hover {
+    color: #FFF;
 }
 
 #grouper * {
@@ -132,7 +132,7 @@ a:visited {
 
 header {
     font-size: 3em;
-    color: #FFFF00;
+    color: #00CC00;
     display: table;
     margin: 0 auto;
     max-widht: 70%;
@@ -146,4 +146,37 @@ header {
 
 .version-container a {
     padding-right: 5px;
+}
+
+.big_font {
+    font-size: 2em;
+}
+
+.twitter-timeline {
+    margin-top: 20px !important;
+}
+
+
+@media (max-width:1000px)
+{
+    body {
+	/* To test if the media query works  */ 
+	/* color: #FF0000; */
+    }
+    #container {
+	display: block;
+	width: 100%;
+	max-width: 100%;
+    }
+    #page  {
+	width: 100%;
+	max-width: 100%;
+	display: block;
+	font-size: 1.5em;
+    }
+    #sidebar {
+	margin: 0 auto;
+	border: 2px solid #666666;
+	width: 10%;
+    }
 }

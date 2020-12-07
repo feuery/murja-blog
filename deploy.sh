@@ -37,8 +37,8 @@ if [ -d $build_dir ]; then
     echo Cloned from $github_url to $build_dir
     echo Commencing uberjarring
 
-    cd $build_dir/blog
-    lein uberjar
+    cd $build_dir
+    ./build.sh
 
     if [ -f $build_dir/blog/target/blog.jar ]; then
 	echo target/blog.jar found! Uberjar succeeded!

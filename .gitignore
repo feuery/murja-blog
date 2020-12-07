@@ -4,3 +4,8 @@
 /blog/resources/public/css/site.min.css
 /new_devenv/.vagrant
 /kantadumppi.sql
+TAGS
+/elm-frontti/elm-stuff
+elm-frontti/*.html
+elm-frontti/*.js
+elm-frontti/elm-stuff/*

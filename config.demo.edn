@@ -9,6 +9,8 @@
       :classname "org.postgresql.Driver"
       :dbtype "postgresql"}
  :css-route "/site.css"
+ :js-route "/tangorauta/projects/murja-blog/elm-frontti/elm.js" ;;path where elm spits out the frontend js
+ ;; TODO make a ci script that embeds elm's result to jar's resource dir
  :client-config {:time-format "dd.MM.yyyy HH:mm"
                  :blog-title "Murja.dev @ $HOSTNAME"
                  :recent-post-count 6

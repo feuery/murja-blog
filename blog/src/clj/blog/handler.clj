@@ -1,6 +1,7 @@
 (ns blog.handler
   (:require [blog.server-conf :refer :all]
             [clojure.pprint :refer [pprint]]
+            [clojure.java.io :as io]
             [blog.util :refer [destructure-db]]
             [schema.core :as s]
             [blog.config :refer [config]]
@@ -47,27 +48,37 @@
                 ;; (route/resources "/js/")
 
                 (undocumented (route/resources "/blog/")
+                              (GET "/test-site.css" rq
+                                (ok 
+                                 (slurp (clojure.java.io/resource "public/css/site.css"))))
                               (GET "*" rq
                                 :sys sys
                                 (try
-                                  (let [{:keys [css-route]} @config
+                                  (let [{:keys [js-route css-route]} @config
                                         path (get-path rq)
                                         post-meta (destructure-db [sys]
                                                                   (if-let [[_ id] (re-matches #"/blog/post/(\d+)" path)]
-                                                                    (post-db/make-fb-meta-tags db id)))]
+                                                                    (post-db/make-fb-meta-tags db id)))
+                                        js (if (not-empty "")
+                                             (slurp js-route)
+                                             (slurp (io/resource "murja.min.js")))]
+
                                         ;(pprint {:metapost post-meta})
+
 
                                     (ok (html5 {:xmlns:og "http://ogp.me/ns#"
                                                 :xmlns:fb "http://www.facebook.com/2008/fbml"}
                                                (into [:head
                                                       (include-css css-route)
-                                                      [:meta {:charset "UTF-8"}]]
+                                                      [:meta {:charset "UTF-8"}]
+                                                      [:script js]]
                                                      post-meta)
                                                [:body
-                                                [:div#app
-                                                 [:p "This site requires js (at least until the lazy developer makes a server-side version of this clojurescript site"]
-                                                 [:p "If you're dev, run `lein figwheel` in the project dir"]]
-                                                (include-js "/blog/js/app.js")])))
+                                                [:div#app]
+                                                [:script
+"Elm.Main.init({
+        node: document.getElementById(\"app\")
+    });"]])))
                                   (catch Throwable t
                                     (clojure.pprint/pprint {:error t})
                                     {:status 500
@@ -77,3 +88,5 @@
   (-> #'app-
       wrap-params
       wrap-app-session))
+
+
