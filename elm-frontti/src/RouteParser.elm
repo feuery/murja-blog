@@ -14,6 +14,7 @@ routeParser =
     oneOf
         [ map Page (s "blog" </> (s "page" </> int))
         , map Home Url.Parser.top
+        , map Home (s "blog")
         , map Post (s "blog" </> (s "post" </> int))]
 
 url_to_route url =

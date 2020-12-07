@@ -38,7 +38,7 @@ if [ -d $build_dir ]; then
     echo Commencing uberjarring
 
     cd $build_dir
-    ./build.sh
+    sh ./build.sh
 
     if [ -f $build_dir/blog/target/blog.jar ]; then
 	echo target/blog.jar found! Uberjar succeeded!
