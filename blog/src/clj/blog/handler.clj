@@ -61,7 +61,7 @@
                                                                     (post-db/make-fb-meta-tags db id)))
                                         js (if (not-empty "")
                                              (slurp js-route)
-                                             (slurp (io/resource "murja.js")))]
+                                             (slurp (io/resource "murja.min.js")))]
 
                                         ;(pprint {:metapost post-meta})
 
