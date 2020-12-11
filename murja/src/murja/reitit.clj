@@ -20,9 +20,16 @@
   {:status 200
    :body "MOI"})
 
+(defn post-matikkaa [{{{:keys [x y]} :body} :parameters}]
+  {:status 200
+   :body (str (+ x y))})
+
 (def app-routes [["" {:middleware [middleware.params/parameters-middleware]}
                   ["/api" 
-                   ["/ping" {:get {:handler #'get-ping}}]]
+                   ["/ping" {:get {:handler #'get-ping}}]
+                   ["/matikkaa" {:post {:handler #'post-matikkaa
+                                        :parameters {:body {:x number?
+                                                            :y number?}}}}]]
                   ["" {:no-doc true}
                    ["/swagger.json" {:get (reitit.swagger/create-swagger-handler)}]
                    ["/swagger/*" {:get (reitit.swagger-ui/create-swagger-ui-handler)}]]]])
@@ -31,7 +38,7 @@
   (ring/router
    app-routes
    {:data {:coercion reitit.coercion.spec/coercion
-           :muuntaja (create-muuntaja)
+           :muuntaja muuntaja/instance
            :middleware [middleware.muuntaja/format-middleware
                         ring.coercion/coerce-exceptions-middleware
                         ring.coercion/coerce-request-middleware
