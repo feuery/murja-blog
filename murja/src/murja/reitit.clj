@@ -1,9 +1,11 @@
 (ns murja.reitit
   (:require [reitit.ring :as ring]
             [reitit.ring.middleware.muuntaja :as middleware.muuntaja]
+            [mount.core :as mount :refer [defstate]]
             [muuntaja.core :as muuntaja]
             [reitit.coercion.spec]
-            [org.httpkit.server :as http-kit]))
+            [org.httpkit.server :as http-kit]
+            [clojure.tools.namespace.repl :as tn]))
 
 (defn create-muuntaja []
   (-> muuntaja/default-options
@@ -34,3 +36,18 @@
 ;; (http-kit/server-stop! server)
 
 ;; (http-kit/server-status server)
+
+(defstate http-server :start (http-kit/run-server (app {})
+                                                  {:port 3000
+                                                   :legacy-return-value? false})
+  :stop (http-kit/server-stop! http-server))
+
+(defn go []
+  (mount/start))
+
+(defn stop []
+  (mount/stop))
+
+(defn reset []
+  (stop)
+  (tn/refresh :after 'dev/go))
