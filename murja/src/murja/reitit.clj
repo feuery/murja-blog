@@ -9,27 +9,19 @@
             [reitit.coercion.spec]
             [reitit.ring.coercion :as ring.coercion]
             [org.httpkit.server :as http-kit]
-            [clojure.tools.namespace.repl :as tn]))
+            [clojure.tools.namespace.repl :as tn]
 
-(defn create-muuntaja []
-  (-> muuntaja/default-options
-      ;; (update-in [:formats "application/transit+json"] merge
-      (muuntaja/create)))
+            [murja.api :as api]))
 
-(defn get-ping [_]
-  {:status 200
-   :body "MOI"})
-
-(defn post-matikkaa [{{{:keys [x y]} :body} :parameters}]
-  {:status 200
-   :body (str (+ x y))})
+;; tags: posts, login, users, settings
 
 (def app-routes [["" {:middleware [middleware.params/parameters-middleware]}
-                  ["/api" 
-                   ["/ping" {:get {:handler #'get-ping}}]
-                   ["/matikkaa" {:post {:handler #'post-matikkaa
-                                        :parameters {:body {:x number?
-                                                            :y number?}}}}]]
+                  ["/api"
+                   ["/posts" {:swagger {:tags ["posts"]}}]
+                   ["/login" {:swagger {:tags ["login"]}}]
+                   ["/users" {:swagger {:tags ["users"]}}]
+                   ["/settings" {:swagger {:tags ["settings"]}}
+                    ["/client-settings" {:get {:handler #'api/get-client-settings}}]]]
                   ["" {:no-doc true}
                    ["/swagger.json" {:get (reitit.swagger/create-swagger-handler)}]
                    ["/swagger/*" {:get (reitit.swagger-ui/create-swagger-ui-handler)}]]]])
