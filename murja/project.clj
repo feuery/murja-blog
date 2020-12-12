@@ -7,7 +7,11 @@
                  [metosin/muuntaja "0.6.7"]
                  [mount "0.1.16"]
                  [org.clojure/tools.namespace "1.1.0"]
-                 [http-kit "2.5.0"]
+                 [org.postgresql/postgresql "42.2.18"]
+                 [org.clojure/java.jdbc "0.7.11"]
+                 [com.cognitect/transit-clj "1.0.324"]
+                 [ring/ring-jetty-adapter "1.8.2"]
+                 [ragtime "0.8.0"]
                  [metosin/reitit "0.5.10"]]
   :repl-options {:init-ns murja.reitit}
   :aot :all)
