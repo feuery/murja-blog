@@ -2,7 +2,7 @@
   (:require [clojure.java.jdbc :as j]
             [murja.security :refer [sha-512]]))
 
-(defn update-user! [{:keys [db-spec]} _id nickname img_location password]
+(defn update-user! [{:keys [db-spec]} {:keys [_id nickname img_location password]}]
   (j/update! db-spec :blog.Users (cond-> {:Nickname nickname
                                           :Img_location img_location
                                           :password (sha-512 password)}
