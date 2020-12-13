@@ -33,3 +33,8 @@
 (defn post-logout [_]
   {:status 204
    :session nil})
+
+(defn get-session [{:keys [db]
+                    {:keys [_id]} :user}]
+  {:status 200
+   :body (api.login/get-user-view-data db _id)})

@@ -6,3 +6,7 @@
 
 (defn user-groups [db {:keys [username]}]
   (db/user-groups db username))
+
+(defn get-user-view-data [db user-id]
+  (-> (db/get-user-view-data db user-id)
+      (dissoc :userid)))

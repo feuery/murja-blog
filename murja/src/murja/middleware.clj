@@ -11,7 +11,10 @@
   (fn [{:keys [db]
         {{:keys [_id] :as identity} :identity} :session
         :as request}]
-    (handler (assoc request :user (merge identity (db.login/get-user-view-data db _id))))))
+    (if identity
+      (handler (assoc request :user (merge identity (db.login/get-user-view-data db _id))))
+      {:status 401
+       :body "Unauthorized!"})))
 
 (defn do-can [handler {:keys [db user session] :as request} action]
   (assert (some? db) "db is nil, please use murja.middleware/wrap-db before can? middleware")

@@ -27,7 +27,9 @@
                   ["/login" {:swagger {:tags ["login"]}}
                    ["/login" {:post {:handler #'api/post-login
                                      :parameters {:body ::login/login}}}]
-                   ["/logout" {:post {:handler #'api/post-logout}}]]                                      
+                   ["/logout" {:post {:handler #'api/post-logout}}]
+                   ["/session" {:middleware [middleware/wrap-user]
+                                :get {:handler #'api/get-session}}]]                                      
                   ["/users" {:swagger {:tags ["users"]}}
                    ["/is-empty" {:get {:handler #'api/get-users-is-empty}}]
                    ["/save" {:middleware [middleware/wrap-user
