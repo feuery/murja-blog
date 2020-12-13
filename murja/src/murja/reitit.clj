@@ -12,24 +12,25 @@
             [cognitect.transit :as transit]
             [ring.adapter.jetty :refer [run-jetty]]
             [ring.middleware.session :as session]
+            [clojure.spec.alpha :as spec]
 
             [murja.api :as api]
             [murja.middleware :as middleware]
             [murja.db :refer [migrate rollback]]
             [murja.db.users]
             [murja.specs.updated-user :as updated-user]
-            [murja.specs.login :as login]))
+            [murja.specs.login :as login]
+            [murja.specs.timed-title :as timed-title]))
 
 ;; tags: posts, login, users, settings
 
 (def app-routes [["/api" {:middleware [middleware/wrap-db]}
-                  ["/posts" {:swagger {:tags ["posts"]}}]
                   ["/login" {:swagger {:tags ["login"]}}
                    ["/login" {:post {:handler #'api/post-login
                                      :parameters {:body ::login/login}}}]
                    ["/logout" {:post {:handler #'api/post-logout}}]
                    ["/session" {:middleware [middleware/wrap-user]
-                                :get {:handler #'api/get-session}}]]                                      
+                                :get {:handler #'api/get-session}}]]
                   ["/users" {:swagger {:tags ["users"]}}
                    ["/is-empty" {:get {:handler #'api/get-users-is-empty}}]
                    ["/save" {:middleware [middleware/wrap-user
@@ -38,9 +39,10 @@
                                     :parameters {:body ::updated-user/updated-user}}}]]
                   ["/settings" {:swagger {:tags ["settings"]}}
                    ["/client-settings" {:get {:handler #'api/get-client-settings}}]]
-                  ["/log-session" {:get {:handler (fn [{:keys [session]}]
-                                                    (clojure.pprint/pprint session)
-                                                    {:status 204})}}]]
+
+                  ["/posts" {:swagger {:tags ["posts"]}}
+                   ["/titles" {:get {:handler #'api/get-posts-titles
+                                     :responses {200 {:body (spec/* ::timed-title/Timed-Title)}}}}]]]
                  ["" {:no-doc true}
                   ["/swagger.json" {:get (reitit.swagger/create-swagger-handler)}]
                   ["/swagger/*" {:get (reitit.swagger-ui/create-swagger-ui-handler)}]]])

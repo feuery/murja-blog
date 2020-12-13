@@ -1,5 +1,6 @@
 (ns murja.api
   (:require [murja.config :as config]
+            [murja.api.posts :as api.posts]
             [murja.api.users :as api.users]
             [murja.api.login :as api.login]))
 
@@ -38,3 +39,7 @@
                     {:keys [_id]} :user}]
   {:status 200
    :body (api.login/get-user-view-data db _id)})
+
+(defn get-posts-titles [{:keys [db]}]
+  {:status 200
+   :body (api.posts/get-titles-by-year db)})
