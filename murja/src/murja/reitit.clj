@@ -50,6 +50,9 @@
                                    :get {:handler #'api/get-posts-all-titles
                                          :summary "Same as /titles, but auths that requester has edit-post - permission"
                                          :responses {200 {:body (spec/* ::timed-title/Timed-Title)}}}}]
+
+                   ["/existing-landing-page" {:get {:summary "Returns either an empty string or the title of already existing landing page"
+                                                    :handler #'api/get-existing-landing-page}}]
                    ]]
                  ["" {:no-doc true}
                   ["/swagger.json" {:get (reitit.swagger/create-swagger-handler)}]

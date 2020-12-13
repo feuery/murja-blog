@@ -48,3 +48,7 @@
   {:status 200
    :body (api.posts/get-titles-by-year db :show-hidden? true)})
 
+
+(defn get-existing-landing-page [{:keys [db]}]
+  {:status 200
+   :body (api.posts/get-existing-landing-page db)})

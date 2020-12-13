@@ -4,3 +4,6 @@
 (defn get-titles-by-year [db & {:keys [show-hidden?]}]
   {:pre [(boolean? show-hidden?)]}
   (db.posts/get-titles-by-year db :show-hidden? show-hidden?))
+
+(defn get-existing-landing-page [db]
+  (db.posts/get-landing-page-title db))
