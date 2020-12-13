@@ -42,4 +42,9 @@
 
 (defn get-posts-titles [{:keys [db]}]
   {:status 200
-   :body (api.posts/get-titles-by-year db)})
+   :body (api.posts/get-titles-by-year db :show-hidden? false)})
+
+(defn get-posts-all-titles [{:keys [db]}]
+  {:status 200
+   :body (api.posts/get-titles-by-year db :show-hidden? true)})
+

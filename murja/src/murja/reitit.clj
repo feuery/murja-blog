@@ -42,7 +42,15 @@
 
                   ["/posts" {:swagger {:tags ["posts"]}}
                    ["/titles" {:get {:handler #'api/get-posts-titles
-                                     :responses {200 {:body (spec/* ::timed-title/Timed-Title)}}}}]]]
+                                     :summary "Returns titles, tags, months and years for the title-widget"
+                                     :responses {200 {:body (spec/* ::timed-title/Timed-Title)}}}}]
+                   ;; TODO this WILL break if used in an environment with more than one writer
+                   ["/all-titles" {:middleware [middleware/wrap-user
+                                                [middleware/can? "edit-post"]]
+                                   :get {:handler #'api/get-posts-all-titles
+                                         :summary "Same as /titles, but auths that requester has edit-post - permission"
+                                         :responses {200 {:body (spec/* ::timed-title/Timed-Title)}}}}]
+                   ]]
                  ["" {:no-doc true}
                   ["/swagger.json" {:get (reitit.swagger/create-swagger-handler)}]
                   ["/swagger/*" {:get (reitit.swagger-ui/create-swagger-ui-handler)}]]])
