@@ -29,3 +29,7 @@
                                         :groups (api.login/user-groups db login-user)}) }
     {:status 401
      :body "Unauthorized"}))
+
+(defn post-logout [_]
+  {:status 204
+   :session nil})

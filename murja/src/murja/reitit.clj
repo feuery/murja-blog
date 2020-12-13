@@ -27,11 +27,7 @@
                   ["/login" {:swagger {:tags ["login"]}}
                    ["/login" {:post {:handler #'api/post-login
                                      :parameters {:body ::login/login}}}]
-                   #_["/authed" {:middleware [middleware/wrap-user
-                                            [middleware/can? "create-comment"]]
-                               :get {:handler (fn [_]
-                                      {:status 200
-                                       :body "You're in!"})}}]]
+                   ["/logout" {:post {:handler #'api/post-logout}}]]                                      
                   ["/users" {:swagger {:tags ["users"]}}
                    ["/is-empty" {:get {:handler #'api/get-users-is-empty}}]
                    ["/save" {:middleware [middleware/wrap-user
