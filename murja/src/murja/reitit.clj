@@ -41,23 +41,29 @@
                    ["/client-settings" {:get {:handler #'api/get-client-settings}}]]
 
                   ["/posts" {:swagger {:tags ["posts"]}}
-                   ["/titles" {:get {:handler #'api/get-posts-titles
+                   ["/titles" {:conflicting true
+                               :get {:handler #'api/get-posts-titles
                                      :summary "Returns titles, tags, months and years for the title-widget"
                                      :responses {200 {:body (spec/* ::timed-title/Timed-Title)}}}}]
                    ;; TODO this WILL break if used in an environment with more than one writer
                    ["/all-titles" {:middleware [middleware/wrap-user
                                                 [middleware/can? "edit-post"]]
+                                   :conflicting true
                                    :get {:handler #'api/get-posts-all-titles
                                          :summary "Same as /titles, but auths that requester has edit-post - permission"
                                          :responses {200 {:body (spec/* ::timed-title/Timed-Title)}}}}]
 
-                   ["/existing-landing-page" {:get {:summary "Returns either an empty string or the title of already existing landing page"
+                   ["/existing-landing-page" {:conflicting true
+                                              :get {:summary "Returns either an empty string or the title of already existing landing page"
                                                     :handler #'api/get-existing-landing-page}}]
                    ["/:id/version/:version" {:get {:summary "Returns an old version of the post and the current comments"
                                                    :parameters {:path {:id int?
                                                                        :version int?}}
                                                    :handler #'api/get-post-version}}]
-                   ]]
+                   ["/:id" {:get {:summary "Returns a post per its id"
+                                  :parameters {:path {:id int?}}
+                                  :handler #'api/get-post-id}
+                            :conflicting true}]]]
                  ["" {:no-doc true}
                   ["/swagger.json" {:get (reitit.swagger/create-swagger-handler)}]
                   ["/swagger/*" {:get (reitit.swagger-ui/create-swagger-ui-handler)}]]])

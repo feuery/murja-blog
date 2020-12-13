@@ -12,3 +12,6 @@
   (assert (some? id))
   (assert (some? version))
   (db.posts/get-versioned-by-id db id version))
+
+(defn get-post-by-id [db id]
+  (db.posts/get-by-id db id))

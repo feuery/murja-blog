@@ -59,3 +59,9 @@
 
     {:status 200
      :body (api.posts/get-post-version-by-id db post-id post-version)}))
+
+(defn get-post-id [{:keys [db parameters]}]
+  (let [{{post-id :id} :path} parameters]
+
+    {:status 200
+     :body (api.posts/get-post-by-id db post-id)}))
