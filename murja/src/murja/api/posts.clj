@@ -7,3 +7,8 @@
 
 (defn get-existing-landing-page [db]
   (db.posts/get-landing-page-title db))
+
+(defn get-post-version-by-id [db id version]
+  (assert (some? id))
+  (assert (some? version))
+  (db.posts/get-versioned-by-id db id version))

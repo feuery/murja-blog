@@ -53,6 +53,10 @@
 
                    ["/existing-landing-page" {:get {:summary "Returns either an empty string or the title of already existing landing page"
                                                     :handler #'api/get-existing-landing-page}}]
+                   ["/:id/version/:version" {:get {:summary "Returns an old version of the post and the current comments"
+                                                   :parameters {:path {:id int?
+                                                                       :version int?}}
+                                                   :handler #'api/get-post-version}}]
                    ]]
                  ["" {:no-doc true}
                   ["/swagger.json" {:get (reitit.swagger/create-swagger-handler)}]

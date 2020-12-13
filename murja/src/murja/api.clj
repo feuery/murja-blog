@@ -52,3 +52,10 @@
 (defn get-existing-landing-page [{:keys [db]}]
   {:status 200
    :body (api.posts/get-existing-landing-page db)})
+
+(defn get-post-version [{:keys [db parameters]}]
+  (let [{{post-id :id
+         post-version :version} :path} parameters]
+
+    {:status 200
+     :body (api.posts/get-post-version-by-id db post-id post-version)}))
