@@ -65,6 +65,8 @@
                                                    :parameters {:path {:id int?
                                                                        :version int?}}
                                                    :handler #'api/get-post-version}}]
+                   ["/:id/versions" {:get {:parameters {:path {:id int?}}
+                                           :handler #'api/get-id-versions}}]
                    ["/:id" {:get {:summary "Returns a post per its id"
                                   :parameters {:path {:id int?}}
                                   :handler #'api/get-post-id}

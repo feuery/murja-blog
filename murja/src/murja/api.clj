@@ -70,3 +70,8 @@
   (let [{{post-id :id} :path} parameters]
     {:status 200
      :body (api.posts/get-post-by-id db post-id :show-hidden? true)}))
+
+(defn get-id-versions [{:keys [db parameters]}]
+  (let [{{post-id :id} :path} parameters]
+    {:status 200
+     :body (api.posts/get-post-versions db post-id)}))

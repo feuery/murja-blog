@@ -15,3 +15,7 @@
 
 (defn get-post-by-id [db id & {:keys [show-hidden?]}]
   (db.posts/get-by-id db id :allow-hidden? show-hidden?))
+
+
+(defn get-post-versions [db post-id]
+  (db.posts/post-versions db post-id))
