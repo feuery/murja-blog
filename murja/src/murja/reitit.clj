@@ -61,10 +61,16 @@
                                                        :summary "Returns a post per its id. Can return also hidden posts if edit-post permission is held"
                                                        :get {:parameters {:path {:id int? :allow-hidden boolean?}}
                                                              :handler #'api/get-post-id-allow-hidden}}]
-                   ["/:id/version/:version" {:get {:summary "Returns an old version of the post and the current comments"
-                                                   :parameters {:path {:id int?
-                                                                       :version int?}}
-                                                   :handler #'api/get-post-version}}]
+                   ["/:id/version/:version" {:parameters {:path {:id int?
+                                                                 :version int?}}
+
+                                             :get {:summary "Returns an old version of the post and the current comments"
+                                                   :handler #'api/get-post-version}
+
+                                             :delete {:summary "Deletes a version of a post"
+                                                      :middleware [middleware/wrap-user
+                                                                   [middleware/can? "delete-post"]]
+                                                      :handler #'api/delete-post-version}}]
                    ["/:id/versions" {:get {:parameters {:path {:id int?}}
                                            :handler #'api/get-id-versions}}]
                    ["/:id" {:get {:summary "Returns a post per its id"

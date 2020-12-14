@@ -19,3 +19,8 @@
 
 (defn get-post-versions [db post-id]
   (db.posts/post-versions db post-id))
+
+(defn delete-post-version [db post-id version-id]
+  (db.posts/delete-by-id db post-id version-id)
+  {:deleted-id post-id
+   :deleted-version version-id})

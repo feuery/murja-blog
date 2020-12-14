@@ -75,3 +75,9 @@
   (let [{{post-id :id} :path} parameters]
     {:status 200
      :body (api.posts/get-post-versions db post-id)}))
+
+(defn delete-post-version [{:keys [db parameters]}]
+  (let [{{post-id :id
+          post-version :version} :path} parameters]
+    {:status 200
+     :body (api.posts/delete-post-version db post-id post-version)}))
