@@ -13,5 +13,5 @@
   (assert (some? version))
   (db.posts/get-versioned-by-id db id version))
 
-(defn get-post-by-id [db id]
-  (db.posts/get-by-id db id))
+(defn get-post-by-id [db id & {:keys [show-hidden?]}]
+  (db.posts/get-by-id db id :allow-hidden? show-hidden?))

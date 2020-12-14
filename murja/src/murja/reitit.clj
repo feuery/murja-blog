@@ -56,6 +56,11 @@
                    ["/existing-landing-page" {:conflicting true
                                               :get {:summary "Returns either an empty string or the title of already existing landing page"
                                                     :handler #'api/get-existing-landing-page}}]
+                   ["/:id/allow-hidden/:allow-hidden" {:middleware [middleware/wrap-user
+                                                                    [middleware/can? "edit-post"]]
+                                                       :summary "Returns a post per its id. Can return also hidden posts if edit-post permission is held"
+                                                       :get {:parameters {:path {:id int? :allow-hidden boolean?}}
+                                                             :handler #'api/get-post-id-allow-hidden}}]
                    ["/:id/version/:version" {:get {:summary "Returns an old version of the post and the current comments"
                                                    :parameters {:path {:id int?
                                                                        :version int?}}

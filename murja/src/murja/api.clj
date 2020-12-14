@@ -64,4 +64,9 @@
   (let [{{post-id :id} :path} parameters]
 
     {:status 200
-     :body (api.posts/get-post-by-id db post-id)}))
+     :body (api.posts/get-post-by-id db post-id :show-hidden? false)}))
+
+(defn get-post-id-allow-hidden [{:keys [db parameters]}]
+  (let [{{post-id :id} :path} parameters]
+    {:status 200
+     :body (api.posts/get-post-by-id db post-id :show-hidden? true)}))
