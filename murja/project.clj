@@ -6,6 +6,7 @@
   :dependencies [[org.clojure/clojure "1.10.1"]
                  [metosin/muuntaja "0.6.7"]
                  [mount "0.1.16"]
+                 [hiccup "1.0.5"]
                  [org.clojure/tools.namespace "1.1.0"]
                  [org.postgresql/postgresql "42.2.18"]
                  [org.clojure/java.jdbc "0.7.11"]

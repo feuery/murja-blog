@@ -1,8 +1,11 @@
 (ns murja.api
   (:require [murja.config :as config]
+            [hiccup.page :refer [include-js include-css html5]]
+            [clojure.java.io :as io]
             [murja.api.posts :as api.posts]
             [murja.api.users :as api.users]
-            [murja.api.login :as api.login]))
+            [murja.api.login :as api.login]
+            [murja.db.posts :as post-db]))
 
 (defn get-client-settings [_]
   {:status 200
@@ -120,4 +123,31 @@
     (api.posts/comment-post db user new-comment)
     {:status 204}))
 
+(defn get-path [rq]
+  {:post [(some? %)]}
+  (get-in rq [:reitit.core/match :path]))
 
+(defn get-frontend [{:keys [db] :as rq}]
+  (def +req+ rq)
+  (let [{:keys [js-route css-route]} config/config 
+        path (get-path rq)
+        post-meta (if-let [[_ id] (re-matches #"/blog/post/(\d+)" path)]
+                    (post-db/make-fb-meta-tags db id))
+        js (if (not-empty js-route)
+             (slurp js-route)
+             (slurp (io/resource "murja.min.js")))]
+
+    {:status 200
+     :body (html5 {:xmlns:og "http://ogp.me/ns#"
+                   :xmlns:fb "http://www.facebook.com/2008/fbml"}
+                  (into [:head
+                         (include-css css-route)
+                         [:meta {:charset "UTF-8"}]
+                         [:script js]]
+                        post-meta)
+                  [:body
+                   [:div#app]
+                   [:script
+                    "Elm.Main.init({
+        node: document.getElementById(\"app\")
+    });"]])}))

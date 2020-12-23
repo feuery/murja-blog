@@ -115,7 +115,8 @@
                    ]]
                  ["" {:no-doc true}
                   ["/swagger.json" {:get (reitit.swagger/create-swagger-handler)}]
-                  ["/swagger/*" {:get (reitit.swagger-ui/create-swagger-ui-handler)}]]])
+                  ["/swagger/*" {:get (reitit.swagger-ui/create-swagger-ui-handler)}]
+                  ["/blog/*" {:get {:handler #'api/get-frontend}}]]])
 
 (defn router [options]
   (ring/router
