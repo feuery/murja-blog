@@ -16,7 +16,7 @@ case $method in
     'DELETE')
 	result=$(curl -s -X DELETE --cookie-jar "$cookie_jar" -b "$cookie_jar" --header 'Accept: application/json' "$murja_url");;
     'PUT')
-	result=$(curl -s -X PUT --cookie-jar "$cookie_jar" -b "$cookie_jar" --header 'Content-Type: application/json' --header 'Accept: application/json' -d "$payload" "$murja_url");;
+	result=$(curl -s -X PUT --cookie-jar "$cookie_jar" -b "$cookie_jar" --header 'Content-Type: application/json' --header 'Accept: application/json' -d @$input_file "$murja_url");;
     *)
 	echo lolwat?;;
 esac
