@@ -14,4 +14,7 @@
                  [ragtime "0.8.0"]
                  [metosin/reitit "0.5.10"]]
   :repl-options {:init-ns murja.reitit}
+  :profiles {:dev {:dependencies [[org.clojure/tools.nrepl "0.2.13"]
+                                  [cider/cider-nrepl "0.25.2"]]
+                     :plugins [[cider/cider-nrepl "0.25.2"]]}}
   :aot :all)

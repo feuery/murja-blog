@@ -20,7 +20,8 @@
             [murja.db.users]
             [murja.specs.updated-user :as updated-user]
             [murja.specs.login :as login]
-            [murja.specs.timed-title :as timed-title]))
+            [murja.specs.timed-title :as timed-title]
+            [murja.specs.post :as post]))
 
 ;; tags: posts, login, users, settings
 
@@ -41,27 +42,45 @@
                    ["/client-settings" {:get {:handler #'api/get-client-settings}}]]
 
                   ["/posts" {:swagger {:tags ["posts"]}}
-                   ["/titles" {:conflicting true
-                               :get {:handler #'api/get-posts-titles
+                   ["/titles" {:get {:handler #'api/get-posts-titles
                                      :summary "Returns titles, tags, months and years for the title-widget"
                                      :responses {200 {:body (spec/* ::timed-title/Timed-Title)}}}}]
                    ;; TODO this WILL break if used in an environment with more than one writer
                    ["/all-titles" {:middleware [middleware/wrap-user
                                                 [middleware/can? "edit-post"]]
-                                   :conflicting true
-                                   :get {:handler #'api/get-posts-all-titles
+                                  :get {:handler #'api/get-posts-all-titles
                                          :summary "Same as /titles, but auths that requester has edit-post - permission"
                                          :responses {200 {:body (spec/* ::timed-title/Timed-Title)}}}}]
 
-                   ["/existing-landing-page" {:conflicting true
-                                              :get {:summary "Returns either an empty string or the title of already existing landing page"
+                   ["/existing-landing-page" {:get {:summary "Returns either an empty string or the title of already existing landing page"
                                                     :handler #'api/get-existing-landing-page}}]
-                   ["/:id/allow-hidden/:allow-hidden" {:middleware [middleware/wrap-user
-                                                                    [middleware/can? "edit-post"]]
-                                                       :summary "Returns a post per its id. Can return also hidden posts if edit-post permission is held"
-                                                       :get {:parameters {:path {:id int? :allow-hidden boolean?}}
-                                                             :handler #'api/get-post-id-allow-hidden}}]
-                   ["/:id/version/:version" {:parameters {:path {:id int?
+                   ["/post" {:post {:summary "Writes a new post into the db"
+                                    :middleware [middleware/wrap-user
+                                                 [middleware/can? "create-post"]]
+                                    :parameters {:body ::post/New-post}
+                                    :handler #'api/create-post} ;; create-post
+                             :put {:summary "Edits a post"
+                                   :parameters {:body ::post/Edited-post}
+                                   :middleware [middleware/wrap-user
+                                                [middleware/can? "edit-post"]]
+                                   :handler #'api/edit-post}}]
+                   ["/post"
+                    ["/:id" {:parameters {:path {:id int?}}
+                             :get {:summary "Returns a post per its id"
+                                   :parameters {:path {:id int?}}
+                                   :handler #'api/get-post-id}
+                             :delete {:summary "Deletes a post and returns its id"
+                                      :middleware [middleware/wrap-user
+                                                   [middleware/can? "delete-post"]]
+                                      :handler #'api/delete-post-id}} ;; edit-post
+                     ["/comment" {:post {:summary "Comments a post and returns it with the new comment appended"
+                                         :parameters {:body ::post/New-comment}
+                                         :middleware [middleware/wrap-user
+                                                      [middleware/can? "comment-post"]]
+                                         :handler #'api/comment-post}}]
+
+                     ["/versions" {:get {:handler #'api/get-id-versions}}]
+                     ["/version/:version" {:parameters {:path {:id int?
                                                                  :version int?}}
 
                                              :get {:summary "Returns an old version of the post and the current comments"
@@ -71,12 +90,29 @@
                                                       :middleware [middleware/wrap-user
                                                                    [middleware/can? "delete-post"]]
                                                       :handler #'api/delete-post-version}}]
-                   ["/:id/versions" {:get {:parameters {:path {:id int?}}
-                                           :handler #'api/get-id-versions}}]
-                   ["/:id" {:get {:summary "Returns a post per its id"
-                                  :parameters {:path {:id int?}}
-                                  :handler #'api/get-post-id}
-                            :conflicting true}]]]
+                     ["/allow-hidden/:allow-hidden" {:middleware [middleware/wrap-user
+                                                                    [middleware/can? "edit-post"]]
+                                                       :summary "Returns a post per its id. Can return also hidden posts if edit-post permission is held"
+                                                       :get {:parameters {:path {:id int? :allow-hidden boolean?}}
+                                                             :handler #'api/get-post-id-allow-hidden}}]]]
+                   
+                   ["/comment/:id" {:delete {:summary "Deletes a comment and returns its id"
+                                             :middleware [middleware/wrap-user
+                                                          [middleware/can? "delete-comment"]]
+                                             :parameters {:path {:id int?}}
+                                             :handler #'api/delete-comment-id}
+                                    :conflicting true}]
+
+                   ["/all/:limit" {:get {:summary "Returns first $limit of all posts sorted by their creation date DESC"
+                                         :parameters {:path {:limit int?}}
+                                         :handler #'api/get-all-limit}
+                                   :conflicting true}]
+                   ["/page/:page/page-size/:page-size" {:get {:summary "Returns a page of specific size. Posts are sorted by their creation date DESC"
+                                                              :parameters {:path {:page int?
+                                                                                  :page-size int?}}
+                                                              :handler #'api/get-page}}]
+                    
+                   ]]
                  ["" {:no-doc true}
                   ["/swagger.json" {:get (reitit.swagger/create-swagger-handler)}]
                   ["/swagger/*" {:get (reitit.swagger-ui/create-swagger-ui-handler)}]]])

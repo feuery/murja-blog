@@ -340,3 +340,16 @@ WHERE p.tags ?? 'landing-page' AND NOT p.tags ?? 'hidden'"]
     [(Meta "og:description" (str/replace (strtake 200 content) #"\n" ""))
      (Meta "og:title" title)
      (Meta "og:site_name" (get-in @con/config [:client-config :blog-title]))]))
+
+(defn save-post!
+  [{:keys [db-spec] :as db}
+   {:keys [_id] :as user}
+   {:keys [title content tags] :as post}]
+  (j/with-db-transaction [c db-spec]
+    (if ((set tags) "landing-page")
+      (let [ids (landing-page-ids c)]
+        (mapv (partial remove-tag! {:db-spec c} "landing-page")
+              ids)))
+    (j/insert! c :blog.post
+               [:Title :Content :creator_id :tags ]
+               [title content _id tags])))

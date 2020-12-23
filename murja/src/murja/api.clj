@@ -81,3 +81,43 @@
           post-version :version} :path} parameters]
     {:status 200
      :body (api.posts/delete-post-version db post-id post-version)}))
+
+(defn delete-post-id [{:keys [db parameters]}]
+  (let [{{post-id :id} :path} parameters]
+    (api.posts/delete-post-id db post-id)
+    {:status 200
+     :body {:post-id post-id}}))
+
+(defn delete-comment-id [{:keys [db parameters]}]
+  (let [{{comment-id :id} :path} parameters]
+    (api.posts/delete-comment-id db comment-id)
+    {:status 200
+     :body {:comment-id comment-id}}))
+
+(defn get-all-limit [{:keys [db parameters]}]
+  (let [{{:keys [limit]} :path} parameters]
+    {:status 200
+     :body (api.posts/get-all db limit)}))
+
+(defn get-page [{:keys [db parameters]}]
+  (let [{{:keys [page page-size]} :path} parameters]
+    {:status 200
+     :body (api.posts/get-page db page page-size)}))
+
+
+(defn create-post [{:keys [db parameters user]}]
+  (let [{new-post :body} parameters]
+    (api.posts/create-post db user new-post)
+    {:status 204}))
+
+(defn edit-post [{:keys [db user parameters]}]
+  (let [{edited-post :body} parameters]
+    (api.posts/edit-post db user edited-post)
+    {:status 204}))
+
+(defn comment-post [{:keys [db user parameters]}]
+  (let [{new-comment :body} parameters]
+    (api.posts/comment-post db user new-comment)
+    {:status 204}))
+
+

@@ -24,3 +24,24 @@
   (db.posts/delete-by-id db post-id version-id)
   {:deleted-id post-id
    :deleted-version version-id})
+
+(defn delete-post-id [db post-id]
+  (db.posts/delete-by-id db post-id))
+
+(defn delete-comment-id [db comment-id]
+  (db.posts/delete-comment-by-id db comment-id))
+
+(defn get-all [db limit]
+  (db.posts/get-all db limit))
+
+(defn get-page [db page page-size]
+  (db.posts/get-page db page page-size))
+
+(defn create-post [db user post]
+  (db.posts/save-post! db user post))
+
+(defn edit-post [db user post]
+  (db.posts/edit-post! db user post))
+
+(defn comment-post [db user comment]
+  (db.posts/comment-post! db user comment))
