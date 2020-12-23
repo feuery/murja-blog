@@ -72,7 +72,8 @@
                              :delete {:summary "Deletes a post and returns its id"
                                       :middleware [middleware/wrap-user
                                                    [middleware/can? "delete-post"]]
-                                      :handler #'api/delete-post-id}} ;; edit-post
+                                      :handler #'api/delete-post-id}}]
+                    ["/:id" {:parameters {:path {:id int?}}}
                      ["/comment" {:post {:summary "Comments a post and returns it with the new comment appended"
                                          :parameters {:body ::post/New-comment}
                                          :middleware [middleware/wrap-user
@@ -114,9 +115,11 @@
                     
                    ]]
                  ["" {:no-doc true}
+                  ["/site.css" {:get {:handler #'api/get-site.css}}]
                   ["/swagger.json" {:get (reitit.swagger/create-swagger-handler)}]
                   ["/swagger/*" {:get (reitit.swagger-ui/create-swagger-ui-handler)}]
-                  ["/blog/*" {:get {:handler #'api/get-frontend}}]]])
+                  ["/blog/*" {:middleware [middleware/wrap-db]
+                              :get {:handler #'api/get-frontend}}]]])
 
 (defn router [options]
   (ring/router

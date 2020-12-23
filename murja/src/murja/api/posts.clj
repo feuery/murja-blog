@@ -35,7 +35,10 @@
   (db.posts/get-all db limit))
 
 (defn get-page [db page page-size]
-  (db.posts/get-page db page page-size))
+  (let [posts (db.posts/get-page db page page-size)]
+    {:posts posts
+     :id page
+     :last-page? (zero? (count (db.posts/get-page db (inc page) page-size)))}))
 
 (defn create-post [db user post]
   (db.posts/save-post! db user post))

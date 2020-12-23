@@ -339,7 +339,7 @@ WHERE p.tags ?? 'landing-page' AND NOT p.tags ?? 'hidden'"]
 
     [(Meta "og:description" (str/replace (strtake 200 content) #"\n" ""))
      (Meta "og:title" title)
-     (Meta "og:site_name" (get-in @con/config [:client-config :blog-title]))]))
+     (Meta "og:site_name" (get-in con/config [:client-config :blog-title]))]))
 
 (defn save-post!
   [{:keys [db-spec] :as db}

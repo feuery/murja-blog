@@ -123,13 +123,16 @@
     (api.posts/comment-post db user new-comment)
     {:status 204}))
 
+(defn get-site.css [_]
+  {:status 200
+   :body (slurp (io/resource "public/css/site.css"))})
+
 (defn get-path [rq]
   {:post [(some? %)]}
   (get-in rq [:reitit.core/match :path]))
 
 (defn get-frontend [{:keys [db] :as rq}]
-  (def +req+ rq)
-  (let [{:keys [js-route css-route]} config/config 
+  (let [{:keys [js-route css-route]} config/config
         path (get-path rq)
         post-meta (if-let [[_ id] (re-matches #"/blog/post/(\d+)" path)]
                     (post-db/make-fb-meta-tags db id))
