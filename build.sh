@@ -14,7 +14,7 @@ else
     echo "Compiling frontend seems to have succeeded!"
 fi
 
-mv ./elm-frontti/murja.min.js ./blog/resources/murja.min.js
+mv ./elm-frontti/murja.min.js ./murja/resources/murja.min.js
 echo "Frontend is moved to backend's resources directory"
 
 pushd murja
