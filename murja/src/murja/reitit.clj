@@ -21,7 +21,8 @@
             [murja.specs.updated-user :as updated-user]
             [murja.specs.login :as login]
             [murja.specs.timed-title :as timed-title]
-            [murja.specs.post :as post]))
+            [murja.specs.post :as post])
+  (:gen-class))
 
 ;; tags: posts, login, users, settings
 
@@ -119,7 +120,11 @@
                   ["/swagger.json" {:get (reitit.swagger/create-swagger-handler)}]
                   ["/swagger/*" {:get (reitit.swagger-ui/create-swagger-ui-handler)}]
                   ["/blog/*" {:middleware [middleware/wrap-db]
-                              :get {:handler #'api/get-frontend}}]]])
+                              :get {:handler #'api/get-frontend}}]
+                  ["/" {:get {:handler (fn [_]
+                                         {:status  302
+                                          :headers {"Location" "/blog/"}
+                                          :body    ""})}}]]])
 
 (defn router [options]
   (ring/router
@@ -153,5 +158,8 @@
   (stop)
   (go))
 
-
-
+(defn -main [& _]
+  (go)
+  (println "Murja running!")
+  (migrate)
+  (println "Migrated!"))

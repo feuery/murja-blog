@@ -17,5 +17,6 @@
   :repl-options {:init-ns murja.reitit}
   :profiles {:dev {:dependencies [[org.clojure/tools.nrepl "0.2.13"]
                                   [cider/cider-nrepl "0.25.2"]]
-                     :plugins [[cider/cider-nrepl "0.25.2"]]}}
+                   :plugins [[cider/cider-nrepl "0.25.2"]]}}
+  :main murja.reitit
   :aot :all)
