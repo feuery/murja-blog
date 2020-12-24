@@ -21,31 +21,23 @@
 
 (defun murja-save-post-buffer (murja-title)
   (interactive)
-  ;; POST /api/posts/post/post
-  ;;  {
-  ;;   "title": "string",
-  ;;   "content": "string",
-  ;;   "tags": [
-  ;;     "string"
-  ;;   ]
-  ;; }
-  (let ((url (if murja-id
-		 (concat murja-url "/api/posts/post/edit")
-	       (concat murja-url "/api/posts/post/post")))
+  ;; if murja-id -> edit
+  (let ((url (concat murja-url "/api/posts/post"))
 	(data (if murja-id
 		  (json-encode `((title . ,murja-title)
 				 (content . ,(buffer-substring-no-properties (point-min) (point-max)))
-				 (tags . ,murja-tags)
+				 (tags . ,(or murja-tags (vector)))
 				 (id . ,(if (stringp murja-id)
 					    (string-to-number murja-id)
 					  murja-id))))
 		(json-encode `((title . ,murja-title)
 			       (content . ,(buffer-substring-no-properties (point-min) (point-max)))
-			       (tags . ,murja-tags))))))
-    (message (concat "Trying to save post to " url))
+			       (tags . ,(or murja-tags (vector))))))))
+    (message (concat "Trying to save post to " url " using method " (if murja-id "PUT" "POST")))
 
     (f-write-text data 'utf-8 (concat murja-script-directory "/input.json"))    
-    (let* ((cmd-result (shell-command-to-string (concat murja-script-directory "/murja-client.sh POST " url " "murja-script-directory "/input.json")))
+    (let* ((cmd-result (shell-command-to-string (concat murja-script-directory "/murja-client.sh " (if murja-id "PUT" "POST") " " url " " murja-script-directory "/input.json")))
+	   (nothing (message (concat "cmd-result: " cmd-result)))
 	   (data (murja-json-read cmd-result)))
       (if data
 	  (murja-handle-edit-success data murja-title)
@@ -108,9 +100,10 @@ Copypasted from http://stackoverflow.com/a/570049"
       (setq murja-title title)
       (setq murja-id id))))
 
+;; curl -X GET "http://localhost:3000/api/posts/post/1/allow-hidden/false" -H  "accept: application/json"
 (defun open-murja-post-buffer (id)
   (if murja-url
-      (let ((url (concat murja-url "/api/posts/" (prin1-to-string id) "/allow-hidden/true")))
+      (let ((url (concat murja-url "/api/posts/post/" (prin1-to-string id) "/allow-hidden/true")))
 	(message (concat "Requesting " url))
 	(let* ((cmd-result (shell-command-to-string (concat murja-script-directory "/murja-client.sh GET " url)))
 	       (data (murja-json-read cmd-result)))

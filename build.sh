@@ -17,5 +17,5 @@ fi
 mv ./elm-frontti/murja.min.js ./blog/resources/murja.min.js
 echo "Frontend is moved to backend's resources directory"
 
-pushd blog
+pushd murja
 lein uberjar

@@ -116,7 +116,7 @@ getPage page_id =
 getPost : Int -> Cmd Msg
 getPost post_id =
     Http.get
-        { url = "/api/posts/" ++ (fromInt post_id)
+        { url = "/api/posts/post/" ++ (fromInt post_id)
         , expect = Http.expectString PostReceived}
 
 getSettings : Cmd Msg
@@ -265,8 +265,8 @@ view model =
                                                                 [articleView settings article]
                                                               PageView page ->
                                                                 [div [] (List.concat [(List.map (articleView settings) page.posts),
-                                                                                          [footer [] (if page.id > 1 then [a [href ("/blog/page/" ++ fromInt (page.id + 1))] [text "Next page"],
-                                                                                                                               a [href ("/blog/page/" ++ fromInt (page.id - 1)), class "newer-post"] [text "Previous page"]]
+                                                                                          [footer [] (if page.id > 1 then [a [href ("/blog/page/" ++ fromInt (page.id + 1))] [text "Older posts"],
+                                                                                                                               a [href ("/blog/page/" ++ fromInt (page.id - 1)), class "newer-post"] [text "Newer posts"]]
                                                                                                       else [a [href ("/blog/page/" ++ fromInt (page.id + 1))] [text "Next page"]])]])]
                                                               
                                                               ShowError err ->
