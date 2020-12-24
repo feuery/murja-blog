@@ -1,0 +1,182 @@
+#devtool {
+    color: #000000;
+    background-color: #FF0000;
+    position: fixed;
+    right: 1%;
+    bottom: 1%;
+}
+
+#minidevtool {
+    width: 20%;
+    position: fixed;
+    right: 1%;
+    bottom: 1%;
+    background-color: #FF9002;
+}
+
+#devtool td {
+    border: 2px solid black;
+}
+
+#page {
+    max-width: 70%;
+    width: 70%;
+    border: 4px solid #666666;
+    display: table-cell;
+}
+
+.post {
+    border: 2px solid #666666;
+}
+
+body {
+    background-color: #000000;
+    font-family: 'Helvetica Neue', Verdana, Helvetica, Arial, sans-serif;
+    color: #00CC00;
+}
+
+.meta {
+    color: #666666;
+}
+
+/* hate css */
+#container {
+    display: table;
+    margin: 0 auto;
+    max-width: 70%;
+}
+
+#sidebar {
+    display: table-cell;
+    margin: 0 auto;
+    border: 2px solid #666666;
+    width: 10%;
+    max-width: 10%;
+
+}
+
+.dev_btn {
+    float: right;
+}
+
+#loginview {
+    border-top: 2px solid #666666;
+    border-bottom: 2px solid #666666;
+}
+
+#loginview button {
+    display: block;
+    margin-bottom: 30px;
+}
+
+#loginview a {
+    display: block;
+}
+
+.user_avatar {
+    width: 50px;
+    height: 50px;
+    margin-left: 10px;
+    margin-right: 10px;
+    display: block;
+}
+
+/* .editor-container  */label {
+    display: block;
+}
+
+textarea {
+    width: 100%;
+    height: 100%;
+}
+
+.blog-title {
+    color: #FFFFFF;
+}
+
+.blog-title:hover {
+    color: #0000FF;
+}
+
+.commenting-area {
+    margin-top: 60px;
+}
+
+#form button {
+    display: block;
+}
+
+#import-form input {
+    display: block;
+}
+
+.newer-post {
+    float: right;
+}
+
+a {
+    color: #0DF;
+}
+
+a:hover {
+    color: #FFF;
+}
+
+#grouper * {
+    list-style: none;
+}
+
+.title-list li {
+    margin: 10px;
+}
+
+header {
+    font-size: 3em;
+    color: #00CC00;
+    display: table;
+    margin: 0 auto;
+    max-widht: 70%;
+}
+
+.version-container {
+    float: right;
+    position: relative;
+    right: 0px;
+}
+
+.version-container a {
+    padding-right: 5px;
+}
+
+.big_font {
+    font-size: 2em;
+}
+
+.twitter-timeline {
+    margin-top: 20px !important;
+}
+
+
+@media (max-width:1000px)
+{
+    body {
+	/* To test if the media query works  */ 
+	/* color: #FF0000; */
+    }
+    #container {
+	display: block;
+	width: 100%;
+	max-width: 100%;
+    }
+    #page  {
+	width: 100%;
+	max-width: 100%;
+	display: block;
+	font-size: 1.5em;
+    }
+    #sidebar {
+	margin: 0 auto;
+	border: 2px solid #666666;
+	width: 10%;
+    }
+}
