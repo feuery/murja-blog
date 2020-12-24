@@ -40,9 +40,9 @@ if [ -d $build_dir ]; then
     cd $build_dir
     sh ./build.sh
 
-    if [ -f $build_dir/blog/target/blog.jar ]; then
+    if [ -f $build_dir/murja/target/blog.jar ]; then
 	echo target/blog.jar found! Uberjar succeeded!
-	scp $build_dir/blog/target/blog.jar $deploy_server:$deploy_jar_path
+	scp $build_dir/murja/target/blog.jar $deploy_server:$deploy_jar_path
 	if [ $? -eq 0 ]; then
 	    scp $build_dir/systemd/unitfile.service $deploy_server:$deploy_unitfile_path
 	    if [ $? -eq 0 ]; then	
