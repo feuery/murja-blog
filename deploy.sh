@@ -40,9 +40,9 @@ if [ -d $build_dir ]; then
     cd $build_dir
     sh ./build.sh
 
-    if [ -f $build_dir/murja/target/blog.jar ]; then
-	echo target/blog.jar found! Uberjar succeeded!
-	scp $build_dir/murja/target/blog.jar $deploy_server:$deploy_jar_path
+    if [ -f $build_dir/murja/target/murja-2.0.0-SNAPSHOT-standalone.jar ]; then
+	echo target/murja-2.0.0-SNAPSHOT-standalone.jar found! Uberjar succeeded!
+	scp $build_dir/murja/target/murja-2.0.0-SNAPSHOT-standalone.jar $deploy_server:$deploy_jar_path
 	if [ $? -eq 0 ]; then
 	    scp $build_dir/systemd/unitfile.service $deploy_server:$deploy_unitfile_path
 	    if [ $? -eq 0 ]; then	
@@ -61,7 +61,7 @@ if [ -d $build_dir ]; then
 	echo
 	echo
     else
-	echo target/blog.jar not found! Uberjar didn\'t succeed!
+	echo target/murja-2.0.0-SNAPSHOT-standalone.jar not found! Uberjar didn\'t succeed!
     fi
 else
     echo git clone $github_url $build_dir seems to have failed. Do you have git installed?
