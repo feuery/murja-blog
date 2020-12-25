@@ -14,6 +14,8 @@ import Article as A
 import Creator as C
 import Page as P
 import Settings
+import Message exposing (..)
+import User
 
 import DateTime exposing (DateTime)
 import Json.Decode as Decode
@@ -52,41 +54,6 @@ subscriptions _ =
   Sub.none
 
 
--- MODEL
-
--- Frontin tilat:
-
---   PageView [List Post]
--- | PostView Post
-
-
-
--- Tuetaan aluksi vain kaikkia lukuoperaatioita mitä nykyinen frontti (ts. postinäkymä ml. kommentit joita backend sattuu palauttamaan, sivunäkymä, otsikkopuu) tukee. Ei tehdä mitään editoria, pohditaan sitä sit joskus. 
-type LoadableType
-    = Post Int
-    | Page Int      
-      
-type ViewState
-    = PageView P.Page
-    | PostView A.Article
-    | Loading LoadableType
-    | ShowError String
-
-type alias Model =
-    { view : ViewState
-    , settings : Maybe Settings.Settings
-    , key : Nav.Key
-    , url : Url.Url}
-    
-type Msg
-  = PageReceived (Result Http.Error String)
-  -- | LoadPage 
-  -- | LoadSettings
-  | PostReceived (Result Http.Error String)
-  | SettingsReceived (Result Http.Error String)
-  | TitlesReceived (Result Http.Error String)
-  | UrlChanged Url.Url
-  | LinkClicked Browser.UrlRequest
 
 
 viewStatePerUrl url =
@@ -98,7 +65,7 @@ viewStatePerUrl url =
     
 -- init : () -> (Model, Cmd Msg)
 init flags url key =
-    let model = Model (viewStatePerUrl url) Nothing key url
+    let model = Model (viewStatePerUrl url) Nothing LoggedOut key url
     in
         ( model
         , getSettings)
@@ -130,6 +97,12 @@ getTitles =
         { url = "/api/posts/titles"
         , expect = Http.expectString TitlesReceived}
 
+postLogin username password =
+    Http.post
+       { url = "/api/login/login"
+       , expect = Http.expectString LoginSuccess
+       , body = Http.stringBody "application/json" ("{\"username\": \""++username++"\", \"password\": \""++password++"\"})")}
+                
 loadPageOrPost : Model -> Cmd Msg
 loadPageOrPost model =
     case model.view of
@@ -144,8 +117,6 @@ loadPageOrPost model =
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg ({settings} as model) =
     case msg of
-        -- LoadPage ->
-        --     (model, getPage)
         SettingsReceived result ->
             case result of
                 Ok settings_json ->
@@ -196,6 +167,33 @@ update msg ({settings} as model) =
                     (model, Nav.pushUrl model.key (Url.toString url))
                 Browser.External href ->
                     (model, Nav.load href)
+        LoginFocus ->
+            ({model | loginState = LoggingIn "" ""}, Cmd.none)
+        ChangeUsername username ->
+            case model.loginState of
+                LoggingIn old_username password ->
+                    ({model | loginState = LoggingIn username password}, Cmd.none)
+                _ -> (model, Cmd.none)
+        ChangePassword password ->
+            case model.loginState of
+                LoggingIn username old_password ->
+                    ({model | loginState = LoggingIn username password}, Cmd.none)
+                _ -> (model, Cmd.none)
+        DoLogIn -> case model.loginState of
+                       LoggingIn username password ->
+                           (model, postLogin username password)
+                       _ -> (model, Cmd.none)
+        LoginSuccess result ->
+            case result of
+                Ok login_result ->
+                    case Decode.decodeString User.userDecoder login_result of
+                        Ok user ->
+                            ({model | loginState = LoggedIn user}, Cmd.none)
+                        Err error ->
+                             ({model | loginState = LoginFailed}, Cmd.none)
+                Err error ->
+                    ({model | loginState = LoginFailed}, Cmd.none)
+                           
 
 -- Everything's now in utc
 -- Getting user's local tz is fucking impossible due to static functional reasons
@@ -271,9 +269,10 @@ view model =
                                                               
                                                               ShowError err ->
                                                                 [pre [] [text err]]
-                                                         , [div [id "sidebar"] (
-                                                                                case settings.titles of
+                                                         , [div [id "sidebar"] [User.loginView model.loginState,
+                                                                                 (case settings.titles of
                                                                                     Just titles ->
-                                                                                        [ sidebarHistory titles ]
+                                                                                        sidebarHistory titles 
                                                                                     Nothing ->
-                                                                                        [div [] [text "Loading history failed"]])]]))]]}
+                                                                                        div [] [text "Loading history failed"])]
+                                                                ]]))]]}
