@@ -1,8 +1,8 @@
 module Title exposing (..)
 
 type alias Title =
-    { Title: String
-    , Id: Int
-    , Year: Int
-    , Month: String
-    , Tags: List String}
+    { title: String
+    , id: Int
+    , year: Int
+    , month: String
+    , tags: List String}

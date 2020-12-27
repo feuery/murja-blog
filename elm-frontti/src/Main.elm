@@ -16,7 +16,8 @@ import Page as P
 import Settings
 import Message exposing (..)
 import User
-import LeftSidebar 
+import Topbar
+import PostsAdmin
 
 import DateTime exposing (DateTime)
 import Json.Decode as Decode
@@ -64,16 +65,29 @@ viewStatePerUrl url =
                            RouteParser.Home -> (Loading (Page 1))
                            RouteParser.NotFound -> (ShowError ("Couldn't parser url " ++ (Url.toString url)))
     
--- init : () -> (Model, Cmd Msg)
 init flags url key =
-    let model = Model (viewStatePerUrl url) Nothing LoggedOut key url
+    let model = Model (viewStatePerUrl url) Regular Nothing LoggedOut key url
     in
         ( model
-        , getSettings)
+        , Cmd.batch [ getSettings
+                    , getTitles
+                    , getSession
+                    ])
 
 
 
 -- UPDATE
+
+getSession =
+    Http.get
+        { url = "/api/login/session"
+        , expect = Http.expectJson GotSession User.userDecoder}
+
+getEditablePosts : Cmd Msg
+getEditablePosts =
+    Http.get
+        { url = "/api/posts/all-titles"
+        , expect = Http.expectString EditableTitlesReceived }
 
 getPage : Int -> Cmd Msg
 getPage page_id =
@@ -123,7 +137,7 @@ update msg ({settings} as model) =
                 Ok settings_json ->
                     case (Decode.decodeString Settings.settingsDecoder settings_json) of
                         Ok new_settings ->
-                            ({model | settings = Just new_settings}, getTitles)
+                            ({model | settings = Just new_settings}, Cmd.none)
                         Err error ->
                             ({model | view = ShowError (Decode.errorToString error)}, Cmd.none)
                 Err http_error -> 
@@ -194,8 +208,43 @@ update msg ({settings} as model) =
                              ({model | loginState = LoginFailed}, Cmd.none)
                 Err error ->
                     ({model | loginState = LoginFailed}, Cmd.none)
+        GotSession result ->
+            case result of
+                Ok user ->
+                    ({model | loginState = LoggedIn user}, Cmd.none)
+                Err error ->
+                    case error of
+                        Http.BadStatus status ->
+                            if status == 401 then
+                                -- no valid session
+                                (model, Cmd.none)
+                            else
+                                ({model | view = ShowError ("Error (" ++ String.fromInt status ++ ") when loading session")}, Cmd.none)
+                        Http.BadBody err ->
+                            ({model | view = ShowError ("Error when loading session: " ++ err)}, Cmd.none)
+                        _ -> ({model | view = ShowError "Error when loading session"}, Cmd.none)
+        EditableTitlesReceived result ->
+            case result of
+                Ok titles_json ->
+                    case Decode.decodeString (Decode.list A.sidebarTitleDecoder) titles_json of
+                        Ok titles ->
+                            ({model | adminView = Posts titles}, Cmd.none)
+                        Err error ->
+                            ({model | adminView = Regular, view = ShowError "Coudln't load titles"}, Cmd.none)
+                Err error ->
+                    ({model | adminView = Regular, view = ShowError "http error while loading titles"}, Cmd.none)
+        ChangeAdminViewState viewState ->
+            case model.loginState of
+                LoggedIn _ ->
+                    let contentLoadingCmd = getContentCmd viewState in 
+                      ({model | adminView = viewState}, contentLoadingCmd)
+                _ -> ({model | adminView = Regular}, Cmd.none)
                            
-
+getContentCmd viewState =
+    case viewState of
+        Posts _ -> getEditablePosts
+        _ -> Cmd.none
+                     
 -- Everything's now in utc
 -- Getting user's local tz is fucking impossible due to static functional reasons
 -- Let someone who cares fix this
@@ -232,7 +281,7 @@ sidebarHistory titles =
               
 articleView : Settings.Settings -> A.Article -> Html Msg
 articleView settings the_actual_post = div [class "post"] [ a [href ("/blog/post/" ++ String.fromInt the_actual_post.id)] [ text the_actual_post.title ],
-                                                   div [class "meta"] [img [class "user_avatar", src the_actual_post.creator.img_location] [],
+                                                   div [class "meta"] [User.user_avatar the_actual_post.creator,
                                                                        p [] [text ("By " ++ the_actual_post.creator.nickname)],
                                                                            case the_actual_post.created_at of
                                                                                Just writing_time ->
@@ -256,24 +305,27 @@ view model =
             { title = settings.blog_title
             , body = 
                   [header [] [a [href "/"] [text settings.blog_title ]],
+                   Topbar.topbar model.loginState,                       
                    div [class "flex-container"] 
-                       [LeftSidebar.leftSidebar model.loginState,
-                   
-                        case model.view of
-                            Loading type_ ->
-                                div [] [text "LOADING"]
-                            PostView article ->
-                                articleView settings article
-                            PageView page ->
-                                div [class "page"] (List.concat [(List.map (articleView settings) page.posts),
-                                                     [footer [] (if page.id > 1 then [a [href ("/blog/page/" ++ fromInt (page.id + 1))] [text "Older posts"],
-                                                                                      a [href ("/blog/page/" ++ fromInt (page.id - 1)), class "newer-post"] [text "Newer posts"]]
-                                                                 else [a [href ("/blog/page/" ++ fromInt (page.id + 1))] [text "Next page"]])]])  
-                            ShowError err ->
-                                pre [] [text err],
-                            div [id "sidebar"] [User.loginView model.loginState,
-                                                    (case settings.titles of
-                                                         Just titles ->
-                                                             sidebarHistory titles 
-                                                         Nothing ->
-                                                             div [] [text "Loading history failed"])]]]}
+                       [ div [class "page"] (case model.adminView of
+                            Regular -> 
+                                (case model.view of
+                                    Loading type_ ->
+                                        [div [] [text "LOADING"]]
+                                    PostView article ->
+                                        [articleView settings article]
+                                    PageView page ->
+                                         (List.concat [(List.map (articleView settings) page.posts),
+                                                                         [footer [] (if page.id > 1 then [a [href ("/blog/page/" ++ fromInt (page.id + 1))] [text "Older posts"],
+                                                                                                          a [href ("/blog/page/" ++ fromInt (page.id - 1)), class "newer-post"] [text "Newer posts"]]
+                                                                                     else [a [href ("/blog/page/" ++ fromInt (page.id + 1))] [text "Next page"]])]])  
+                                    ShowError err ->
+                                        [pre [] [text err]])
+                            Posts titles -> [PostsAdmin.view titles]
+                            _ -> [p [] [text "Joku adminview"]])
+                       , div [id "sidebar"] [ User.loginView model.loginState
+                                            , (case settings.titles of
+                                                   Just titles ->
+                                                       sidebarHistory titles 
+                                                   Nothing ->
+                                                       div [] [text "Loading history failed"])]]]}

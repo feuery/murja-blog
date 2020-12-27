@@ -1,10 +1,21 @@
 
 .left-sidebar {
+    flex: 1 1;
+    border: 2px solid #666666;
+}
 
+.left-sidebar > ul {
+    display: flex;
+    flex-flow: row wrap;
+}
+
+.left-sidebar > ul > li {
+    flex: 1 1;
+    list-style: none;
 }
 
 .page {
-    flex: 8 1 /*max-content*/;
+    flex: 8 1;
 }
 
 .post {
@@ -24,12 +35,33 @@ body {
 .flex-container {
     display: flex;
     flex-flow: row wrap;
-    width: 100%;
+}
+
+.title-flex-container {
+    display: flex;
+    flex-flow: row wrap;
+}
+
+.title-flex-container > * {
+    border: 5px solid #222222;
+}
+
+.title-flex-container > a {
+    flex: 1 4;
+}
+
+.vertical-flex-container {
+    display: flex;
+    flex-flow: column wrap;
+}
+
+.post-admin-title {
+    flex: 3 1;
 }
 
 #sidebar {
     border: 2px solid #666666;
-    flex: 1 1 /*max-content*/;
+    flex: 1 1;
 }
 
 #loginview {
@@ -54,7 +86,7 @@ body {
     display: block;
 }
 
-/* .editor-container  */label {
+label {
     display: block;
 }
 
@@ -130,26 +162,9 @@ header {
 }
 
 
-@media (max-width:1000px)
+@media only screen and (max-device-width:480px)
 {
     body {
-	/* To test if the media query works  */ 
-	/* color: #FF0000; */
-    }
-    #container {
-	display: block;
-	width: 100%;
-	max-width: 100%;
-    }
-    #page  {
-	width: 100%;
-	max-width: 100%;
-	display: block;
-	font-size: 1.5em;
-    }
-    #sidebar {
-	margin: 0 auto;
-	border: 2px solid #666666;
-	width: 10%;
+	font-size: 3em;
     }
 }

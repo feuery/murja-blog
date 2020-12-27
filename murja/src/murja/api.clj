@@ -28,7 +28,7 @@
                    {login-user :body} :parameters}]
   (if-let [login-data (api.login/do-login db login-user)]
     {:status 200
-     :body login-data
+     :body (dissoc login-data :userid)
      :session (assoc session :identity {:_id (:userid login-data)
                                         :groups (api.login/user-groups db login-user)}) }
     {:status 401
@@ -40,6 +40,7 @@
 
 (defn get-session [{:keys [db]
                     {:keys [_id]} :user}]
+  (assert (some? _id))
   {:status 200
    :body (api.login/get-user-view-data db _id)})
 

@@ -34,7 +34,6 @@ import Json.Decode.Extra as Extra
 
 nicknameDecoder = Decode.field "nickname" Decode.string
 imgDecoder = Decode.field "img_location" Decode.string
-userIdDecoder = Decode.field "userid" Decode.int
 group_name_decoder = Decode.field "primary-group-name" Decode.string
 permissionsDecoder = Decode.field "permissions" (Decode.list Decode.string)
                    
@@ -45,7 +44,6 @@ userDecoder =
     Decode.succeed LoginUser
         |> decodeApply nicknameDecoder
         |> decodeApply imgDecoder
-        |> decodeApply userIdDecoder
         |> decodeApply group_name_decoder
         |> decodeApply permissionsDecoder
     
@@ -74,3 +72,5 @@ loginView loginstate =
                                       (List.concat [actual_view,
                                                     [button [onClick DoLogIn] [text "Login!"],
                                                      div [] [text "Login failed! Check username and password!"]]]))
+
+user_avatar creator = img [class "user_avatar", src creator.img_location] []
