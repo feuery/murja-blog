@@ -3,27 +3,31 @@ module Message exposing (..)
 import Http
 import Browser
 import Page as P
-import Article as A
+import Article
 import Browser.Navigation as Nav
 import Settings
 import Url
-import Title 
+import Title
+
+import Stack exposing (..)
 
 type LoadableType
     = Post Int
-    | Page Int      
+    | Page Int
+
+type EditorState
+    = Closed
+    | EditingPost Article.Article
     
 type ViewState
     = PageView P.Page
-    | PostView A.Article
+    | PostView Article.Article
     | Loading LoadableType
     | ShowError String
-
-type AdminViewState
-    = Regular                   -- delegate to whatever model.view says
-    | Posts (List Title.Title)                     -- list all the posts in db
-    | Comments                  -- list all the comments in db
-    | Media                     -- list all the image blobs in db
+    | PostEditorList (List Title.Title)                     -- list all the posts in db
+    | PostEditor Article.Article
+    | CommentsList                  -- list all the comments in db
+    | MediaList                     -- list all the image blobs in db
       
 type alias User =
     { username : String
@@ -46,10 +50,10 @@ type alias LoginUser =
     }      
       
 type alias Model =
-    { view : ViewState
-    , adminView : AdminViewState
+    { view_stack : Stack ViewState
     , settings : Maybe Settings.Settings
     , loginState : LoginState
+    , editorState : EditorState
     , key : Nav.Key
     , url : Url.Url}
     
@@ -66,5 +70,8 @@ type Msg
   | ChangePassword String
   | DoLogIn
   | LoginSuccess (Result Http.Error String)
-  | ChangeAdminViewState AdminViewState
+  | ChangeViewState ViewState (Maybe (Cmd Msg))
+  | PopViewstate
   | GotSession (Result Http.Error LoginUser)
+  | OpenPostEditor Int
+  | EditorPostReceived (Result Http.Error Article.Article)

@@ -10,7 +10,8 @@ import Html.Parser.Util
 
 import Http
 
-import Article as A
+import Article
+import Ajax_cmds exposing (..)
 import Creator as C
 import Page as P
 import Settings
@@ -28,6 +29,7 @@ import Dict.Extra exposing (groupBy)
 import Dict exposing (toList, keys, get)
 import String exposing (fromInt)
 import String.Extra exposing (toSentenceCase)
+import Stack exposing (push, top, pop)
 
 import Browser.Navigation as Nav
 
@@ -66,7 +68,7 @@ viewStatePerUrl url =
                            RouteParser.NotFound -> (ShowError ("Couldn't parser url " ++ (Url.toString url)))
     
 init flags url key =
-    let model = Model (viewStatePerUrl url) Regular Nothing LoggedOut key url
+    let model = Model (push (viewStatePerUrl url) Stack.initialise) Nothing LoggedOut Closed key url
     in
         ( model
         , Cmd.batch [ getSettings
@@ -78,56 +80,20 @@ init flags url key =
 
 -- UPDATE
 
-getSession =
-    Http.get
-        { url = "/api/login/session"
-        , expect = Http.expectJson GotSession User.userDecoder}
 
-getEditablePosts : Cmd Msg
-getEditablePosts =
-    Http.get
-        { url = "/api/posts/all-titles"
-        , expect = Http.expectString EditableTitlesReceived }
-
-getPage : Int -> Cmd Msg
-getPage page_id =
-    Http.get
-        { url = "/api/posts/page/" ++ (fromInt page_id) ++ "/page-size/6"
-        , expect = Http.expectString PageReceived}
-
-getPost : Int -> Cmd Msg
-getPost post_id =
-    Http.get
-        { url = "/api/posts/post/" ++ (fromInt post_id)
-        , expect = Http.expectString PostReceived}
-
-getSettings : Cmd Msg
-getSettings =
-    Http.get
-        { url = "/api/settings/client-settings"
-        , expect = Http.expectString SettingsReceived}
-
-getTitles =
-    Http.get
-        { url = "/api/posts/titles"
-        , expect = Http.expectString TitlesReceived}
-
-postLogin username password =
-    Http.post
-       { url = "/api/login/login"
-       , expect = Http.expectString LoginSuccess
-       , body = Http.stringBody "application/json" ("{\"username\": \""++username++"\", \"password\": \""++password++"\"})")}
                 
 loadPageOrPost : Model -> Cmd Msg
 loadPageOrPost model =
-    case model.view of
-        Loading loadable_type ->
-            case loadable_type of
-                Post post_id ->
-                    getPost post_id
-                Page page_id ->
-                    getPage page_id
-        _ -> Cmd.none
+    case top model.view_stack of
+        Nothing -> Cmd.none
+        Just current_view -> case current_view of
+                         Loading loadable_type ->
+                             case loadable_type of
+                                 Post post_id ->
+                                     getPost post_id
+                                 Page page_id ->
+                                     getPage page_id
+                         _ -> Cmd.none
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg ({settings} as model) =
@@ -139,31 +105,31 @@ update msg ({settings} as model) =
                         Ok new_settings ->
                             ({model | settings = Just new_settings}, Cmd.none)
                         Err error ->
-                            ({model | view = ShowError (Decode.errorToString error)}, Cmd.none)
+                            ({model | view_stack = push (ShowError (Decode.errorToString error)) model.view_stack}, Cmd.none)
                 Err http_error -> 
-                    ({model | view = ShowError "Http error while loading settings"}, Cmd.none)
+                    ({model | view_stack = push (ShowError "Http error while loading settings") model.view_stack}, Cmd.none)
         PostReceived result ->
             case result of
                 Ok post_json ->
-                    case (Decode.decodeString A.articleDecoder post_json) of
-                        Ok post -> ({model | view = PostView post}, Cmd.none)
-                        Err error -> ({model | view = ShowError (Decode.errorToString error)}, Cmd.none)
+                    case (Decode.decodeString Article.articleDecoder post_json) of
+                        Ok post -> ({model | view_stack = push (PostView post) model.view_stack}, Cmd.none)
+                        Err error -> ({model | view_stack = push (ShowError (Decode.errorToString error)) model.view_stack}, Cmd.none)
                 Err http_error ->
-                    ({model | view = ShowError "Http error while loading settings"}, Cmd.none)
+                    ({model | view_stack = push (ShowError "Http error while loading settings") model.view_stack}, Cmd.none)
         PageReceived result ->
             case result of
                 Ok page_json ->
                     case (Decode.decodeString P.pageDecoder page_json) of
                         Ok page -> 
-                            ({model | view = PageView page}, Cmd.none)
+                            ({model | view_stack = push (PageView page) model.view_stack}, Cmd.none)
                         Err error ->
-                            ({model | view = ShowError (Decode.errorToString error)}, Cmd.none)
+                            ({model | view_stack = push (ShowError (Decode.errorToString error)) model.view_stack}, Cmd.none)
                 Err http_error ->
-                    ({model | view = ShowError "ERROR"}, Cmd.none)
+                    ({model | view_stack = push (ShowError "ERROR") model.view_stack}, Cmd.none)
         TitlesReceived result ->
             case result of
                 Ok json ->
-                    case Decode.decodeString (Decode.list A.sidebarTitleDecoder) json of
+                    case Decode.decodeString (Decode.list Article.sidebarTitleDecoder) json of
                         Ok decoded_titles ->
                             case settings of
                                 Just unwrapped_settings ->
@@ -171,11 +137,11 @@ update msg ({settings} as model) =
                                 Nothing ->
                                     (model, Cmd.none)
                         Err error ->
-                            ({model | view = ShowError (Decode.errorToString error)}, Cmd.none)
+                            ({model | view_stack = push (ShowError (Decode.errorToString error)) model.view_stack}, Cmd.none)
                 Err error ->
-                    ({model | view = ShowError "Coudln't load titles"}, Cmd.none)
+                    ({model | view_stack = push (ShowError "Coudln't load titles") model.view_stack}, Cmd.none)
         UrlChanged url ->
-            ({model | url = url, view = viewStatePerUrl url}, getSettings)
+            ({model | url = url, view_stack = push (viewStatePerUrl url) model.view_stack}, getSettings)
         LinkClicked urlRequest ->
             case urlRequest of
                 Browser.Internal url ->
@@ -219,30 +185,48 @@ update msg ({settings} as model) =
                                 -- no valid session
                                 (model, Cmd.none)
                             else
-                                ({model | view = ShowError ("Error (" ++ String.fromInt status ++ ") when loading session")}, Cmd.none)
+                                ({model | view_stack = push (ShowError ("Error (" ++ String.fromInt status ++ ") when loading session")) model.view_stack}, Cmd.none)
                         Http.BadBody err ->
-                            ({model | view = ShowError ("Error when loading session: " ++ err)}, Cmd.none)
-                        _ -> ({model | view = ShowError "Error when loading session"}, Cmd.none)
+                            ({model | view_stack = push (ShowError ("Error when loading session: " ++ err)) model.view_stack}, Cmd.none)
+                        _ -> ({model | view_stack = push (ShowError "Error when loading session") model.view_stack}, Cmd.none)
         EditableTitlesReceived result ->
             case result of
                 Ok titles_json ->
-                    case Decode.decodeString (Decode.list A.sidebarTitleDecoder) titles_json of
+                    case Decode.decodeString (Decode.list Article.sidebarTitleDecoder) titles_json of
                         Ok titles ->
-                            ({model | adminView = Posts titles}, Cmd.none)
+                            ({model | view_stack = push (PostEditorList titles) model.view_stack}, Cmd.none)
                         Err error ->
-                            ({model | adminView = Regular, view = ShowError "Coudln't load titles"}, Cmd.none)
+                            ({model | view_stack = push (ShowError "Coudln't load titles") model.view_stack}, Cmd.none)
                 Err error ->
-                    ({model | adminView = Regular, view = ShowError "http error while loading titles"}, Cmd.none)
-        ChangeAdminViewState viewState ->
-            case model.loginState of
-                LoggedIn _ ->
-                    let contentLoadingCmd = getContentCmd viewState in 
-                      ({model | adminView = viewState}, contentLoadingCmd)
-                _ -> ({model | adminView = Regular}, Cmd.none)
+                    ({model | view_stack = push (ShowError "http error while loading titles") model.view_stack}, Cmd.none)
+        -- ChangeAdminView_stackState viewState ->
+        --     case model.loginState of
+        --         LoggedIn _ ->
+        --             let contentLoadingCmd = getContentCmd viewState in 
+        --               ({model | adminView = viewState}, contentLoadingCmd)
+        --         _ -> (model, Cmd.none)
+        OpenPostEditor post_id ->
+            (model, getPostEditorData post_id)
+        EditorPostReceived result ->
+            case result of
+                Ok post ->
+                    ({model | editorState = EditingPost post}, Cmd.none)
+                Err _ ->
+                    ({model | view_stack = push (ShowError "Error while loading editor") model.view_stack}, Cmd.none)
+        ChangeViewState viewstate cmd ->
+            let command = 
+                    case cmd of
+                        Just cmd_ -> cmd_
+                        Nothing -> Cmd.none
+            in
+                ({model | view_stack = push viewstate model.view_stack}, command)
+        PopViewstate ->
+            let (_, new_stack) = pop model.view_stack in
+            ({model | view_stack = new_stack}, Cmd.none)
                            
 getContentCmd viewState =
     case viewState of
-        Posts _ -> getEditablePosts
+        PostEditorList _ -> getEditablePosts
         _ -> Cmd.none
                      
 -- Everything's now in utc
@@ -256,7 +240,7 @@ formatDateTime formatString posixTime =
 
 
 
-sidebarHistory : List A.Title -> Html Msg
+sidebarHistory : List Article.Title -> Html Msg
 sidebarHistory titles =
     let grouped_by_year = groupBy .year titles in
       div [id "grouper"]
@@ -279,7 +263,7 @@ sidebarHistory titles =
                                                Nothing ->
                                                         [li [] [text ("There's no year " ++ (fromInt year) ++ " in titles")]]) (keys grouped_by_year |> List.reverse)))]
               
-articleView : Settings.Settings -> A.Article -> Html Msg
+articleView : Settings.Settings -> Article.Article -> Html Msg
 articleView settings the_actual_post = div [class "post"] [ a [href ("/blog/post/" ++ String.fromInt the_actual_post.id)] [ text the_actual_post.title ],
                                                    div [class "meta"] [User.user_avatar the_actual_post.creator,
                                                                        p [] [text ("By " ++ the_actual_post.creator.nickname)],
@@ -304,26 +288,32 @@ view model =
         Just settings ->
             { title = settings.blog_title
             , body = 
-                  [header [] [a [href "/"] [text settings.blog_title ]],
-                   Topbar.topbar model.loginState,                       
-                   div [class "flex-container"] 
-                       [ div [class "page"] (case model.adminView of
-                            Regular -> 
-                                (case model.view of
-                                    Loading type_ ->
-                                        [div [] [text "LOADING"]]
-                                    PostView article ->
-                                        [articleView settings article]
-                                    PageView page ->
-                                         (List.concat [(List.map (articleView settings) page.posts),
-                                                                         [footer [] (if page.id > 1 then [a [href ("/blog/page/" ++ fromInt (page.id + 1))] [text "Older posts"],
-                                                                                                          a [href ("/blog/page/" ++ fromInt (page.id - 1)), class "newer-post"] [text "Newer posts"]]
-                                                                                     else [a [href ("/blog/page/" ++ fromInt (page.id + 1))] [text "Next page"]])]])  
-                                    ShowError err ->
-                                        [pre [] [text err]])
-                            Posts titles -> [PostsAdmin.view titles]
-                            _ -> [p [] [text "Joku adminview"]])
-                       , div [id "sidebar"] [ User.loginView model.loginState
+                  [ header [] [a [href "/"] [text settings.blog_title ]]
+                  , Topbar.topbar model.loginState
+                  , div [class "flex-container"] 
+                        [ div [class "page"]
+                              (let maybe_view  = top model.view_stack in
+                              case maybe_view of
+                                   Nothing -> [div [] [text "Couldn't load view status"]]
+                                   Just viewstate ->
+                                      case viewstate of
+                                          Loading type_ ->
+                                              [div [] [text "LOADING"]]
+                                          PostView article ->
+                                              [articleView settings article]
+                                          PageView page ->
+                                              (List.concat [(List.map (articleView settings) page.posts),
+                                                                [footer [] (if page.id > 1 then [ a [href ("/blog/page/" ++ fromInt (page.id + 1))] [text "Older posts"]
+                                                                                                , a [href ("/blog/page/" ++ fromInt (page.id - 1)), class "newer-post"] [text "Newer posts"]]
+                                                                            else [a [href ("/blog/page/" ++ fromInt (page.id + 1))] [text "Next page"]])]])
+                                          ShowError err ->
+                                              [pre [] [text err]]
+                                          PostEditorList titles -> [div [] [ text ("posteditorlist, count of titles: " ++ String.fromInt (List.length titles))
+                                                                           , PostsAdmin.view titles]]
+                                          PostEditor post -> [ div [] [text "Posteditor"]]
+                                          CommentsList -> [ div [] [text "CommentsList"] ]
+                                          MediaList -> [div [] [text "Medialist!"]])
+                        , div [id "sidebar"] [ User.loginView model.loginState
                                             , (case settings.titles of
                                                    Just titles ->
                                                        sidebarHistory titles 
