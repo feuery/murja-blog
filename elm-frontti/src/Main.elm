@@ -19,6 +19,7 @@ import Message exposing (..)
 import User
 import Topbar
 import PostsAdmin
+import PostEditor
 
 import DateTime exposing (DateTime)
 import Json.Decode as Decode
@@ -65,10 +66,12 @@ viewStatePerUrl url =
                            RouteParser.Page page_id -> (Loading (Page page_id))
                            RouteParser.Post post_id -> (Loading (Post post_id))
                            RouteParser.Home -> (Loading (Page 1))
-                           RouteParser.NotFound -> (ShowError ("Couldn't parser url " ++ (Url.toString url)))
+                           RouteParser.NotFound -> (ShowError ("Couldn't parse url " ++ (Url.toString url)))
+                           --TODO fix 
+                           RouteParser.PostEditor post_id -> Loading (Post post_id)
     
 init flags url key =
-    let model = Model (push (viewStatePerUrl url) Stack.initialise) Nothing LoggedOut Closed key url
+    let model = Model (push (viewStatePerUrl url) Stack.initialise) Nothing LoggedOut key url
     in
         ( model
         , Cmd.batch [ getSettings
@@ -210,7 +213,7 @@ update msg ({settings} as model) =
         EditorPostReceived result ->
             case result of
                 Ok post ->
-                    ({model | editorState = EditingPost post}, Cmd.none)
+                    ({model | view_stack = push (PostEditor post) model.view_stack}, Cmd.none)
                 Err _ ->
                     ({model | view_stack = push (ShowError "Error while loading editor") model.view_stack}, Cmd.none)
         ChangeViewState viewstate cmd ->
@@ -310,7 +313,7 @@ view model =
                                               [pre [] [text err]]
                                           PostEditorList titles -> [div [] [ text ("posteditorlist, count of titles: " ++ String.fromInt (List.length titles))
                                                                            , PostsAdmin.view titles]]
-                                          PostEditor post -> [ div [] [text "Posteditor"]]
+                                          PostEditor post -> PostEditor.postEditor post 
                                           CommentsList -> [ div [] [text "CommentsList"] ]
                                           MediaList -> [div [] [text "Medialist!"]])
                         , div [id "sidebar"] [ User.loginView model.loginState

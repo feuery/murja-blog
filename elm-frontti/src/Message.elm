@@ -14,10 +14,6 @@ import Stack exposing (..)
 type LoadableType
     = Post Int
     | Page Int
-
-type EditorState
-    = Closed
-    | EditingPost Article.Article
     
 type ViewState
     = PageView P.Page
@@ -53,7 +49,6 @@ type alias Model =
     { view_stack : Stack ViewState
     , settings : Maybe Settings.Settings
     , loginState : LoginState
-    , editorState : EditorState
     , key : Nav.Key
     , url : Url.Url}
     

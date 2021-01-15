@@ -3,10 +3,11 @@ module RouteParser exposing (..)
 import Url
 import Url.Parser exposing (..)
 import String exposing (fromInt)
-
+-- http://localhost:3000/blog/post/edit/21
 type Route
     = Page Int
     | Post Int
+    | PostEditor Int
     | Home
     | NotFound
 
@@ -15,7 +16,8 @@ routeParser =
         [ map Page (s "blog" </> (s "page" </> int))
         , map Home Url.Parser.top
         , map Home (s "blog")
-        , map Post (s "blog" </> (s "post" </> int))]
+        , map Post (s "blog" </> (s "post" </> int))
+        , map PostEditor (s "blog" </> (s "post" </> (s "edit" </> int)))]
 
 url_to_route url =
             Maybe.withDefault NotFound (parse routeParser url)
@@ -29,4 +31,5 @@ route_to_string route =
         Post post ->
             ("Post " ++ (fromInt post))
         Home -> "Home"
+        PostEditor id -> "Editing post " ++ String.fromInt id
         NotFound -> "Parsing failed"

@@ -1,3 +1,20 @@
+html, body {
+    height: 100%
+}
+
+#editor-post-title {
+    flex: 1 1;	    
+}
+
+#editor-post-content {
+    box-sizing: border-box;
+    height: 100%
+    flex: 1 1;	    
+}
+
+#editor-post-save {
+    flex: 1 1;
+}
 
 .left-sidebar {
     flex: 1 1;
@@ -16,10 +33,17 @@
 
 .page {
     flex: 8 1;
+    height: 100%;
+    bottom: 0;
+
+
+    display: flex;
+    flex-flow: row wrap;
 }
 
 .post {
     border: 2px solid #666666;
+    width: 100%;
 }
 
 body {
@@ -35,6 +59,7 @@ body {
 .flex-container {
     display: flex;
     flex-flow: row wrap;
+    height: 100%;
 }
 
 .title-flex-container {
