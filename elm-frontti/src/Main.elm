@@ -311,8 +311,7 @@ view model =
                                                                             else [a [href ("/blog/page/" ++ fromInt (page.id + 1))] [text "Next page"]])]])
                                           ShowError err ->
                                               [pre [] [text err]]
-                                          PostEditorList titles -> [div [] [ text ("posteditorlist, count of titles: " ++ String.fromInt (List.length titles))
-                                                                           , PostsAdmin.view titles]]
+                                          PostEditorList titles -> [ PostsAdmin.view titles ]
                                           PostEditor post -> PostEditor.postEditor post 
                                           CommentsList -> [ div [] [text "CommentsList"] ]
                                           MediaList -> [div [] [text "Medialist!"]])

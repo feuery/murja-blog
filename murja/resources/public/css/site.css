@@ -6,6 +6,18 @@ html, body {
     flex: 1 1;	    
 }
 
+.tagview {
+    display: table;
+}
+
+.tagview > button {
+    display: table-cell;
+}
+
+.tagview > select {
+    display: block;
+}
+
 #editor-post-content {
     box-sizing: border-box;
     height: 100%
@@ -77,6 +89,7 @@ body {
 
 .vertical-flex-container {
     display: flex;
+    width: 100%;
     flex-flow: column wrap;
 }
 
