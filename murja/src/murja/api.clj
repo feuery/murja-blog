@@ -149,12 +149,17 @@
                    :xmlns:fb "http://www.facebook.com/2008/fbml"}
                   (into [:head
                          (include-css css-route)
-                         [:meta {:charset "UTF-8"}]
+                         [:meta {:charset "UTF-8"}]                         
                          [:script js]]
                         post-meta)
                   [:body
                    [:div#app]
                    [:script
-                    "Elm.Main.init({
+                    "var app = Elm.Main.init({
         node: document.getElementById(\"app\")
-    });"]])}))
+    });
+app.ports.prompt.subscribe( (prompt) => {
+  let value = window.prompt(prompt);
+  app.ports.tags.send(value);
+});
+"]])}))

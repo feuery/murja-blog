@@ -1,4 +1,4 @@
-module Main exposing (..)
+port module Main exposing (..)
 
 import Browser
 import Html exposing (..)
@@ -56,7 +56,7 @@ main =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-  Sub.none
+  tags ReceivedTag
 
 
 
@@ -84,6 +84,9 @@ init flags url key =
 -- UPDATE
 
 
+-- PORTS --
+port prompt : String -> Cmd msg
+port tags : (String -> msg) -> Sub msg
                 
 loadPageOrPost : Model -> Cmd Msg
 loadPageOrPost model =
@@ -202,12 +205,6 @@ update msg ({settings} as model) =
                             ({model | view_stack = push (ShowError "Coudln't load titles") model.view_stack}, Cmd.none)
                 Err error ->
                     ({model | view_stack = push (ShowError "http error while loading titles") model.view_stack}, Cmd.none)
-        -- ChangeAdminView_stackState viewState ->
-        --     case model.loginState of
-        --         LoggedIn _ ->
-        --             let contentLoadingCmd = getContentCmd viewState in 
-        --               ({model | adminView = viewState}, contentLoadingCmd)
-        --         _ -> (model, Cmd.none)
         OpenPostEditor post_id ->
             (model, getPostEditorData post_id)
         EditorPostReceived result ->
@@ -226,6 +223,15 @@ update msg ({settings} as model) =
         PopViewstate ->
             let (_, new_stack) = pop model.view_stack in
             ({model | view_stack = new_stack}, Cmd.none)
+        PromptTag prompt_message ->
+            (model, prompt prompt_message)
+        ReceivedTag tag ->
+            case top model.view_stack of
+                Just (PostEditor article) ->
+                    let (_, new_stack) = pop model.view_stack in
+                    ({model | view_stack = push (PostEditor {article | tags = tag :: article.tags }) new_stack}, Cmd.none)
+                _ -> ({model | view_stack = push (ShowError "Error while loading editor") model.view_stack}, Cmd.none)
+                    
                            
 getContentCmd viewState =
     case viewState of

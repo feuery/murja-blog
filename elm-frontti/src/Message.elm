@@ -70,3 +70,5 @@ type Msg
   | GotSession (Result Http.Error LoginUser)
   | OpenPostEditor Int
   | EditorPostReceived (Result Http.Error Article.Article)
+  | PromptTag String
+  | ReceivedTag String

@@ -2,7 +2,7 @@ module PostEditor exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onInput)
+import Html.Events exposing (..)
 
 import Http
 
@@ -10,13 +10,14 @@ import Article
 import Ajax_cmds exposing (..)
 import Creator as C
 import Page as P
+import Message exposing (..)
 
 optionize tag = option [value tag] [text tag]
 
 tagView post = div [class "tagview"]
                [ select [ multiple True
                         , class "tag-select"] (List.map optionize post.tags)
-               , button [] [text "Add tag"]
+               , button [ onClick (PromptTag "New tag? ") ] [ text "Add tag"]
                , button [] [text "Remove selected tag"]
                ]
 
