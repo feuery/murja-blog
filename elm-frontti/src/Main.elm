@@ -86,6 +86,7 @@ init flags url key =
 
 -- PORTS --
 port prompt : String -> Cmd msg
+port alert : String -> Cmd msg
 port tags : (String -> msg) -> Sub msg
                 
 loadPageOrPost : Model -> Cmd Msg
@@ -210,7 +211,7 @@ update msg ({settings} as model) =
         EditorPostReceived result ->
             case result of
                 Ok post ->
-                    ({model | view_stack = push (PostEditor post) model.view_stack}, Cmd.none)
+                    ({model | view_stack = push (PostEditor post "") model.view_stack}, Cmd.none)
                 Err _ ->
                     ({model | view_stack = push (ShowError "Error while loading editor") model.view_stack}, Cmd.none)
         ChangeViewState viewstate cmd ->
@@ -225,12 +226,26 @@ update msg ({settings} as model) =
             ({model | view_stack = new_stack}, Cmd.none)
         PromptTag prompt_message ->
             (model, prompt prompt_message)
+        Alert alert_msg ->
+            (model, alert alert_msg)
+        SelectTag tag ->
+            let (top_viewstate, stack) = pop model.view_stack in
+            case top_viewstate of
+                Just (PostEditor article selected_tag) -> 
+                    ({model | view_stack = push (PostEditor article tag) stack}, Cmd.none)
+                _ -> (model, Cmd.none)
         ReceivedTag tag ->
             case top model.view_stack of
-                Just (PostEditor article) ->
+                Just (PostEditor article selected_tag) ->
                     let (_, new_stack) = pop model.view_stack in
-                    ({model | view_stack = push (PostEditor {article | tags = tag :: article.tags }) new_stack}, Cmd.none)
+                    ({model | view_stack = push (PostEditor {article | tags = tag :: article.tags } selected_tag) new_stack}, Cmd.none)
                 _ -> ({model | view_stack = push (ShowError "Error while loading editor") model.view_stack}, Cmd.none)
+        DropTag tag ->
+            case top model.view_stack of
+                Just (PostEditor article selected_tag) ->
+                    let (_, new_stack) = pop model.view_stack in
+                    ({model | view_stack = push (PostEditor {article | tags = List.filter ((/=) tag) article.tags } selected_tag) new_stack}, Cmd.none)
+                _ -> ({model | view_stack = push (ShowError "Error dropping tag") model.view_stack}, Cmd.none)
                     
                            
 getContentCmd viewState =
@@ -318,7 +333,7 @@ view model =
                                           ShowError err ->
                                               [pre [] [text err]]
                                           PostEditorList titles -> [ PostsAdmin.view titles ]
-                                          PostEditor post -> PostEditor.postEditor post 
+                                          PostEditor post tag_index -> PostEditor.postEditor post tag_index
                                           CommentsList -> [ div [] [text "CommentsList"] ]
                                           MediaList -> [div [] [text "Medialist!"]])
                         , div [id "sidebar"] [ User.loginView model.loginState

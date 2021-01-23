@@ -158,6 +158,9 @@
                     "var app = Elm.Main.init({
         node: document.getElementById(\"app\")
     });
+app.ports.alert.subscribe( (prompt) => {
+  window.alert(prompt);
+});
 app.ports.prompt.subscribe( (prompt) => {
   let value = window.prompt(prompt);
   app.ports.tags.send(value);

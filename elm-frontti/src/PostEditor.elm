@@ -14,16 +14,19 @@ import Message exposing (..)
 
 optionize tag = option [value tag] [text tag]
 
-tagView post = div [class "tagview"]
+tagView post selectedTag = div [class "tagview"]
                [ select [ multiple True
-                        , class "tag-select"] (List.map optionize post.tags)
-               , button [ onClick (PromptTag "New tag? ") ] [ text "Add tag"]
-               , button [] [text "Remove selected tag"]
+                        , class "tag-select"
+                        , onInput SelectTag] (List.map optionize post.tags)
+               , button [ onClick (PromptTag "New tag? ") ]
+                   [ text "Add tag"]
+               , button [ onClick (DropTag selectedTag) ]
+                   [text "Remove selected tag"]
                ]
 
-postEditor post = [ div [] [ input [name "title", id "editor-post-title", value post.title] []]
+postEditor post tag = [ div [] [ input [name "title", id "editor-post-title", value post.title] []]
                   , div [] [ button [id "editor-post-save"] [text "Save version"]]
-                  , tagView post
+                  , tagView post tag
                   , textarea [id "editor-post-content"] [text post.content]
                   ]
                   
