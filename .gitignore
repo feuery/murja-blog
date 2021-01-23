@@ -9,3 +9,6 @@ TAGS
 elm-frontti/*.html
 elm-frontti/*.js
 elm-frontti/elm-stuff/*
+murja*.js
+*cookies
+*input.json
