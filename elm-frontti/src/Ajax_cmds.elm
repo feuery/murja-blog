@@ -66,7 +66,7 @@ putArticle article =
                 , headers = []
                 , url = "/api/posts/post"
                 , body = Http.jsonBody <| Article.encode article
-                , expect = Http.expectString HttpIgnoreResponse
+                , expect = Http.expectString HttpGoHome
                 , timeout = Nothing
                 , tracker = Nothing
                 }

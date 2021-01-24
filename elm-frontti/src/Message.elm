@@ -10,15 +10,11 @@ import Url
 import Title
 
 import Stack exposing (..)
-
-type LoadableType
-    = Post Int
-    | Page Int
     
 type ViewState
     = PageView P.Page
     | PostView Article.Article
-    | Loading LoadableType
+    | Loading 
     | ShowError String
     | PostEditorList (List Title.Title)                     -- list all the posts in db
     | PostEditor Article.Article String --String == SelectedTag as it's rendered
@@ -78,3 +74,5 @@ type Msg
   | SavePost
   | HttpIgnoreResponse (Result Http.Error String)
   | ChangePost String
+  | HttpGoHome (Result Http.Error String)
+  | GoHome

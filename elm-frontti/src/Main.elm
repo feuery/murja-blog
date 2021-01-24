@@ -58,27 +58,36 @@ subscriptions : Model -> Sub Msg
 subscriptions _ =
   tags ReceivedTag
 
-
-
-
+viewStatePerUrl : Url.Url -> (ViewState, List (Cmd Msg))
 viewStatePerUrl url =
     case RouteParser.url_to_route url of
-                           RouteParser.Page page_id -> (Loading (Page page_id))
-                           RouteParser.Post post_id -> (Loading (Post post_id))
-                           RouteParser.Home -> (Loading (Page 1))
-                           RouteParser.NotFound -> (ShowError ("Couldn't parse url " ++ (Url.toString url)))
-                           --TODO fix 
-                           RouteParser.PostEditor post_id -> Loading (Post post_id)
+        RouteParser.Page page_id -> (Loading, [ getSettings
+                                              , getTitles
+                                              , getSession
+                                              , getPage page_id
+                                              ])
+        RouteParser.Post post_id -> (Loading, [ getSettings
+                                              , getTitles
+                                              , getSession
+                                              , getPost post_id])
+        RouteParser.Home -> (Loading, [ getSettings
+                                      , getTitles
+                                      , getSession
+                                      , getPage 1
+                                      ])
+        RouteParser.PostEditor post_id -> (Loading, [ getSettings
+                                                    , getTitles
+                                                    , getSession
+                                                    , getPostEditorData post_id])
+                                          
+        RouteParser.NotFound -> (ShowError ("Couldn't parse url " ++ (Url.toString url)), [Cmd.none])
     
-init flags url key =
-    let model = Model (push (viewStatePerUrl url) Stack.initialise) Nothing LoggedOut key url
+init _ url key =
+    let (viewstate, cmds) = (viewStatePerUrl url)
+        model = Model (push viewstate Stack.initialise) Nothing LoggedOut key url
     in
         ( model
-        , Cmd.batch [ getSettings
-                    , getTitles
-                    , getSession
-                    ])
-
+        , Cmd.batch cmds)
 
 
 -- UPDATE
@@ -89,19 +98,6 @@ port prompt : String -> Cmd msg
 port alert : String -> Cmd msg
 port tags : (String -> msg) -> Sub msg
                 
-loadPageOrPost : Model -> Cmd Msg
-loadPageOrPost model =
-    case top model.view_stack of
-        Nothing -> Cmd.none
-        Just current_view -> case current_view of
-                         Loading loadable_type ->
-                             case loadable_type of
-                                 Post post_id ->
-                                     getPost post_id
-                                 Page page_id ->
-                                     getPage page_id
-                         _ -> Cmd.none
-
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg ({settings} as model) =
     case msg of
@@ -140,7 +136,7 @@ update msg ({settings} as model) =
                         Ok decoded_titles ->
                             case settings of
                                 Just unwrapped_settings ->
-                                    ({model | settings = Just {unwrapped_settings | titles = Just decoded_titles}}, loadPageOrPost model)
+                                    ({model | settings = Just {unwrapped_settings | titles = Just decoded_titles}}, Cmd.none)
                                 Nothing ->
                                     (model, Cmd.none)
                         Err error ->
@@ -148,7 +144,8 @@ update msg ({settings} as model) =
                 Err error ->
                     ({model | view_stack = push (ShowError "Coudln't load titles") model.view_stack}, Cmd.none)
         UrlChanged url ->
-            ({model | url = url, view_stack = push (viewStatePerUrl url) model.view_stack}, getSettings)
+            let (view_state, cmds) = viewStatePerUrl url in 
+            ({model | url = url, view_stack = push view_state model.view_stack}, Cmd.batch cmds)
         LinkClicked urlRequest ->
             case urlRequest of
                 Browser.Internal url ->
@@ -263,9 +260,16 @@ update msg ({settings} as model) =
                     ( {model | view_stack = new_stack}
                     , (if new_post_p then postArticle article else putArticle article))
                 _ -> ({model | view_stack = push (ShowError "Error while saving the article") model.view_stack}, Cmd.none)
-                         
-                    
-                           
+        GoHome -> doGoHome model
+        HttpGoHome _ -> doGoHome model
+            
+doGoHome model =
+    (model, Cmd.batch [ getSettings
+                      , getTitles
+                      , getSession
+                      , getPage 1
+                      ])
+                
 getContentCmd viewState =
     case viewState of
         PostEditorList _ -> getEditablePosts
@@ -343,7 +347,7 @@ view model =
                                    Nothing -> [div [] [text "Couldn't load view status"]]
                                    Just viewstate ->
                                       case viewstate of
-                                          Loading type_ ->
+                                          Loading ->
                                               [div [] [text "LOADING"]]
                                           PostView article ->
                                               [articleView settings article]

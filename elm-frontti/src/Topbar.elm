@@ -13,7 +13,7 @@ topbar state =
         LoggedIn user ->
             div [class "left-sidebar"] [ span [] [text ("Welcome, " ++ user.nickname)]
                                        , User.user_avatar user
-                                       , ul [] [ li [onClick PopViewstate] [text "Home"]
+                                       , ul [] [ li [onClick GoHome] [text "Home"]
                                                , li [onClick (ChangeViewState (PostEditorList []) (Just getEditablePosts))] [text "Manage posts"]
                                                , li [onClick (ChangeViewState CommentsList Nothing)] [text "Manage comments"]
                                                , li [onClick (ChangeViewState MediaList Nothing)] [text "Manage media"]]
