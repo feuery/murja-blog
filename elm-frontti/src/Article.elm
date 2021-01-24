@@ -1,7 +1,10 @@
 module Article exposing (..)
 
-import DateTime exposing (DateTime)
+import Creator exposing (encode)
 
+import DateTime exposing (DateTime)
+import Json.Encode as Json exposing (..)
+import Json.Encode.Extra exposing (..)
 import Json.Decode as Decode exposing (Decoder, succeed)
 import Json.Decode.Pipeline exposing (required)
 import Json.Decode.Extra as Extra
@@ -42,12 +45,32 @@ type alias Article =
     -- , amount_of_comments : Int
     , title : String
     , pre_post_id : Maybe Int
-    , id : Int
+    , id : Maybe Int
     , versions: List Int
     , version : Maybe Int
     -- , next_post_id: Maybe Int
     , created_at: Maybe Time.Posix
     }
+
+-- encoder
+encode : Article -> Json.Value
+encode article =
+    object
+        [ ( "creator", Creator.encode article.creator )
+        , ( "tags", list string article.tags)
+        , ( "content", string article.content)
+        , ( "comments", (list string (case article.comments of
+                                         Just comments -> comments
+                                         Nothing -> [])))
+        , ( "title", string article.title)
+        , ( "pre_post_id", (maybe int) article.pre_post_id)
+        , ( "id", (maybe int) article.id)
+        , ( "version", (maybe int) article.version)
+        , ( "created_at", (maybe iso8601) article.created_at)
+        ]
+
+
+-- decoder
 
     
 tagsDecoder = Decode.field "tags" (Decode.list Decode.string)
@@ -56,11 +79,11 @@ commentsDecoder = Decode.maybe (Decode.field "comments" (Decode.list Decode.stri
 -- amount_of_commentsDecoder = Decode.field "amount-of-comments" Decode.int                  
 titleDecoder = Decode.field "title" Decode.string
 pre_post_idDecoder = Decode.maybe (Decode.field "prev-post-id"  Decode.int)
-idDecoder = Decode.field "id" Decode.int
+idDecoder = Decode.maybe ( Decode.field "id" Decode.int)
 versionsDecoder = Decode.field "versions" (Decode.list Decode.int)
 versionDecoder = Decode.maybe (Decode.field "version" Decode.int)
 -- next_post_idDecoder = Decode.field "next-post-id" (Decode.maybe Decode.int)
-created_atDecoder = Decode.field "created_at" (Decode.maybe Extra.datetime)
+created_atDecoder = Decode.field "created_at" (Decode.maybe Extra.iso8601)
 creator_Decoder = Decode.field "creator" creatorDecoder                    
 
 -- |> == clojure's ->>

@@ -49,3 +49,26 @@ getPostEditorData post_id =
     Http.get
         { url = "/api/posts/post/" ++ (String.fromInt post_id) ++ "/allow-hidden/true"
         , expect = Http.expectJson EditorPostReceived Article.articleDecoder}
+
+postArticle : Article.Article -> Cmd Msg        
+postArticle article =
+    Http.post
+        { url = "/api/posts/post"
+        , body = Http.jsonBody <| Article.encode article
+        , expect = Http.expectString HttpIgnoreResponse }
+        
+putArticle : Article.Article -> Cmd Msg        
+putArticle article =
+    case article.id of
+        Just id ->
+            Http.request
+                { method = "PUT"
+                , headers = []
+                , url = "/api/posts/post"
+                , body = Http.jsonBody <| Article.encode article
+                , expect = Http.expectString HttpIgnoreResponse
+                , timeout = Nothing
+                , tracker = Nothing
+                }
+        Nothing -> Cmd.none
+

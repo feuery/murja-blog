@@ -75,3 +75,6 @@ type Msg
   | SelectTag String
   | Alert String
   | DropTag String
+  | SavePost
+  | HttpIgnoreResponse (Result Http.Error String)
+  | ChangePost String

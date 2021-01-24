@@ -25,8 +25,10 @@ tagView post selectedTag = div [class "tagview"]
                ]
 
 postEditor post tag = [ div [] [ input [name "title", id "editor-post-title", value post.title] []]
-                  , div [] [ button [id "editor-post-save"] [text "Save version"]]
+                  , div [] [ button [ id "editor-post-save"
+                                    , onClick SavePost ] [text "Save version"]]
                   , tagView post tag
-                  , textarea [id "editor-post-content"] [text post.content]
+                  , textarea [ id "editor-post-content"
+                             , onInput ChangePost] [text post.content]
                   ]
                   

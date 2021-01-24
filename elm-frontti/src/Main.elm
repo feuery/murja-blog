@@ -246,6 +246,24 @@ update msg ({settings} as model) =
                     let (_, new_stack) = pop model.view_stack in
                     ({model | view_stack = push (PostEditor {article | tags = List.filter ((/=) tag) article.tags } selected_tag) new_stack}, Cmd.none)
                 _ -> ({model | view_stack = push (ShowError "Error dropping tag") model.view_stack}, Cmd.none)
+        HttpIgnoreResponse result ->
+            (model, Cmd.none)
+        ChangePost new_content ->
+            case top model.view_stack of
+                Just (PostEditor article selected_tag) ->
+                    let (_, new_stack) = pop model.view_stack in
+                    ({model | view_stack = push (PostEditor {article | content = new_content} selected_tag) new_stack}, Cmd.none)
+                _ -> (model, Cmd.none)
+        SavePost ->
+            case top model.view_stack of
+                Just (PostEditor article _) ->
+                    let new_post_p = article.id == Nothing
+                        (_, new_stack) = pop model.view_stack in
+
+                    ( {model | view_stack = new_stack}
+                    , (if new_post_p then postArticle article else putArticle article))
+                _ -> ({model | view_stack = push (ShowError "Error while saving the article") model.view_stack}, Cmd.none)
+                         
                     
                            
 getContentCmd viewState =
@@ -288,7 +306,11 @@ sidebarHistory titles =
                                                         [li [] [text ("There's no year " ++ (fromInt year) ++ " in titles")]]) (keys grouped_by_year |> List.reverse)))]
               
 articleView : Settings.Settings -> Article.Article -> Html Msg
-articleView settings the_actual_post = div [class "post"] [ a [href ("/blog/post/" ++ String.fromInt the_actual_post.id)] [ text the_actual_post.title ],
+articleView settings the_actual_post =
+    case the_actual_post.id of
+        Nothing -> div [class "post"] [text "Post id is nil :/"]
+        Just post_id ->
+            div [class "post"] [ a [href ("/blog/post/" ++ String.fromInt post_id)] [ text the_actual_post.title ],
                                                    div [class "meta"] [User.user_avatar the_actual_post.creator,
                                                                        p [] [text ("By " ++ the_actual_post.creator.nickname)],
                                                                            case the_actual_post.created_at of
