@@ -76,3 +76,4 @@ type Msg
   | ChangePost String
   | HttpGoHome (Result Http.Error String)
   | GoHome
+  | ChangeTitle String

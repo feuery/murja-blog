@@ -262,6 +262,12 @@ update msg ({settings} as model) =
                 _ -> ({model | view_stack = push (ShowError "Error while saving the article") model.view_stack}, Cmd.none)
         GoHome -> doGoHome model
         HttpGoHome _ -> doGoHome model
+        ChangeTitle new_title ->
+            case top model.view_stack of
+                Just (PostEditor article selected_tag) ->
+                    let (_, new_stack) = pop model.view_stack in
+                    ({model | view_stack = push (PostEditor {article | title = new_title} selected_tag) new_stack}, Cmd.none)
+                _ -> (model, Cmd.none)
             
 doGoHome model =
     (model, Cmd.batch [ getSettings

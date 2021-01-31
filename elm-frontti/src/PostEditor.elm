@@ -24,7 +24,10 @@ tagView post selectedTag = div [class "tagview"]
                    [text "Remove selected tag"]
                ]
 
-postEditor post tag = [ div [] [ input [name "title", id "editor-post-title", value post.title] []]
+postEditor post tag = [ div [] [ input [ name "title"
+                                       , id "editor-post-title"
+                                       , value post.title
+                                       , onInput ChangeTitle] []]
                   , div [] [ button [ id "editor-post-save"
                                     , onClick SavePost ] [text "Save version"]]
                   , tagView post tag
