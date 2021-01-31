@@ -77,3 +77,4 @@ type Msg
   | HttpGoHome (Result Http.Error String)
   | GoHome
   | ChangeTitle String
+  | RunAce 

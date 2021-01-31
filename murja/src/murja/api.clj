@@ -149,6 +149,7 @@
                    :xmlns:fb "http://www.facebook.com/2008/fbml"}
                   (into [:head
                          (include-css css-route)
+                         [:script {:src "https://pagecdn.io/lib/ace/1.4.12/ace.js"}]
                          [:meta {:charset "UTF-8"}]                         
                          [:script js]]
                         post-meta)
@@ -161,6 +162,18 @@
 app.ports.alert.subscribe( (prompt) => {
   window.alert(prompt);
 });
+
+app.ports.runAce.subscribe( () => {
+
+  let editor = ace.edit(\"editor-post-content\");
+  editor.setTheme(\"ace/theme/monokai\");
+  editor.session.setMode('ace/mode/html');
+  editor.setKeyboardHandler(\"ace/keyboard/emacs\");
+  
+
+  console.log(\"ace should be initiated\");
+});
+
 app.ports.prompt.subscribe( (prompt) => {
   let value = window.prompt(prompt);
   app.ports.tags.send(value);

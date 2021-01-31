@@ -3,6 +3,8 @@ module PostEditor exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Json.Decode
+    
 
 import Http
 
@@ -31,7 +33,9 @@ postEditor post tag = [ div [] [ input [ name "title"
                   , div [] [ button [ id "editor-post-save"
                                     , onClick SavePost ] [text "Save version"]]
                   , tagView post tag
-                  , textarea [ id "editor-post-content"
-                             , onInput ChangePost] [text post.content]
+                  , div [] [text "Post editor (please click it): "]
+                  , div [ id "editor-post-content"
+                        , onClick RunAce
+                        ] [text post.content]
                   ]
                   
