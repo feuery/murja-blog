@@ -33,9 +33,15 @@ postEditor post tag = [ div [] [ input [ name "title"
                   , div [] [ button [ id "editor-post-save"
                                     , onClick SavePost ] [text "Save version"]]
                   , tagView post tag
-                  , div [] [text "Post editor (please click it): "]
+                      -- I'm not exactly happy with this hack
+                      -- but if I return a cmd that runs the ace initialisation code from the state-change
+                      -- that also initiates this view, ace code is run before this #editor-post-content div
+                      -- exists in DOM
+                      --
+                      -- I was also unable to find a on-rendered event I could've hooked the RunAce command
+                      -- so for now ace is initiated by on-click event on an element whose existence is certain
+                  , div [ onClick (RunAce post.content)] [text "Click here to load editor"]
                   , div [ id "editor-post-content"
-                        , onClick RunAce
-                        ] [text post.content]
+                        ] [] -- [text post.content]
                   ]
                   

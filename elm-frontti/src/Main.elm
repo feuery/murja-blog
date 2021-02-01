@@ -55,8 +55,9 @@ main =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions _ =
-  tags ReceivedTag
+subscriptions _ = Sub.batch 
+                  [ tags ReceivedTag
+                  , aceStateUpdate AceStateUpdate]
 
 viewStatePerUrl : Url.Url -> (ViewState, List (Cmd Msg))
 viewStatePerUrl url =
@@ -97,7 +98,8 @@ init _ url key =
 port prompt : String -> Cmd msg
 port alert : String -> Cmd msg
 port tags : (String -> msg) -> Sub msg
-port runAce : () -> Cmd msg            
+port runAce : String -> Cmd msg
+port aceStateUpdate : (String -> msg) -> Sub msg               
                 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg ({settings} as model) =
@@ -226,8 +228,8 @@ update msg ({settings} as model) =
             (model, prompt prompt_message)
         Alert alert_msg ->
             (model, alert alert_msg)
-        RunAce ->
-            (model, runAce ())
+        RunAce content ->
+            (model, runAce content)
         SelectTag tag ->
             let (top_viewstate, stack) = pop model.view_stack in
             case top_viewstate of
@@ -261,10 +263,18 @@ update msg ({settings} as model) =
                         (_, new_stack) = pop model.view_stack in
 
                     ( {model | view_stack = new_stack}
-                    , (if new_post_p then postArticle article else putArticle article))
+                    , if new_post_p then postArticle article else putArticle article)
                 _ -> ({model | view_stack = push (ShowError "Error while saving the article") model.view_stack}, Cmd.none)
         GoHome -> doGoHome model
         HttpGoHome _ -> doGoHome model
+        AceStateUpdate content ->
+            case top model.view_stack of
+                Just (PostEditor article selected_tag) ->
+                    let(_, new_stack) = pop model.view_stack in
+                    ( {model | view_stack = push (PostEditor {article | content = content} selected_tag) new_stack}
+                    , Cmd.none)
+                _ -> (model, Cmd.none)
+                    
         ChangeTitle new_title ->
             case top model.view_stack of
                 Just (PostEditor article selected_tag) ->

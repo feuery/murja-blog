@@ -163,14 +163,18 @@ app.ports.alert.subscribe( (prompt) => {
   window.alert(prompt);
 });
 
-app.ports.runAce.subscribe( () => {
+app.ports.runAce.subscribe( (content) => {
 
   let editor = ace.edit(\"editor-post-content\");
   editor.setTheme(\"ace/theme/monokai\");
   editor.session.setMode('ace/mode/html');
   editor.setKeyboardHandler(\"ace/keyboard/emacs\");
+  editor.session.setValue(content);
   
-
+  editor.on('change', event => {
+    let value = editor.getSession().getValue();
+    app.ports.aceStateUpdate.send(value);
+  });
   console.log(\"ace should be initiated\");
 });
 

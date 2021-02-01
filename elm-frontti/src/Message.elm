@@ -68,6 +68,7 @@ type Msg
   | EditorPostReceived (Result Http.Error Article.Article)
   | PromptTag String
   | ReceivedTag String
+  | AceStateUpdate String
   | SelectTag String
   | Alert String
   | DropTag String
@@ -77,4 +78,4 @@ type Msg
   | HttpGoHome (Result Http.Error String)
   | GoHome
   | ChangeTitle String
-  | RunAce 
+  | RunAce String
