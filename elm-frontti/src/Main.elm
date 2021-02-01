@@ -358,7 +358,7 @@ view model =
             { title = settings.blog_title
             , body = 
                   [ header [] [a [href "/"] [text settings.blog_title ]]
-                  , Topbar.topbar model.loginState
+                  , Topbar.topbar model.loginState --model
                   , div [class "flex-container"] 
                         [ div [class "page"]
                               (let maybe_view  = top model.view_stack in

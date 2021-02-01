@@ -36,6 +36,7 @@ type LoginState
 
 type alias LoginUser =
     { nickname : String
+    , username : String
     , img_location : String
     , primary_group_name : String
     , permissions : List String

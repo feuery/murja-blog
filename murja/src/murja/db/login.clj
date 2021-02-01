@@ -40,8 +40,9 @@ WHERE u.Username = ? AND u.Password = ?" username (sha-512 passwd)])]
           (do
             (println "User must have 1 primary group. " username " had " (count primary-group))
             nil)
-          (let [{:keys [nickname groupname img_location userid]} (first primary-group)]
+          (let [{:keys [nickname groupname img_location userid username]} (first primary-group)]
             {:nickname nickname
+             :username username
              :img_location img_location
              :userid userid
              :primary-group-name groupname
@@ -54,11 +55,12 @@ JOIN blog.GroupMapping gm ON u.ID = gm.UserID
 JOIN blog.UserGroup ug ON ug.ID = gm.GroupID
 where u.ID = ?" user-id]
            {:row-fn (fn [{:keys [nickname username groupname img_location userid] :as user}]
-                     {:nickname nickname
-                      :img_location img_location
-                      :userid userid
-                      :primary-group-name groupname
-                      :permissions (user-permissions db :username username)})
+                      {:nickname nickname
+                       :username username
+                       :img_location img_location
+                       :userid userid
+                       :primary-group-name groupname
+                       :permissions (user-permissions db :username username)})
            :result-set-fn first}))
 
 (defn user-groups

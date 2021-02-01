@@ -36,13 +36,14 @@ nicknameDecoder = Decode.field "nickname" Decode.string
 imgDecoder = Decode.field "img_location" Decode.string
 group_name_decoder = Decode.field "primary-group-name" Decode.string
 permissionsDecoder = Decode.field "permissions" (Decode.list Decode.string)
-                   
+usernameDecoder = Decode.field "username" Decode.string                  
                      
 -- |> == clojure's ->>
 userDecoder : Decoder LoginUser
 userDecoder =
     Decode.succeed LoginUser
         |> decodeApply nicknameDecoder
+        |> decodeApply usernameDecoder
         |> decodeApply imgDecoder
         |> decodeApply group_name_decoder
         |> decodeApply permissionsDecoder
