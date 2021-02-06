@@ -59,8 +59,9 @@ loginView loginstate =
     let actual_view = [label [for "username"] [text "Username"],
                        input [name "username", id "username", onInput ChangeUsername, onFocus LoginFocus ] [],
                        label [for "password"] [text "Password"],
-                       input [name "password", id "password", type_ "password", onInput ChangePassword ] [],
-                       label [] [text ("Loginstate: " ++ stateToText loginstate)]] in
+                       input [name "password", id "password", type_ "password", onInput ChangePassword ] []
+                           -- , label [] [text ("Loginstate: " ++ stateToText loginstate)]
+                      ] in
     div [] (case loginstate of
                                   LoggedIn usr ->
                                       [text ("Welcome, " ++ usr.nickname)]
