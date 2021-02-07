@@ -175,6 +175,15 @@ app.ports.runAce.subscribe( (content) => {
     let value = editor.getSession().getValue();
     app.ports.aceStateUpdate.send(value);
   });
+
+  const config = { attributes: false, childList: true};
+  const callback = function(mutationsList, observer) {
+    editor.destroy();
+    editor = null;
+  };
+  const observer = new MutationObserver(callback);
+  observer.observe(document.getElementById('editor-post-content'), config);
+
   console.log(\"ace should be initiated\");
 });
 
