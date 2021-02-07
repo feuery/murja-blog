@@ -13,9 +13,10 @@
             [ring.adapter.jetty :refer [run-jetty]]
             [ring.middleware.session :as session]
             [clojure.spec.alpha :as spec]
-
             [murja.api :as api]
+
             [murja.middleware :as middleware]
+            [murja.config :as config]
             [murja.db :refer [migrate rollback]]
             [murja.db.users]
             [murja.specs.updated-user :as updated-user]
@@ -145,7 +146,9 @@
                      {:middleware [session/wrap-session]}))
 
 (defstate http-server
-  :start (run-jetty (app {}) {:port 3000 :join? false})
+  :start (run-jetty (app {}) {:port (get-in config/config [:http :port])
+                              :join? false
+                              :host (get-in config/config [:http :host])})
   :stop (.stop http-server))
 
 (defn go []
