@@ -47,7 +47,6 @@ html, body {
 
 .page {
     flex: 8 1;
-    height: 100%;
     bottom: 0;
 
 
@@ -167,7 +166,7 @@ a:hover {
     color: #FFF;
 }
 
-#grouper * {
+#grouper ul {
     list-style: none;
 }
 
