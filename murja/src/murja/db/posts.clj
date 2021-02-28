@@ -1,5 +1,7 @@
 (ns murja.db.posts
   (:require [clojure.java.jdbc :as j]
+            clojure.pprint
+            [hugsql.core :refer [def-db-fns]]
             [murja.specs.timed-title :as timed-title]
             [clojure.string :as str]
             [murja.config :as con]
@@ -7,6 +9,8 @@
             [clojure.set :refer [rename-keys]]
             #_[murja.util :refer :all])
   (:import [org.postgresql.util PGobject]))
+
+(def-db-fns "post.sql")
 
 (defn change-key [map old-key new-key]
   (rename-keys map {old-key new-key}))
@@ -17,8 +21,8 @@
        slurp))
 
 (defn parse-string [str]
-        (->> str
-             (muuntaja/decode "application/json")))
+  (->> str
+       (muuntaja/decode "application/json")))
 
 (extend-protocol j/ISQLValue
   clojure.lang.IPersistentMap
@@ -62,14 +66,7 @@
 (defn
   post-comments
   [db-spec post-id]
-  (let [comments-flat (j/query db-spec ["SELECT c.ID, c.parent_comment_id, 
-c.Content,
-c.created_at,
-u.Username, u.Nickname, u.Img_location
-FROM blog.Comment c
-JOIN blog.Users u ON u.ID = c.creator_id
-WHERE c.parent_post_id = ?
-ORDER BY c.created_at", post-id])
+  (let [comments-flat (post-comments* db-spec {:parent-post-id post-id})
         root-comments (filter (comp nil? :parent_comment_id) comments-flat)
         children (map ->Comment
                       (filter :parent_comment_id comments-flat))]
@@ -85,38 +82,29 @@ ORDER BY c.created_at", post-id])
         (->Comment comment)))
      root-comments)))
 
-(defn ;; ^:always-validate
-  get-titles-by-year ;; :- [Timed-Title]
+(defn get-titles-by-year 
   [{:keys [db-spec] :as db} & {:keys [show-hidden?]
-                        :or {show-hidden? false}}]
-  (j/query db-spec
-           [(if-not show-hidden?
-              "SELECT p.Title, p.created_at, p.id, p.Tags
-FROM blog.Post p
-WHERE NOT p.tags ?? 'hidden'
-ORDER BY p.created_at DESC"
-              "SELECT p.Title, p.created_at, p.id, p.Tags
-FROM blog.Post p
-ORDER BY p.created_at DESC")]
-           {:row-fn (fn [{:keys [title created_at id tags]}]
-                                       (let [created_at (.toLocalDateTime created_at)
-                                             year (.getYear created_at)
-                                             month (timed-title/int->month
-                                                    (.getMonthValue created_at))]
-                                         {:Title title
-                                          :Year year
-                                          :Id id
-                                          :Month month
-                                          :Tags tags}))
-           :result-set-fn vec}))
+                               :or {show-hidden? false}}]
+  {:pre [(some? db-spec)]}
+  (try
+    (->> (get-titles-by-year* db-spec {:show-hidden show-hidden?})
+         (mapv (comp #(rename-keys % {:month :Month
+                                      :id :Id
+                                      :tags :Tags
+                                      :year :Year
+                                      :title :Title})
+                     #(update % :month (comp timed-title/int->month int)))))
+    (catch Exception ex
+      (clojure.pprint/pprint {:db db})
+      (throw ex))))
+;; TODO make a real automated test of this
+#_(assert (and (= (count (get-titles-by-year murja.db/db )) 21)
+             (= (count (get-titles-by-year murja.db/db :show-hidden? true)) 22)))
+
 
 (defn post-versions [{:keys [db-spec] :as db} post-id]
-  (j/query db-spec ["SELECT version 
-FROM blog.Post_History 
-WHERE ID = ? AND NOT tags ?? 'hidden' 
-ORDER BY version ASC" post-id]
-           {:row-fn :version
-            :result-fn vec}))
+  (->> (post-versions* db-spec {:post-id post-id})
+       (mapv :version)))
    
 (defn ->Post [db {:keys [username id nickname img_location] :as db-row}]
   (let [result (-> db-row
@@ -128,87 +116,38 @@ ORDER BY version ASC" post-id]
       result)))
 
 (defn get-next-prev-postids [{:keys [db-spec] :as db} id]
-  (let [next-id (j/query db-spec ["SELECT p.ID 
-FROM blog.Post p
-WHERE p.ID < ? AND NOT p.tags ?? 'hidden'
-LIMIT 1" id]
-                         {:row-fn :id
-                          :result-set-fn first})
-        prev-id (j/query db-spec ["SELECT p.ID 
-FROM blog.Post p
-WHERE p.ID > ? AND NOT p.tags ?? 'hidden'
-LIMIT 1" id]
-                         {:row-fn :id
-                          :result-set-fn first})]
+  (let [{next-id :id} (next-post-id db-spec {:post-id id})
+        {prev-id :id} (prev-post-id db-spec {:post-id id})]
     {:next next-id :prev prev-id}))
            
-(defn get-by-id ;; :- sc/Commented-Post
-  [{:keys [db-spec] :as db} id & {:keys [allow-hidden?] :or {allow-hidden? false}}]
-  (let [sql (if-not allow-hidden?
-              "SELECT p.ID, p.Title, p.created_at, p.Content, p.tags, u.Username, u.Nickname, u.Img_location, COUNT(c.ID) AS amount_of_comments
-FROM blog.Post p
-JOIN blog.Users u ON u.ID = p.creator_id
-LEFT JOIN blog.Comment c ON c.parent_post_id = p.ID
-WHERE p.ID = ? AND NOT p.tags ?? 'hidden'
-GROUP BY p.ID, u.ID"
-              "SELECT p.ID, p.Title, p.created_at, p.Content, p.tags, u.Username, u.Nickname, u.Img_location, COUNT(c.ID) AS amount_of_comments
-FROM blog.Post p
-JOIN blog.Users u ON u.ID = p.creator_id
-LEFT JOIN blog.Comment c ON c.parent_post_id = p.ID
-WHERE p.ID = ?
-GROUP BY p.ID, u.ID")
-        db-row (j/query db-spec [sql id]
-                        {:result-set-fn first
-                        :row-fn #(change-key % :amount_of_comments :amount-of-comments)})]
-    (if-not (empty? db-row)
-      (let [{:keys [next prev]} (get-next-prev-postids db id)]
-        (-> (->Post db db-row)
-            (assoc :comments (post-comments db-spec id)
-                   :next-post-id next
-                   :prev-post-id prev)))
-      {})))
+(defn get-by-id [{:keys [db-spec] :as db} id & {:keys [allow-hidden?] :or {allow-hidden? false}}]
+  (if-let [db-row (get-by-id* db-spec {:post-id id
+                                       :show-hidden allow-hidden?})]
+    (let [{:keys [next prev]} (get-next-prev-postids db id)]
+      (-> (->Post db db-row)
+          (assoc :comments (post-comments db-spec id)
+                 :next-post-id next
+                 :prev-post-id prev)))
+    {}))
 
 (defn get-versioned-by-id
   [{:keys [db-spec] :as db} post-id post-version]
-  (let [db-row (j/query db-spec ["SELECT p.ID, p.Title, p.created_at, p.Content, p.tags, u.Username, u.Nickname, u.Img_location, p.version, COUNT(c.ID) AS amount_of_comments
-FROM blog.Post_History p
-JOIN blog.Users u ON u.ID = p.creator_id
-LEFT JOIN blog.Comment c ON c.parent_post_id = p.ID
-WHERE p.ID = ? AND p.version = ? AND not tags ?? 'hidden'
-GROUP BY p.ID, u.ID, p.title, p.created_at, p.Content, p.tags, u.Username, u.Nickname, u.Img_location, p.version" post-id post-version]
-                        {:result-set-fn first
-                         :row-fn #(change-key % :amount_of_comments :amount-of-comments)})]
-    (if-not (empty? db-row)
-      ;; That function is broken...
+  (if-let [db-row (get-versioned-by-id* db-spec {:post-id post-id
+                                                 :version-id post-version})]
       (let [{:keys [next prev]} (get-next-prev-postids db post-id)]
         (-> (->Post db db-row)
             (assoc :comments (post-comments db-spec post-id)
                    :next-post-id next
                    :prev-post-id prev)))
-      {})))
+      {}))
+
 
 (defn get-all
   [{:keys [db-spec] :as db} limit]
-  (let [sql-vec (if limit
-                  ["SELECT p.id, p.Title, p.Content, p.created_at, p.tags, u.Username, u.Nickname, u.Img_location, COUNT(c.ID) AS amount_of_comments
-FROM blog.Post p
-JOIN blog.Users u ON u.ID = p.creator_id
-LEFT JOIN blog.Comment c ON c.parent_post_id = p.ID
-WHERE NOT p.tags ?? 'hidden'
-GROUP BY p.ID, u.ID
-ORDER BY p.created_at DESC
-LIMIT ?" limit]
-                  ["SELECT p.Id, p.Title, p.Content, p.created_at, p.tags, u.Username, u.Nickname, u.Img_location, COUNT(c.ID) AS amount_of_comments
-FROM blog.Post p
-JOIN blog.Users u ON u.ID = p.creator_id
-LEFT JOIN blog.Comment c ON c.parent_post_id = p.ID
-WHERE NOT p.tags ?? 'hidden'
-GROUP BY p.ID, u.ID
-ORDER BY p.created_at DESC
-"])]
-    (j/query db-spec sql-vec
-             {:row-fn (comp #(change-key % :amount_of_comments :amount-of-comments)
-                                           (partial ->Post db))})))
+  (->> (if limit
+         (get-all* db-spec {:limit limit})
+         (get-all* db-spec))
+       (mapv (partial ->Post db))))
 
 (defn get-page 
   [{:keys [db-spec] :as db}
@@ -216,83 +155,54 @@ ORDER BY p.created_at DESC
    page-size 
    & {:keys [allow-hidden?]
       :or {allow-hidden? false}}]
-  (j/query db-spec ["SELECT p.ID, p.Title, p.Content, p.created_at, p.tags, u.Username, u.Nickname, u.Img_location, COUNT(c.ID) AS amount_of_comments
-FROM blog.Post p
-JOIN blog.Users u ON u.ID = p.creator_id
-LEFT JOIN blog.Comment c ON c.parent_post_id = p.ID
-WHERE (NOT p.tags ?? 'hidden') OR ?
-GROUP BY p.ID, u.ID
-ORDER BY p.created_at DESC
-LIMIT ?
-OFFSET ?" allow-hidden? page-size (* (dec page) page-size)] {:row-fn (comp #(change-key % :amount_of_comments :amount-of-comments)
-                                                                           (partial ->Post db))}))
+  (->> (get-page* db-spec {:show-hidden  allow-hidden?
+                           :page-size page-size
+                           :page-id (* (dec page) page-size)})
+       (mapv (partial ->Post db))))
+
+;; (->> (get-page murja.db/db 2 2)
+;;      (map :id))
+;; (22 21)
+;; (24 23)
+
         
     
 
 (defn landing-page-ids [db-c]
-  (j/query db-c ["SELECT id
-FROM blog.Post 
-WHERE tags ?? 'landing-page' AND NOT tags ?? 'hidden'"]
-           {:row-fn :id
-           :result-set-fn vec}))
+  (->> (landing-page-ids* db-c)
+       (mapv :id)))
 
 (defn remove-tag! [{:keys [db-spec] :as db} tag id]
-  (if-let [tags (j/query db-spec ["SELECT tags FROM blog.Post WHERE id = ?" id] {:row-fn :tags
-                                                                                 :result-set-fn first})]
+  (if-let [{:keys [tags]} (get-posts-tags* db-spec {:post-id id})]
     (let [new-tags (filterv (complement #(= % tag)) tags)]
-      (j/update! db-spec :blog.Post
-                 {:tags new-tags}
-                 ["id = ?" id]))))
-
-(defn edit-post!
-  [{:keys [db-spec] :as db}
-   {:keys [_id] :as user}
-   {:keys [title content tags] :as post}]
-    (j/with-db-transaction [c db-spec]
-      (if ((set tags) "landing-page")
-        (let [ids (landing-page-ids c)]
-          (mapv (partial remove-tag! {:db-spec c} "landing-page")
-                ids)))
-      (j/insert! c :blog.post
-                 [:Title :Content :creator_id :tags ]
-                 [title content _id tags])))
+      ;; tälle pitääkin sitten nyt oikeasti duunata automaagitestiä
+      (update-tags* db-spec {:new-tags new-tags}))))
 
 (defn edit-post! [{:keys [db-spec] :as db}
                   {:keys [_id] :as user}
-                  {:keys [title content tags id]}]
+                  {:keys [title content tags id] :as post}]
 
-    (j/with-db-transaction [c db-spec]
-      (if ((set tags) "landing-page")
-        (let [ids (landing-page-ids c)]
-          (mapv (partial remove-tag! {:db-spec c} "landing-page")
-                ids)))
-      ;; move the old post to the history table
-      (j/execute! db-spec ["
-INSERT INTO blog.Post_History(ID, Title, Content, creator_id, tags, created_at, version)
-SELECT p.ID, p.Title, p.Content, p.creator_id, p.tags, p.created_at, coalesce(MAX(ph.version), 0) + 1
-FROM blog.Post p
-LEFT JOIN blog.Post_History ph ON p.ID = ph.ID
-WHERE p.id = ?
-GROUP BY p.ID" id])
-      (j/update! c :blog.Post
-                 {:title title
-                  :content content
-                  :tags tags}
-                 ["id = ?" id])))
+  (j/with-db-transaction [c db-spec]
+    (if ((set tags) "landing-page")
+      (let [ids (landing-page-ids c)]
+        (mapv (partial remove-tag! {:db-spec c} "landing-page")
+              ids)))
+    (update-post db-spec post)))
 
 (defn delete-by-id
   ([{:keys [db-spec] :as db}
-   post-id]
-   (j/delete! db-spec :blog.Post ["ID = ?" post-id]))
+    post-id]
+   (delete-post db-spec {:id post-id}))
   ([{:keys [db-spec] :as db}
     post-id
     post-version]
-   (j/delete! db-spec :blog.Post_History ["ID = ? AND version = ?" post-id post-version])))
+   (delete-post db-spec {:id post-id
+                         :version post-version})))
 
 (defn delete-comment-by-id
   [{:keys [db-spec] :as db}
    comment-id]
-  (j/delete! db-spec :blog.Comment ["ID = ?" comment-id]))
+  (delete-comment db-spec {:id comment-id}))
 
 (defn comment-post!
   [{:keys [db-spec] :as db}
@@ -307,21 +217,12 @@ GROUP BY p.ID" id])
 (defn
   get-landing-page
   [{:keys [db-spec] :as db}]
-  (j/query db-spec ["SELECT p.ID, p.Title, p.created_at, p.Content, p.tags, u.Username, u.Nickname, u.Img_location, COUNT(c.ID) AS \"amount-of-comments\"
-FROM blog.Post p
-JOIN blog.Users u ON u.ID = p.creator_id
-LEFT JOIN blog.Comment c ON c.parent_post_id = p.ID
-WHERE p.tags ?? 'landing-page' AND NOT p.tags ?? 'hidden'
-GROUP BY p.ID, u.ID"]
-           {:result-set-fn #(or (first %) {})
-           :row-fn (partial ->Post db)}))
+  (->> (get-landing-page* db-spec)
+       (->Post db)))
 
 (defn get-landing-page-title
   [{:keys [db-spec] :as db}]
-  (or (j/query db-spec ["SELECT p.Title, p.Id
-FROM blog.Post p
-WHERE p.tags ?? 'landing-page' AND NOT p.tags ?? 'hidden'"]
-               {:result-set-fn  first})
+  (or (landing-page-title db-spec)
       {}))
 
 (defn strtake [n s]
@@ -350,6 +251,4 @@ WHERE p.tags ?? 'landing-page' AND NOT p.tags ?? 'hidden'"]
       (let [ids (landing-page-ids c)]
         (mapv (partial remove-tag! {:db-spec c} "landing-page")
               ids)))
-    (j/insert! c :blog.post
-               [:Title :Content :creator_id :tags ]
-               [title content _id tags])))
+    (insert-post db-spec (assoc post :creator-id _id))))

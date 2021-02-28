@@ -1,5 +1,6 @@
 (ns murja.middleware
   (:require [murja.db :as db]
+            [clojure.pprint]
             [murja.db.login :as db.login]
             #_[murja.db.users :as db.users]))
 
@@ -7,14 +8,17 @@
   (fn [request]
     (handler (assoc request :db db/db))))
 
+(defn wrapping-user [handler {:keys [db]
+                              {{:keys [_id] :as req-identity} :identity} :session
+                              :as request}]
+  (if req-identity
+    (handler (assoc request :user (merge req-identity (db.login/get-user-view-data db _id))))
+    {:status 401
+     :body "Unauthorized!"}))
+  
 (defn wrap-user [handler]
-  (fn [{:keys [db]
-        {{:keys [_id] :as identity} :identity} :session
-        :as request}]
-    (if identity
-      (handler (assoc request :user (merge identity (db.login/get-user-view-data db _id))))
-      {:status 401
-       :body "Unauthorized!"})))
+  (fn [req]
+    (wrapping-user handler req)))
 
 (defn do-can [handler {:keys [db user session] :as request} action]
   (assert (some? db) "db is nil, please use murja.middleware/wrap-db before can? middleware")

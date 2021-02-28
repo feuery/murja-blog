@@ -2,13 +2,17 @@
   (:require [mount.core :refer [defstate]]
             [ragtime.jdbc :as jdbc]
             [ragtime.repl :as rag]
+            [hugsql.core :as hug]
+            [hugsql.adapter.clojure-java-jdbc :as ad]
             [murja.config :as config]))
 
 (defstate db 
-  :start {:db
-          {:datastore (jdbc/sql-database (:db config/config))
-           :migrations (jdbc/load-resources "migrations")}
-          :db-spec (:db config/config)}
+  :start (do
+           (hug/set-adapter! (ad/hugsql-adapter-clojure-java-jdbc))
+           {:db
+            {:datastore (jdbc/sql-database (:db config/config))
+             :migrations (jdbc/load-resources "migrations")}
+            :db-spec (:db config/config)})
   :stop nil)
 
 
@@ -30,4 +34,4 @@
   ([]
    (rollback db)))
 
-;; (migrate)
+

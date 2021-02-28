@@ -13,10 +13,16 @@
                  [com.cognitect/transit-clj "1.0.324"]
                  [ring/ring-jetty-adapter "1.8.2"]
                  [ragtime "0.8.0"]
-                 [metosin/reitit "0.5.10"]]
+                 [metosin/reitit "0.5.10"]
+                 [com.layerware/hugsql-core "0.5.1"]
+                 [com.layerware/hugsql-adapter-clojure-java-jdbc "0.5.1"]]
   :repl-options {:init-ns murja.reitit}
   :profiles {:dev {:dependencies [[org.clojure/tools.nrepl "0.2.13"]
-                                  [cider/cider-nrepl "0.25.2"]]
+                                  [cider/cider-nrepl "0.25.2"]
+
+                                  [ring/ring-mock "0.4.0"]]
                    :plugins [[cider/cider-nrepl "0.25.2"]]}}
+  :source-paths ["src" "src/sql"]
+  
   :main murja.reitit
   :aot :all)
