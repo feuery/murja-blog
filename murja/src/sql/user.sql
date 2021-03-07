@@ -12,9 +12,9 @@ where ID = :_id
 insert into blog.Users (username, nickname, img_location, password)
 values (:username, :nickname, :img_location, :password)
 
--- :name get-user :? :!
+-- :name get-user :? :1
 select * from blog.Users where username = :username
 
--- :name insert-groupmapping
+-- :name insert-groupmapping :!
 insert into blog.groupmapping (userid, groupid, primarygroup)
 values (:userid, :groupid, :primarygroup)

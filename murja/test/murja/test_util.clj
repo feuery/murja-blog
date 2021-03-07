@@ -10,7 +10,7 @@
 
 (defn init-users [{:keys [db-spec] :as db}]
   (when-not (test-user-really-exists? db)
-    (insert-test-user! db-spec test-admin))
+    (insert-test-user! db-spec @test-admin))
   (swap! test-admin assoc :_id (:id (test-user-id db-spec))))
 
   

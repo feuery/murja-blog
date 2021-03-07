@@ -25,10 +25,11 @@
                 :password password}]
                 
       (insert-user* d (update user :password sha-512))
-      (let [{user-id :id} (get-user d {:username username})]
+      (let [{user-id :id :as user} (get-user d {:username username})]
         (insert-groupmapping d {:userid user-id
                                 :groupid (if everything-was-empty?
                                            1 ;; admin's id
                                            2 ;; user's id
                                            )
-                                :primarygroup true})))))
+                                :primarygroup true})
+        (dissoc user :password)))))

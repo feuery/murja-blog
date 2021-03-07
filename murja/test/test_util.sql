@@ -12,3 +12,7 @@ select id from blog.users where username = 'test-user';
 -- :name delete-test-posts :!
 delete from blog.post
 where tags ?? 'test-generated'
+
+-- :name delete-test-users :!
+delete from blog.Users
+where username like 'test%';

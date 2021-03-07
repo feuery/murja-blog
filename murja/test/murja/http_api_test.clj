@@ -8,6 +8,7 @@
             [ring.mock.request :refer [request json-body]]
             [murja.reitit :as reitit]
             [murja.db :as db]
+            [murja.db.users :as db.users]
             [murja.config :as config]))
 
 #_(assert (not-empty (:started (mount/start (mount/only [#'config/config #'db/db])))))
@@ -19,8 +20,13 @@
   
   status)
 
+(def decode-body (comp (partial muuntaja/decode "application/json")
+                       slurp))
+
 (deftest http-api-test
+  (util/delete-test-users (:db-spec murja.db/db))
   (util/init-users murja.db/db)
+  
   (testing "| if stuff that's supposed to return something from test db instead of spec errors does that "
     (with-redefs [middleware/wrapping-user (fn [handler req]
                                              (handler (assoc req :user @util/test-admin)))
@@ -38,8 +44,7 @@
                                                 (json-body {:title "Uusi testi title"
                                                             :content "Testi contenttia"
                                                             :tags [#_"hidden" "test-generated"]})))
-                                       :body (comp (partial muuntaja/decode "application/json")
-                                                   slurp))]
+                                       :body decode-body)]
             (is (= status 200))
 
             (testing "| PUT /api/posts/post"
@@ -51,8 +56,7 @@
                     {:keys [body status]} (update
                                            (app (-> (request :put "/api/posts/post")
                                                     (json-body edited-post)))
-                                           :body (comp (partial muuntaja/decode "application/json")
-                                                       slurp))]
+                                           :body decode-body)]
                 (if-not (= status 200)
                   (clojure.pprint/pprint {:problem-body body}))
                 (is (= status 200))
@@ -61,8 +65,7 @@
                   (println "Fetching post from url " (pr-str (str "/api/posts/post/" id)))
                   (let [{:keys [body status]} (update
                                                (app (request :get (str "/api/posts/post/" id)))
-                                               :body (comp (partial muuntaja/decode "application/json")
-                                                           slurp))]
+                                               :body decode-body )]
                     (is (= status 200))
                     (is (= (merge edited-post
                                   {:creator {:nickname "Test-User", :username "test-user", :img_location ""},
@@ -70,5 +73,32 @@
 	                           :amount-of-comments 0,
                                    :versions [1],
 	                           :version nil} )
-                           (dissoc body :created_at :next-post-id :prev-post-id))))))))))))
+                           (dissoc body :created_at :next-post-id :prev-post-id)))))))))
+        (testing "registering user"
+          (let [{:keys [status body]} (update
+                                       (app (request :get "/api/users/is-empty"))
+                                       :body decode-body)]
+            (is (= status 200))
+            (is (false? (:is-empty? body))))
+          (let [user (db.users/register-user! murja.db/db "test-user" "test-username" "" "testipassu")]
+            (is (= (dissoc user :id)
+                   {:username "test-username",
+	            :nickname "test-user",
+	            :img_location ""}))
+
+            ;; this is untestable because I don't have the slightest clue how I should mock session here
+            #_(testing "updating user"
+              (binding [murja.middleware/*test-user* user]
+                (let [{:keys [status body]} (update
+                                             (app (-> (request :post "/api/users/save")
+                                                      (json-body (-> user
+                                                                     (assoc :username "test-updated-username"
+                                                                            :nickname "test-PÄIVITETTY NIKKI"
+                                                                            :password "testipassu")))))
+                                             :body decode-body)]
+                  (is (= status 200))
+                  (is (empty? body))))))))))
+
+          
+  (util/delete-test-users (:db-spec murja.db/db))
   (util/delete-test-posts (:db-spec murja.db/db)))
