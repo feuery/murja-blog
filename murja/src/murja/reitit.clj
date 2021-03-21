@@ -33,6 +33,9 @@
                                 :middleware [middleware.multipart/multipart-middleware]
                                 :post {:handler #'api/post-pictures
                                        :parameters {:multipart {:file middleware.multipart/temp-file-part}}}}]
+                  ["/pictures/:id" {:swagger {:tags ["media"]}
+                                    :get {:handler #'api/get-pictures
+                                          :parameters {:path {:id string?}}}}]
                    
                   ["/login" {:swagger {:tags ["login"]}}
                    ["/login" {:post {:handler #'api/post-login

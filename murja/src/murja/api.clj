@@ -141,6 +141,20 @@
   {:status 200
    :body (api.media/save-image db file)})
 
+(defn get-pictures [{:keys [db]
+                     {{:keys [id]} :path} :parameters}]
+  (let [{:keys [data name]} (api.media/get-picture db id)]
+    {:status 200
+     :body data
+     :headers {"Content-Disposition" (str "inline; filename=" name)}}))
+
+
+
+
+
+
+  
+
 (defn get-frontend [{:keys [db] :as rq}]
   (let [{:keys [js-route css-route]} config/config
         path (get-path rq)

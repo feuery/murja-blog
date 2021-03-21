@@ -9,3 +9,6 @@
   (let [bytedata (IOUtils/toByteArray (io/input-stream tempfile))]
     (first (insert-media db-spec {:name filename
                                   :data bytedata}))))
+
+(defn get-picture [{:keys [db-spec]} id]
+  (get-media db-spec {:id id}))
