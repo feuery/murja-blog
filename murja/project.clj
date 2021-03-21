@@ -12,6 +12,7 @@
                  [org.clojure/java.jdbc "0.7.11"]
                  [com.cognitect/transit-clj "1.0.324"]
                  [ring/ring-jetty-adapter "1.8.2"]
+                 [commons-io/commons-io "2.8.0"]
                  [ragtime "0.8.0"]
                  [metosin/reitit "0.5.10"]
                  [com.layerware/hugsql-core "0.5.1"]

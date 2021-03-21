@@ -2,6 +2,7 @@
   (:require [reitit.ring :as ring]
             [reitit.ring.middleware.muuntaja :as reitit.middleware.muuntaja]
             [reitit.ring.middleware.parameters :as reitit.middleware.params]
+            [reitit.ring.middleware.multipart :as middleware.multipart]
             [reitit.swagger-ui]
             [reitit.swagger]
             [mount.core :as mount :refer [defstate]]
@@ -14,7 +15,7 @@
             [ring.middleware.session :as session]
             [clojure.spec.alpha :as spec]
             [murja.api :as api]
-
+            
             [murja.middleware :as middleware]
             [murja.config :as config]
             [murja.db :refer [migrate rollback]]
@@ -28,6 +29,11 @@
 ;; tags: posts, login, users, settings
 
 (def app-routes [["/api" {:middleware [middleware/wrap-db]}
+                  ["/pictures" {:swagger {:tags ["media"]}
+                                :middleware [middleware.multipart/multipart-middleware]
+                                :post {:handler #'api/post-pictures
+                                       :parameters {:multipart {:file middleware.multipart/temp-file-part}}}}]
+                   
                   ["/login" {:swagger {:tags ["login"]}}
                    ["/login" {:post {:handler #'api/post-login
                                      :parameters {:body ::login/login}}}]

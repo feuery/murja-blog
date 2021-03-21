@@ -5,6 +5,7 @@
             [murja.api.posts :as api.posts]
             [murja.api.users :as api.users]
             [murja.api.login :as api.login]
+            [murja.api.media :as api.media]
             [murja.db.posts :as post-db]))
 
 (defn get-client-settings [_]
@@ -134,6 +135,11 @@
 (defn get-path [rq]
   {:post [(some? %)]}
   (get-in rq [:reitit.core/match :path]))
+
+(defn post-pictures [{:keys [db]
+                      {{:keys [file]} :multipart} :parameters}]
+  {:status 200
+   :body (api.media/save-image db file)})
 
 (defn get-frontend [{:keys [db] :as rq}]
   (let [{:keys [js-route css-route]} config/config
