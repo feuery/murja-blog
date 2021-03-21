@@ -12,3 +12,6 @@
 
 (defn get-picture [{:keys [db-spec]} id]
   (get-media db-spec {:id id}))
+
+(defn list-pictures [{:keys [db-spec]}]
+  (list-pictures* db-spec))

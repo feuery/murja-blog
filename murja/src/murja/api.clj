@@ -148,6 +148,10 @@
      :body data
      :headers {"Content-Disposition" (str "inline; filename=" name)}}))
 
+(defn get-pictures-list [{:keys [db]}]
+  {:status 200
+   :body (api.media/list-pictures db)})
+
 
 
 

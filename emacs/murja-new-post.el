@@ -52,7 +52,8 @@
   (local-set-key (kbd "C-x C-s") (lambda ()
 				   (interactive)
 				   (murja-save-post-buffer murja-title)))
-  (local-set-key (kbd "C-x C-m t") #'murja-edit-tags))
+  (local-set-key (kbd "C-x C-m t") #'murja-edit-tags)
+  (local-set-key (kbd "C-x C-m i") #'murja-list-images))
 
 (defun murja-new-post (title)
   (interactive "sNew title: ")
