@@ -17,6 +17,9 @@ case $method in
 	result=$(curl -s -X DELETE --cookie-jar "$cookie_jar" -b "$cookie_jar" --header 'Accept: application/json' "$murja_url");;
     'PUT')
 	result=$(curl -s -X PUT --cookie-jar "$cookie_jar" -b "$cookie_jar" --header 'Content-Type: application/json' --header 'Accept: application/json' -d @$input_file "$murja_url");;
+    'MULTIPART')
+	form_data="file=@$input_file;type=image/jpeg"
+	result=$(curl -s --cookie-jar "$cookie_jar" $murja_url -H  "accept: application/json" -H  "Content-Type: multipart/form-data" -F $form_data );;
     *)
 	echo lolwat?;;
 esac

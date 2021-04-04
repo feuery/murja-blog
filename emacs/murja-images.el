@@ -40,3 +40,12 @@
 				 ("Name" 40 t)])
     (setq tabulated-list-entries (mapcar #'murja-media-entry data))
     (tabulated-list-print)))
+
+(defun murja-upload-image (image-file)
+  (interactive "f")
+  (let* ((cmd-result (shell-command-to-string (concat murja-script-directory "/murja-client.sh MULTIPART " murja-url "/api/pictures \"" image-file "\"")))
+	 (result (murja-json-read cmd-result))
+	 (id (cdr (assoc 'id result))))
+    (insert "<img src=\"" murja-url "/api/pictures/" id "\" />")))
+
+(provide 'murja-images)

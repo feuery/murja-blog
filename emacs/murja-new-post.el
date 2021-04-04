@@ -1,6 +1,7 @@
 ;; -*- lexical-binding: t -*-
 
 (require 'murja-tags)
+(require 'murja-images)
 
 (defvar murja-error-handler (cl-function (lambda (&rest args &key error-thrown response &allow-other-keys)
 					   (message "Got error: %S - %S" error-thrown))))
@@ -53,7 +54,9 @@
 				   (interactive)
 				   (murja-save-post-buffer murja-title)))
   (local-set-key (kbd "C-x C-m t") #'murja-edit-tags)
-  (local-set-key (kbd "C-x C-m i") #'murja-list-images))
+  (local-set-key (kbd "C-x C-m l") #'murja-list-images)
+  (local-set-key (kbd "C-x C-m i") #'murja-upload-image)
+  )
 
 (defun murja-new-post (title)
   (interactive "sNew title: ")
