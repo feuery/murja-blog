@@ -30,7 +30,9 @@
 
 (def app-routes [["/api" {:middleware [middleware/wrap-db]}
                   ["/pictures" {:swagger {:tags ["media"]}
-                                :middleware [middleware.multipart/multipart-middleware]
+                                :middleware [middleware.multipart/multipart-middleware
+                                             middleware/wrap-user
+                                             [middleware/can? "create-post"]]
                                 :post {:handler #'api/post-pictures
                                        :parameters {:multipart {:file middleware.multipart/temp-file-part}}}}]
                   ["/pictures"
