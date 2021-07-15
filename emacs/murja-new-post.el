@@ -36,14 +36,15 @@
 			       (tags . ,(or murja-tags (vector))))))))
     (message (concat "Trying to save post to " url " using method " (if murja-id "PUT" "POST")))
 
-    (f-write-text data 'utf-8 (concat murja-script-directory "/input.json"))    
-    (let* ((cmd-result (shell-command-to-string (concat murja-script-directory "/murja-client.sh " (if murja-id "PUT" "POST") " " url " " murja-script-directory "/input.json")))
-	   (nothing (message (concat "cmd-result: " cmd-result)))
+    (let* ((operation (if murja-id "apiPostsPostPut" "apiPostsPostPost"))
+	   (shell-cmd (concat "echo '" data "' | " murja-script-directory "/murja-client.sh -s --data @- --content-type 'application/json' --host " murja-url " " operation))
+	   ;;(nothing (message "Shell-command: %s" shell-cmd))
+	   (cmd-result (shell-command-to-string shell-cmd))
+	   ;;(nothing (message (concat "cmd-result: " cmd-result)))
 	   (data (murja-json-read cmd-result)))
       (if data
 	  (murja-handle-edit-success data murja-title)
 	(message "data is nil")))))
-
 
 (define-derived-mode murja-post-mode html-mode " murja-post "
   "Mode for writing and editing murja posts"
@@ -97,23 +98,23 @@ Copypasted from http://stackoverflow.com/a/570049"
       (insert (cdr
 	       (assoc 'content
 		      data)))
-      ;; (murja-xml-pretty-print (point-min) (point-max))
+      (murja-xml-pretty-print (point-min) (point-max))
       (murja-post-mode)
       
       (setq murja-tags (mapcar (lambda (x) x) tags))
       (setq murja-title title)
       (setq murja-id id))))
 
-;; curl -X GET "http://localhost:3000/api/posts/post/1/allow-hidden/false" -H  "accept: application/json"
 (defun open-murja-post-buffer (id)
   (if murja-url
-      (let ((url (concat murja-url "/api/posts/post/" (prin1-to-string id) "/allow-hidden/true")))
-	(message (concat "Requesting " url))
-	(let* ((cmd-result (shell-command-to-string (concat murja-script-directory "/murja-client.sh GET " url)))
-	       (data (murja-json-read cmd-result)))
-	  (if data
-	      (opening-murja-post-buffer data)
-	    (message (concat "Data is invalid: " (prin1-to-string data))))))
+      (let* ((call (concat murja-script-directory "/murja-client.sh -s --data @- --host " murja-url " apiPostsPostIdAllowHiddenAllowHiddenGet id=" (prin1-to-string id) " allow-hidden=true"))
+	     ;; (_ (message "calling murja with cmd %s" call))
+	     (cmd-result (shell-command-to-string call))
+	     ;; (_ (message "cmd-result when opening murja post: %s" cmd-result))
+	     (data (murja-json-read cmd-result)))
+	(if data
+	    (opening-murja-post-buffer data)
+	  (message (concat "Data is invalid: " (prin1-to-string data)))))
     (message "murja-url is nil, did you call murja-main?")))
 
 

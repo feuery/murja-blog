@@ -19,10 +19,10 @@
                  [com.layerware/hugsql-adapter-clojure-java-jdbc "0.5.1"]]
   :repl-options {:init-ns murja.reitit}
   :profiles {:dev {:dependencies [[org.clojure/tools.nrepl "0.2.13"]
-                                  [cider/cider-nrepl "0.25.2"]
+                                  [cider/cider-nrepl "0.26.0"]
 
                                   [ring/ring-mock "0.4.0"]]
-                   :plugins [[cider/cider-nrepl "0.25.2"]]}}
+                   :plugins [[cider/cider-nrepl "0.26.0"]]}}
   :source-paths ["src" "src/sql"]
   
   :main murja.reitit

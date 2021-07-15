@@ -8,11 +8,11 @@
 
 (defvar *murja-old-buffer* nil)
 
-(defun insert-media-id ()
-  (interactive)
+(defun insert-media-id (alt-text)
+  (interactive "sAlt text: ")
   (let ((id (murja-selected-media-id)))
     (switch-to-buffer *murja-old-buffer*)
-    (insert "<img src=\"" murja-url "/api/pictures/" id "\" />")))
+    (insert "<img src=\"" murja-url "/api/pictures/" id "\" alt=\"" alt-text "\" />")))
     
 
 (defvar murja-media-mode-map
@@ -31,7 +31,7 @@
 
 (defun murja-list-images ()
   (interactive)
-  (let* ((cmd-result (shell-command-to-string (concat murja-script-directory "/murja-client.sh GET " murja-url "/api/pictures/list/all")))
+  (let* ((cmd-result (shell-command-to-string (concat murja-script-directory "/murja-client.sh -s --host " murja-url " apiPicturesListAllGet")))
 	 (data (murja-json-read cmd-result))
 	 (*murja-old-buffer* (current-buffer)))
     (switch-to-buffer (get-buffer-create (concat "Murja images: " murja-url)))
@@ -41,11 +41,12 @@
     (setq tabulated-list-entries (mapcar #'murja-media-entry data))
     (tabulated-list-print)))
 
-(defun murja-upload-image (image-file)
-  (interactive "f")
-  (let* ((cmd-result (shell-command-to-string (concat murja-script-directory "/murja-client.sh MULTIPART " murja-url "/api/pictures \"" image-file "\"")))
+(defun murja-upload-image (image-file alt-text)
+  (interactive "f\nsAlt text: ")
+  (let* ((cmd-result (shell-command-to-string (concat murja-script-directory "/murja-client.sh -s -F file=@" image-file " --host " murja-url " apiPicturesPost")))
+	 ;;(cmd-result (shell-command-to-string (concat murja-script-directory "/murja-client.sh MULTIPART " murja-url "/api/pictures \"" image-file "\"")))
 	 (result (murja-json-read cmd-result))
 	 (id (cdr (assoc 'id result))))
-    (insert "<img src=\"" murja-url "/api/pictures/" id "\" />")))
+    (insert "<img src=\"" murja-url "/api/pictures/" id "\" alt=\"" alt-text "\" />")))
 
 (provide 'murja-images)

@@ -1,26 +1,12 @@
-#!/usr/bin/env bash
+#!/bin/env bash
 
-method=$1
-murja_url=$2
-input_file=$3
-cookie_jar=./cookies
+source_dir=$(dirname "${0}")
+cookie_jar=$source_dir/cookies
 
-# echo curling $payload to $murja_url
+if [ ! -d $source_dir/murja-client/ ]; then
+    echo "murja-client doesn't exist in $(pwd)"
+    sh $source_dir/generate-client.sh
+fi
 
-case $method in
-    'GET')
-	# echo curl -s -X GET --cookie-jar "$cookie_jar" --header 'Accept: application/json' "$murja_url"
-	result=$(curl -s -X GET --cookie-jar "$cookie_jar" -b "$cookie_jar" --header 'Accept: application/json' "$murja_url");;
-    'POST')
-	result=$(curl -s -X POST --cookie-jar "$cookie_jar" -b "$cookie_jar" --header 'Content-Type: application/json' --header 'Accept: application/json' -d @$input_file "$murja_url");;
-    'DELETE')
-	result=$(curl -s -X DELETE --cookie-jar "$cookie_jar" -b "$cookie_jar" --header 'Accept: application/json' "$murja_url");;
-    'PUT')
-	result=$(curl -s -X PUT --cookie-jar "$cookie_jar" -b "$cookie_jar" --header 'Content-Type: application/json' --header 'Accept: application/json' -d @$input_file "$murja_url");;
-    'MULTIPART')
-	form_data="file=@$input_file;type=image/jpeg"
-	result=$(curl -s --cookie-jar "$cookie_jar" $murja_url -H  "accept: application/json" -H  "Content-Type: multipart/form-data" -F $form_data );;
-    *)
-	echo lolwat?;;
-esac
-echo $result
+sh $source_dir/murja-client/client.sh --cookie-jar "$cookie_jar" -b "$cookie_jar" "$@"
+
