@@ -97,7 +97,18 @@
                                                                             :password "testipassu")))))
                                              :body decode-body)]
                   (is (= status 200))
-                  (is (empty? body))))))))))
+                  (is (empty? body)))))))
+        (testing "/api/posts/all-titles shows hidden posts too"
+          (testing "let's insert a hidden post there"
+            (let [{:keys [status body]} (update
+                                         (app (-> (request :post "/api/posts/post")
+                                                  (json-body {:title "hidden title"
+                                                              :content "Testi contenttia"
+                                                              :tags ["hidden" "test-generated"]})))
+                                         :body decode-body)]
+              (is (= status 200))))
+          (let [{:keys [status body] :as result} (update (app (request :get "/api/posts/all-titles")) :body decode-body)]
+            (is ((set (mapcat :Tags body)) "hidden")))))))
 
           
   (util/delete-test-users (:db-spec murja.db/db))

@@ -53,9 +53,10 @@
   (when murja-url
     (let* ((title-url (concat murja-url "/api/posts/all-titles"))
 	   (cmd-result (shell-command-to-string
-			(concat murja-script-directory "/murja-client.sh -s --host " murja-url " apiPostsTitlesGet")))
+			(concat murja-script-directory "/murja-client.sh -s --host " murja-url " apiPostsAllTitlesGet")))
 	   
 	   (data (murja-json-read cmd-result)))
+
       (switch-to-buffer (get-buffer-create (concat "Murja: " murja-url)))
       (setq loaded-murja-titles data)
       (murja-title-mode)
@@ -78,7 +79,7 @@
 			       username
 			       " password=="
 			       passwd))))
-      (Message "Result %s " cmd-result)
+      (message "Result %s " cmd-result)
       (setq murja-url url)
       
       (let ((data (murja-json-read cmd-result)))
