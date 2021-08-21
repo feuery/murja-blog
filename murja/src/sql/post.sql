@@ -17,7 +17,7 @@ SELECT p.Title,
        p.id as "Id",
        p.Tags
 FROM blog.Post p
-WHERE NOT p.tags ?? 'unlisted' AND (NOT p.tags ?? 'hidden' OR (p.tags ?? 'hidden' AND :show-hidden))
+WHERE :show-hidden OR (NOT p.tags ?? 'unlisted' AND NOT p.tags ?? 'hidden')
 ORDER BY p.created_at DESC
 
 -- :name post-versions*
