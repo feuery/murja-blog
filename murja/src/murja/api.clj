@@ -169,6 +169,7 @@
              (slurp (io/resource "murja.min.js")))]
 
     {:status 200
+     :headers {"content-type" "text/html"}
      :body (html5 {:xmlns:og "http://ogp.me/ns#"
                    :xmlns:fb "http://www.facebook.com/2008/fbml"}
                   (into [:head

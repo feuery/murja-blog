@@ -14,7 +14,7 @@
   (let ((id (cdr (assoc 'id data))))
     (if id
 	(setq murja-id id))
-    (message (concat title " saved successfully to " murja-url " with id " (prin1-to-string murja-id)))))
+    (message (concat title " saved successfully to " murja-url " with id " (prin1-to-string (or id murja-id))))))
 
 (defun murja-edit-tags ()
   (interactive)

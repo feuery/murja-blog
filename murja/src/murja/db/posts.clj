@@ -243,6 +243,9 @@
         {:keys [content title] :as post} (get-by-id db post-id)]
 
     [(twitter-meta "twitter:card" "summary")
+     (Meta "twitter:title" title)
+     (Meta "twitter:description" (str/replace (strtake 200 content) #"\n" ""))
+     
      (Meta "og:description" (str/replace (strtake 200 content) #"\n" ""))
      (Meta "og:title" title)
      (Meta "og:site_name" (get-in con/config [:client-config :blog-title]))]))
