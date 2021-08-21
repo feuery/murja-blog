@@ -17,7 +17,7 @@ SELECT p.Title,
        p.id as "Id",
        p.Tags
 FROM blog.Post p
-WHERE NOT p.tags ?? 'hidden' OR (p.tags ?? 'hidden' AND :show-hidden)
+WHERE NOT p.tags ?? 'unlisted' AND (NOT p.tags ?? 'hidden' OR (p.tags ?? 'hidden' AND :show-hidden))
 ORDER BY p.created_at DESC
 
 -- :name post-versions*
@@ -72,7 +72,7 @@ SELECT p.ID, p.Title, p.Content, p.created_at, p.tags, u.Username, u.Nickname, u
 FROM blog.Post p
 JOIN blog.Users u ON u.ID = p.creator_id
 LEFT JOIN blog.Comment c ON c.parent_post_id = p.ID
-WHERE (NOT p.tags ?? 'hidden') OR :show-hidden
+WHERE NOT p.tags ?? 'unlisted' AND ((NOT p.tags ?? 'hidden') OR :show-hidden)
 GROUP BY p.ID, u.ID
 ORDER BY p.created_at DESC
 LIMIT :page-size

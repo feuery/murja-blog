@@ -14,7 +14,7 @@
   (let ((id (cdr (assoc 'id data))))
     (if id
 	(setq murja-id id))
-    (message (concat title " saved successfully to " murja-url))))
+    (message (concat title " saved successfully to " murja-url " with id " (prin1-to-string murja-id)))))
 
 (defun murja-edit-tags ()
   (interactive)
@@ -22,29 +22,34 @@
 
 (defun murja-save-post-buffer (murja-title)
   (interactive)
-  ;; if murja-id -> edit
-  (let ((url (concat murja-url "/api/posts/post"))
-	(data (if murja-id
-		  (json-encode `((title . ,murja-title)
-				 (content . ,(buffer-substring-no-properties (point-min) (point-max)))
-				 (tags . ,(or murja-tags (vector)))
-				 (id . ,(if (stringp murja-id)
-					    (string-to-number murja-id)
-					  murja-id))))
-		(json-encode `((title . ,murja-title)
-			       (content . ,(buffer-substring-no-properties (point-min) (point-max)))
-			       (tags . ,(or murja-tags (vector))))))))
-    (message (concat "Trying to save post to " url " using method " (if murja-id "PUT" "POST")))
+  (let ((tags (or murja-tags (vector))))
+    (if (and (member "hidden" tags)
+	     (member "unlisted" tags))
+	(message "Post can't be both hidden and unlisted!")
+      
+      ;; if murja-id -> edit
+      (let ((url (concat murja-url "/api/posts/post"))
+	    (data (if murja-id
+		      (json-encode `((title . ,murja-title)
+				     (content . ,(buffer-substring-no-properties (point-min) (point-max)))
+				     (tags . ,tags)
+				     (id . ,(if (stringp murja-id)
+						(string-to-number murja-id)
+					      murja-id))))
+		    (json-encode `((title . ,murja-title)
+				   (content . ,(buffer-substring-no-properties (point-min) (point-max)))
+				   (tags . ,(or murja-tags (vector))))))))
+	(message (concat "Trying to save post to " url " using method " (if murja-id "PUT" "POST")))
 
-    (let* ((operation (if murja-id "apiPostsPostPut" "apiPostsPostPost"))
-	   (shell-cmd (concat "echo '" data "' | " murja-script-directory "/murja-client.sh -s --data @- --content-type 'application/json' --host " murja-url " " operation))
-	   ;;(nothing (message "Shell-command: %s" shell-cmd))
-	   (cmd-result (shell-command-to-string shell-cmd))
-	   ;;(nothing (message (concat "cmd-result: " cmd-result)))
-	   (data (murja-json-read cmd-result)))
-      (if data
-	  (murja-handle-edit-success data murja-title)
-	(message "data is nil")))))
+	(let* ((operation (if murja-id "apiPostsPostPut" "apiPostsPostPost"))
+	       (shell-cmd (concat "echo '" data "' | " murja-script-directory "/murja-client.sh -s --data @- --content-type 'application/json' --host " murja-url " " operation))
+	       ;;(nothing (message "Shell-command: %s" shell-cmd))
+	       (cmd-result (shell-command-to-string shell-cmd))
+	       ;;(nothing (message (concat "cmd-result: " cmd-result)))
+	       (data (murja-json-read cmd-result)))
+	  (if data
+	      (murja-handle-edit-success data murja-title)
+	    (message "data is nil")))))))
 
 (define-derived-mode murja-post-mode html-mode " murja-post "
   "Mode for writing and editing murja posts"

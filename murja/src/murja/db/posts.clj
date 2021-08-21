@@ -232,13 +232,18 @@
   [:meta {:content contents
           :property prop}])
 
+(defn twitter-meta [name content]
+  [:meta {:name name
+          :content content}])
+
 (defn make-fb-meta-tags [{:keys [db-spec] :as db} post-id]
   (let [post-id (if (string? post-id)
                   (Long/parseLong post-id)
                   post-id)
         {:keys [content title] :as post} (get-by-id db post-id)]
 
-    [(Meta "og:description" (str/replace (strtake 200 content) #"\n" ""))
+    [(twitter-meta "twitter:card" "summary")
+     (Meta "og:description" (str/replace (strtake 200 content) #"\n" ""))
      (Meta "og:title" title)
      (Meta "og:site_name" (get-in con/config [:client-config :blog-title]))]))
 
