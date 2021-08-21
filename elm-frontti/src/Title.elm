@@ -4,5 +4,5 @@ type alias Title =
     { title: String
     , id: Int
     , year: Int
-    , month: String
+    , month: Int
     , tags: List String}

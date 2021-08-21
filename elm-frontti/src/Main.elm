@@ -36,6 +36,7 @@ import Browser.Navigation as Nav
 
 import RouteParser
 import Url
+import Date_utils exposing (int_to_month_string)
 
 
 -- MAIN
@@ -316,14 +317,18 @@ sidebarHistory titles =
                                                    [li [] [details [] [summary [] [text (fromInt year)],
                                                                         let grouped_by_month = groupBy .month per_year in
                                                                           ul [] (List.concat (List.map (\month ->
-                                                                                                            [li [] [details [] [summary [] [text (toSentenceCase month)],
-                                                                                                                                ul [class "title-list"] (titles
-                                                                                                                                      |> List.filter (\title ->
-                                                                                                                                                          title.year == year && title.month == month)
-                                                                                                                                      |> List.map (\title ->
-                                                                                                                                                       [li [class "title-list"]
-                                                                                                                                                            [a [href ("/blog/post/" ++ (fromInt title.id))] [text title.title]]])
-                                                                                                                                      |> List.concat)]]]) (keys grouped_by_month)))]]]
+                                                                                                            case (int_to_month_string month) of
+                                                                                                                Just month_str -> 
+                                                                                                                    [li [] [details [] [summary [] [text (toSentenceCase month_str)]
+                                                                                                                                       , ul [class "title-list"] (titles
+                                                                                                                                                                 |> List.filter (\title ->
+                                                                                                                                                                                     title.year == year && title.month == month)
+                                                                                                                                                                 |> List.map (\title ->
+                                                                                                                                                                                  [li [class "title-list"]
+                                                                                                                                                                                       [a [href ("/blog/post/" ++ (fromInt title.id))] [text title.title]]])
+                                                                                                                                                                 |> List.concat)]]]
+                                                                                                                Nothing -> [li [] [details [] [summary [] [text ("Couldn't decode month " ++ (String.fromInt month))]]]]
+                                                                                                       ) (keys grouped_by_month) |> List.reverse))]]]
 
                                                Nothing ->
                                                         [li [] [text ("There's no year " ++ (fromInt year) ++ " in titles")]]) (keys grouped_by_year |> List.reverse)))]

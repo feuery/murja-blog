@@ -105,7 +105,7 @@ type alias Title =
     { title : String
     , id : Int
     , year : Int
-    , month: String
+    , month: Int
     , tags: List String
     }
     
@@ -115,5 +115,5 @@ sidebarTitleDecoder =
         |> decodeApply (Decode.field "Title" Decode.string)
         |> decodeApply (Decode.field "Id" Decode.int)
         |> decodeApply (Decode.field "Year" Decode.int)
-        |> decodeApply (Decode.field "Month" Decode.string)
+        |> decodeApply (Decode.field "Month" Decode.int)
         |> decodeApply (Decode.field "Tags" (Decode.list Decode.string))

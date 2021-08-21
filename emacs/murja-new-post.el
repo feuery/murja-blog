@@ -22,7 +22,7 @@
 
 (defun murja-save-post-buffer (murja-title)
   (interactive)
-  (let ((tags (or murja-tags (vector))))
+  (let ((tags murja-tags))
     (if (and (member "hidden" tags)
 	     (member "unlisted" tags))
 	(message "Post can't be both hidden and unlisted!")
@@ -32,7 +32,7 @@
 	    (data (if murja-id
 		      (json-encode `((title . ,murja-title)
 				     (content . ,(buffer-substring-no-properties (point-min) (point-max)))
-				     (tags . ,tags)
+				     (tags . ,(or tags (vector)))
 				     (id . ,(if (stringp murja-id)
 						(string-to-number murja-id)
 					      murja-id))))

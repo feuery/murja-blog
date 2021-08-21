@@ -12,10 +12,12 @@
 (defvar murja-url nil)
 (defvar loaded-murja-titles nil)
 
+(defvar murja-months (list "January" "February" "March" "April" "May" "June" "July" "August" "September" "October" "November" "December"))
+
 (defun murja-title-entry (title)
   (list title
 	`[,(assoc-default 'Title title)
-	  ,(capitalize (assoc-default 'Month title))
+	  ,(capitalize (nth (truncate (- (assoc-default 'Month title) 1)) murja-months))
 	  ,(prin1-to-string (assoc-default 'Year title))]))
 
 (defvar murja-title-mode-map

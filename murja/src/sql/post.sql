@@ -12,8 +12,8 @@ ORDER BY c.created_at
 
 -- :name get-titles-by-year*
 SELECT p.Title,
-       CEIL(EXTRACT(MONTH FROM p.created_at)) AS "Month",
-       CEIL(EXTRACT(YEAR FROM p.created_at)) AS "Year",
+       EXTRACT(MONTH FROM p.created_at) AS "Month",
+       EXTRACT(YEAR FROM p.created_at) AS "Year",
        p.id as "Id",
        p.Tags
 FROM blog.Post p

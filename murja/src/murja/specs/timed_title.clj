@@ -6,16 +6,10 @@
 (def int->month (zipmap (map inc (range)) months))
 (def month->int (zipmap months (map inc (range))))
 
-(defn int->month-str [i]
-  (-> (int->month i)
-      name
-      (str/replace #":" "")
-      str/capitalize))
-
 (spec/def ::Title string?)
 (spec/def ::Id number?)
 (spec/def ::Year number?)
-(spec/def ::Month (set months))
+(spec/def ::Month number?)
 (spec/def ::Tag string?)
 (spec/def ::Tags (spec/* ::Tag))
 

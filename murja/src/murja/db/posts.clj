@@ -88,19 +88,17 @@
   {:pre [(some? db-spec)]}
   (try
     (->> (get-titles-by-year* db-spec {:show-hidden show-hidden?})
-         (mapv (comp #(rename-keys % {:month :Month
-                                      :id :Id
-                                      :tags :Tags
-                                      :year :Year
-                                      :title :Title})
-                     #(update % :month (comp timed-title/int->month int)))))
+         (mapv #(rename-keys % {:month :Month
+                                :id :Id
+                                :tags :Tags
+                                :year :Year
+                                :title :Title})))
     (catch Exception ex
       (clojure.pprint/pprint {:db db})
       (throw ex))))
 ;; TODO make a real automated test of this
 #_(assert (and (= (count (get-titles-by-year murja.db/db )) 21)
-             (= (count (get-titles-by-year murja.db/db :show-hidden? true)) 22)))
-
+               (= (count (get-titles-by-year murja.db/db :show-hidden? true)) 22)))
 
 (defn post-versions [{:keys [db-spec] :as db} post-id]
   (->> (post-versions* db-spec {:post-id post-id})
