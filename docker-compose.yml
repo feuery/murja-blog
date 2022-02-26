@@ -1,10 +1,11 @@
-db:
-  image: postgres:latest
-  ports:
-    - 5432:5432
-  environment:
-    POSTGRES_USER: blogadmin
-    POSTGRES_PASSWORD: blog
-    POSTGRES_DB: blogdb
-    POSTGRES_INITDB_ARGS: '--locale en_US.UTF-8'
+services:
+  db:
+    image: postgres:latest
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: blogadmin
+      POSTGRES_PASSWORD: blog
+      POSTGRES_DB: blogdb
+      POSTGRES_INITDB_ARGS: '--locale en_US.UTF-8'
     
