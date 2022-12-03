@@ -46,6 +46,17 @@
                                                             :tags [#_"hidden" "test-generated"]})))
                                        :body decode-body)]
             (is (= status 200))
+            (is (= {:tags ["test-generated"],
+                    :creator
+                    {:nickname "Test-User", :username "test-user", :img_location ""},
+                    :content "Testi contenttia",
+                    :comments [],
+                    :amount-of-comments 0,
+                    :title "Uusi testi title",
+                    :prev-post-id nil,
+                    :versions [],
+                    :version nil}
+                   (dissoc body :id :created_at :next-post-id)))
 
             (testing "| PUT /api/posts/post"
               (let [{:keys [id]} body

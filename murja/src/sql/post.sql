@@ -92,9 +92,9 @@ update blog.post
 set tags = :new-tags
 where id = :post-id
 
--- :name insert-post :!
+-- :name insert-post :<! :1
 insert into blog.post (title, content, creator_id, tags)
-values (:title, :content, :creator-id, :tags);
+values (:title, :content, :creator-id, :tags) returning id;
 
 -- :name update-post :!
 update blog.post

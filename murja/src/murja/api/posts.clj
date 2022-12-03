@@ -41,9 +41,9 @@
      :last-page? (zero? (count (db.posts/get-page db (inc page) page-size)))}))
 
 (defn create-post [db user post]
-  (let [post (update post :tags #(or % []))]
-    (db.posts/save-post! db user post)
-    (first (db.posts/get-page db 1 1 :allow-hidden? true))))
+  (let [post (update post :tags #(or % []))
+        {post-id :id} (db.posts/save-post! db user post)]
+    (get-post-by-id db post-id :show-hidden? true)))
 
 (defn edit-post [db user post]
   (let [post (update post :tags #(or % []))]
