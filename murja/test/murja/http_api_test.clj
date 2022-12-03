@@ -64,7 +64,8 @@
                                  :id id
                                  :content "Muokattua contenttia"
                                  :tags ["test-generated" "edited-tag"]}
-                    {:keys [body status]} (update
+                    {:keys [status]
+                     updated-post :body} (update
                                            (app (-> (request :put "/api/posts/post")
                                                     (json-body edited-post)))
                                            :body decode-body)]
@@ -78,6 +79,12 @@
                                                (app (request :get (str "/api/posts/post/" id)))
                                                :body decode-body )]
                     (is (= status 200))
+                    (is (= body updated-post))
+
+                    (if (not= body updated-post)
+                      (clojure.pprint/pprint
+                       (clojure.data/diff body updated-post)))
+                    
                     (is (= (merge edited-post
                                   {:creator {:nickname "Test-User", :username "test-user", :img_location ""},
 	                           :comments [],

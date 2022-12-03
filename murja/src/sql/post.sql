@@ -96,7 +96,7 @@ where id = :post-id
 insert into blog.post (title, content, creator_id, tags)
 values (:title, :content, :creator-id, :tags) returning id;
 
--- :name update-post :!
+-- :name update-post :! :1
 update blog.post
 set title = :title,
     content = :content,

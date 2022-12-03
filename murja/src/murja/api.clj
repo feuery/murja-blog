@@ -113,15 +113,12 @@
 (defn create-post [{:keys [db parameters user]}]
   (let [{new-post :body} parameters]
     {:status 200
-     ;; we have to return a body to not confuse json parser in the emacs end
      :body (api.posts/create-post db user new-post)}))
 
 (defn edit-post [{:keys [db user parameters]}]
   (let [{edited-post :body} parameters]
-    (api.posts/edit-post db user edited-post)
     {:status 200
-     ;; we have to return a body to not confuse json parser in the emacs end
-     :body {:success? true}}))
+     :body (api.posts/edit-post db user edited-post)}))
 
 (defn comment-post [{:keys [db user parameters]}]
   (let [{new-comment :body} parameters]

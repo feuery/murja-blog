@@ -45,9 +45,10 @@
         {post-id :id} (db.posts/save-post! db user post)]
     (get-post-by-id db post-id :show-hidden? true)))
 
-(defn edit-post [db user post]
+(defn edit-post [db user {:keys [id] :as post}]
   (let [post (update post :tags #(or % []))]
-    (db.posts/edit-post! db user post)))
+    (db.posts/edit-post! db user post)
+    (get-post-by-id db id :show-hidden? true)))
 
 (defn comment-post [db user comment]
   (db.posts/comment-post! db user comment))
