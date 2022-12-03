@@ -1,8 +1,8 @@
 #!/bin/env bash
 
 if [ ! -f ./swagger-codegen-cli.jar ]; then
-    echo "swagger-codegen-cli.jar not found. wgetting..."
-    wget https://repo1.maven.org/maven2/io/swagger/swagger-codegen-cli/2.4.21/swagger-codegen-cli-2.4.21.jar -O swagger-codegen-cli.jar
+    echo "swagger-codegen-cli.jar not found. Finding..."
+    curl https://repo1.maven.org/maven2/io/swagger/swagger-codegen-cli/2.4.21/swagger-codegen-cli-2.4.21.jar -o swagger-codegen-cli.jar
 
 fi
 
