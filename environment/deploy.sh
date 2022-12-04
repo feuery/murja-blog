@@ -3,6 +3,13 @@
 # You might need to have a file at /etc/murja/config.edn for the build to pass
 # Copy an example file from $project_root/config.demo.edn
 
+set -euo pipefail
+
+if [[ $PWD =~ environment ]] ;
+then
+    pushd ..
+fi
+
 build_dir=~/murja-deployment
 github_url="https://github.com/feuery/murja-blog.git"
 deploy_server="feuerx.net"
@@ -38,7 +45,7 @@ if [ -d $build_dir ]; then
     echo Commencing uberjarring
 
     cd $build_dir
-    sh ./build.sh
+    sh ./environment/build.sh
 
     if [ -f $build_dir/murja/target/murja-2.0.0-SNAPSHOT-standalone.jar ]; then
 	echo target/murja-2.0.0-SNAPSHOT-standalone.jar found! Uberjar succeeded!

@@ -1,6 +1,11 @@
-#!/bin/env bash
+#!/usr/bin/env bash
 
 set -euo pipefail
+
+if [[ $PWD =~ environment ]] ;
+then
+    pushd ..
+fi
 
 pushd ./elm-frontti
 elm make src/Main.elm --output murja.js --optimize
