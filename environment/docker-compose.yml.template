@@ -1,0 +1,37 @@
+# kpcli --kdb=./testikanta.kdbx --command show Root/kanta
+services:
+  db:
+    image: postgres:latest
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: blogadmin
+      # TODO templatoi
+      POSTGRES_PASSWORD: {{db_password}}
+      POSTGRES_DB: blogdb
+      POSTGRES_INITDB_ARGS: '--locale en_US.UTF-8'
+  nginx:
+    image: linuxserver/swag:latest
+    cap_add:
+      - NET_ADMIN
+    environment:
+      # TODO check the correct values for PUID and PGID by running `id`
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Helsinki
+      - URL=feuerx.net
+      - VALIDATION=dns
+      - DNSPLUGIN=digitalocean
+      - STAGING=true
+    volumes:
+      - ./nginx:/config/nginx/site-confs/
+      - ./dns-conf:/config/dns-conf
+      - ./www:/config/www
+    ports:
+      - 443:443
+      - 80:80
+    restart: unless-stopped
+  app:
+    build: .
+    ports:
+      - 3000:3000

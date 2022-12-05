@@ -5,6 +5,9 @@ set -euo pipefail
 if [[ $PWD =~ environment ]] ;
 then
     pushd ..
+    requires_popd=true
+else
+    requires_popd=false
 fi
 
 pushd ./elm-frontti
@@ -24,3 +27,10 @@ echo "Frontend is moved to backend's resources directory"
 
 pushd murja
 lein uberjar
+
+popd
+
+if [ $requires_popd = true ];
+then
+    popd
+fi

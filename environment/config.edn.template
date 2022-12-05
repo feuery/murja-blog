@@ -1,0 +1,17 @@
+{:db {;; same auth details as in the docker-compose.yml
+      :user "blogadmin"
+      :password "{{db_password}}"
+      :host "db"
+      :port "5432"
+      :db "blogdb"
+      :dbname "blogdb"
+      :classname "org.postgresql.Driver"
+      :dbtype "postgresql"}
+ :http {:host "0.0.0.0"
+        :port 3000}
+ :css-route "/site.css"
+ ;; TODO make a ci script that embeds elm's result to jar's resource dir
+ :client-config {:time-format "dd.MM.yyyy HH:mm"
+                 :blog-title "Murja.dev @ $HOSTNAME"
+                 :recent-post-count 6
+                 :xss-filter-posts? false}}
