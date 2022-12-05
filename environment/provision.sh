@@ -28,7 +28,7 @@ if [ -f ../murja/target/murja-2.0.0-SNAPSHOT-standalone.jar ]; then
 
     sed "s/{{dns}}/$dns_api_key/g" dns-conf/digitalocean.ini.template > dns-conf/digitalocean.ini
 
-    if [ -d www] ;
+    if [ -d www ] ;
     then
 	rm -rf www
     fi
