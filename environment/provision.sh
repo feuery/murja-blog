@@ -17,9 +17,11 @@ cd $original_path
 
 if [ -f ../murja/target/murja-2.0.0-SNAPSHOT-standalone.jar ]; then
     cp ../murja/target/murja-2.0.0-SNAPSHOT-standalone.jar ./murja.jar
+
+    echo Give password to the secrets store TWICE now
+    
     db_password=$(kpcli --kdb=./secrets.kdbx --command "show -f Root/db"|grep Pass:|cut -d: -f2|awk '{$1=$1};1')
     dns_api_key=$(kpcli --kdb=./secrets.kdbx --command "show -f Root/dns"|grep Pass:|cut -d: -f2|awk '{$1=$1};1')
-    echo Give password to the secrets store TWICE now
     
     sed "s/{{db_password}}/$db_password/g" docker-compose.yml.template > docker-compose.yml
     sed "s/{{db_password}}/$db_password/g" config.edn.template > config.edn
