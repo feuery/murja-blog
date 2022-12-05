@@ -33,7 +33,7 @@ if [ -f ../murja/target/murja-2.0.0-SNAPSHOT-standalone.jar ]; then
 	rm -rf www
     fi
 
-    git clone git@github.com:feuery/feuerx_frontpage.git www	
+    git clone https://github.com/feuery/feuerx_frontpage.git www	
 
     docker-compose up
 else
