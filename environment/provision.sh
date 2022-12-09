@@ -35,7 +35,7 @@ if [ -f ../murja/target/murja-2.0.0-SNAPSHOT-standalone.jar ]; then
 
     git clone https://github.com/feuery/feuerx_frontpage.git www	
 
-    docker-compose up
+    docker-compose start
 else
     echo "No murja jar found :("
 fi
