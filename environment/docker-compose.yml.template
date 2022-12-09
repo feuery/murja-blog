@@ -22,7 +22,7 @@ services:
       - URL=feuerx.net
       - VALIDATION=dns
       - DNSPLUGIN=digitalocean
-      - STAGING=true
+      - STAGING=false
     volumes:
       - ./nginx:/config/nginx/site-confs/
       - ./dns-conf:/config/dns-conf
