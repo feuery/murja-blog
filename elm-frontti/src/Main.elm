@@ -212,7 +212,8 @@ update msg ({settings} as model) =
         EditorPostReceived result ->
             case result of
                 Ok post ->
-                    ({model | view_stack = push (PostEditor post "") model.view_stack} , Cmd.none)
+                    ({model | view_stack = push (PostEditor post "") model.view_stack}
+                    , setupAce post.content)
                 Err _ ->
                     ({model | view_stack = push (ShowError "Error while loading editor") model.view_stack}, Cmd.none)
         ChangeViewState viewstate cmd ->

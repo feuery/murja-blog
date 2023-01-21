@@ -40,8 +40,5 @@ postEditor post tag = [ div [] [ input [ name "title"
                       --
                       -- I was also unable to find a on-rendered event I could've hooked the RunAce command
                       -- so for now ace is initiated by on-click event on an element whose existence is certain
-                  , div [ onClick (RunAce post.content)] [text "Click here to load editor"]
-                  , div [ id "editor-post-content"
-                        ] [] -- [text post.content]
-                  ]
+                  , div [ id "editor-post-content"] []]
                   

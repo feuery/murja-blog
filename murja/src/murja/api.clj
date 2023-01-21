@@ -185,7 +185,11 @@ app.ports.alert.subscribe( (prompt) => {
   window.alert(prompt);
 });
 
-app.ports.runAce.subscribe( (content) => {
+let creationObserver = null;
+
+let runace = (content) => {
+
+  if(creationObserver) creationObserver.disconnect();
 
   let editor = ace.edit(\"editor-post-content\");
   editor.setTheme(\"ace/theme/monokai\");
@@ -207,10 +211,25 @@ app.ports.runAce.subscribe( (content) => {
   observer.observe(document.getElementById('editor-post-content'), config);
 
   console.log(\"ace should be initiated\");
-});
+};
+
+app.ports.runAce.subscribe(runace);
 
 app.ports.prompt.subscribe( (prompt) => {
   let value = window.prompt(prompt);
   app.ports.tags.send(value);
 });
+
+app.ports.setupAce.subscribe((content) => {
+ creationObserver = new MutationObserver(function(mutations) {
+ 
+  let editor = document.getElementById(\"editor-post-title\");
+  if (editor) {
+    runace(content); 
+  }
+   
+ });
+ creationObserver.observe(document, {attributes: false, childList: true, characterData: false, subtree:true});
+});
+
 "]])}))

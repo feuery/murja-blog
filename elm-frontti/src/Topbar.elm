@@ -14,7 +14,7 @@ topbar state =
     case state of
         LoggedIn user ->
             let empty_article = Article (Creator user.username user.nickname user.img_location) [""] "" Nothing "New post" Nothing Nothing [] Nothing Nothing
-                new_post_cmd = (ChangeViewState (PostEditor empty_article "") Nothing) in
+                new_post_cmd = (ChangeViewState (PostEditor empty_article "") (Just (setupAce ""))) in
             div [class "left-sidebar"] [ span [] [text ("Welcome, " ++ user.nickname)]
                                        , User.user_avatar user
                                        , ul [] [ li [ onClick GoHome] [text "Home"]

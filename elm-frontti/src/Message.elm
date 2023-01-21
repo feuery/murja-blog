@@ -1,4 +1,4 @@
-module Message exposing (..)
+port module Message exposing (..)
 
 import Http
 import Browser
@@ -80,3 +80,8 @@ type Msg
   | GoHome
   | ChangeTitle String
   | RunAce String
+  
+
+
+-- ports
+port setupAce : String -> Cmd msg
