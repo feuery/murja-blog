@@ -26,8 +26,26 @@ html, body {
     flex: 10 1;	    
 }
 
-#editor-post-save {
-    flex: 1 1;
+/* #editor-post-save { */
+/*     flex: 1 1; */
+/* } */
+
+#editor-buttons * {
+    display: block;
+}
+
+#selector-div {
+    
+}
+
+#selector-div img {
+    width: 300px;
+    height: 300px;
+    padding: 1em;
+}
+
+#selector-div img:hover {
+    background-color: #880088;
 }
 
 .left-sidebar {

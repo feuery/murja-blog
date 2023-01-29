@@ -9,10 +9,10 @@ TAGS
 elm-frontti/*.html
 elm-frontti/*.js
 elm-frontti/elm-stuff/*
-murja*.js
 *cookies
 *input.json
 /elm-frontti/src/elm.js
 /emacs/swagger-codegen-cli.jar
 /response
 /result
+/murja/resources/murja.min.js

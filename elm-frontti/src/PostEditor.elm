@@ -13,11 +13,12 @@ import Ajax_cmds exposing (..)
 import Creator as C
 import Page as P
 import Message exposing (..)
+import ImageSelector exposing (imageSelector)
 
 optionize tag = option [value tag] [text tag]
 
 tagView post selectedTag = div [class "tagview"]
-               [ select [ multiple True
+              [ select [ multiple True
                         , class "tag-select"
                         , onInput SelectTag] (List.map optionize post.tags)
                , button [ onClick (PromptTag "New tag? ") ]
@@ -26,19 +27,18 @@ tagView post selectedTag = div [class "tagview"]
                    [text "Remove selected tag"]
                ]
 
-postEditor post tag = [ div [] [ input [ name "title"
-                                       , id "editor-post-title"
-                                       , value post.title
-                                       , onInput ChangeTitle] []]
-                  , div [] [ button [ id "editor-post-save"
-                                    , onClick SavePost ] [text "Save version"]]
-                  , tagView post tag
-                      -- I'm not exactly happy with this hack
-                      -- but if I return a cmd that runs the ace initialisation code from the state-change
-                      -- that also initiates this view, ace code is run before this #editor-post-content div
-                      -- exists in DOM
-                      --
-                      -- I was also unable to find a on-rendered event I could've hooked the RunAce command
-                      -- so for now ace is initiated by on-click event on an element whose existence is certain
-                  , div [ id "editor-post-content"] []]
+postEditor post tag showImageModal loadedImages = [ div [ id "editor-buttons"]
+                                                        [ input [ name "title"
+                                                                , id "editor-post-title"
+                                                                , value post.title
+                                                                , onInput ChangeTitle] []
+                                                        , button [ id "editor-post-save"
+                                                                 , onClick SavePost ] [text "Save version"]
+                                                        , button [ id "image-insert-btn"
+                                                                 , onClick GetListOfImages]
+                                                              [text "Insert image"]]
+                                                        
+                                                  , tagView post tag
+                                                  , if showImageModal then imageSelector loadedImages else div [] []
+                                                  , div [ id "editor-post-content"] []]
                   

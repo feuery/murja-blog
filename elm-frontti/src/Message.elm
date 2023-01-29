@@ -8,7 +8,9 @@ import Browser.Navigation as Nav
 import Settings
 import Url
 import Title
+import Image exposing (Image)
 
+import UUID exposing (UUID)
 import Stack exposing (..)
     
 type ViewState
@@ -45,6 +47,8 @@ type alias LoginUser =
 type alias Model =
     { view_stack : Stack ViewState
     , settings : Maybe Settings.Settings
+    , showImageModal : Bool
+    , loadedImages : List Image
     , loginState : LoginState
     , key : Nav.Key
     , url : Url.Url}
@@ -80,8 +84,12 @@ type Msg
   | GoHome
   | ChangeTitle String
   | RunAce String
+  | GetListOfImages
+  | GotListOfImages (Result Http.Error String)
+  | SelectedImage UUID
   
 
 
 -- ports
 port setupAce : String -> Cmd msg
+port addImgToAce : String -> Cmd msg

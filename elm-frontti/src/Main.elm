@@ -20,6 +20,8 @@ import User
 import Topbar
 import PostsAdmin
 import PostEditor
+import Image
+import ImageSelector exposing (imageSelector)
 
 import DateTime exposing (DateTime)
 import Json.Decode as Decode
@@ -37,6 +39,8 @@ import Browser.Navigation as Nav
 import RouteParser
 import Url
 import Date_utils exposing (int_to_month_string)
+
+import UUID
 
 
 -- MAIN
@@ -86,7 +90,7 @@ viewStatePerUrl url =
     
 init _ url key =
     let (viewstate, cmds) = (viewStatePerUrl url)
-        model = Model (push viewstate Stack.initialise) Nothing LoggedOut key url
+        model = Model (push viewstate Stack.initialise) Nothing False [] LoggedOut key url
     in
         ( model
         , Cmd.batch cmds)
@@ -283,6 +287,21 @@ update msg ({settings} as model) =
                     let (_, new_stack) = pop model.view_stack in
                     ({model | view_stack = push (PostEditor {article | title = new_title} selected_tag) new_stack}, Cmd.none)
                 _ -> (model, Cmd.none)
+        GetListOfImages -> ( { model | showImageModal = True }
+                           , getListOfImages)
+        GotListOfImages result ->
+            case result of
+                Ok json ->
+                    case Decode.decodeString (Decode.list Image.imageDecoder) json of
+                        Ok images ->
+                            ({model | showImageModal = True, loadedImages = images}, Cmd.none) -- view_stack = push (ShowMediaForSelection images) model.view_stack}, Cmd.none)
+                        Err error ->
+                            ({model | view_stack = push (ShowError "Couldn't deserialize images") model.view_stack}, Cmd.none)
+                Err error ->
+                    ({model | view_stack = push (ShowError "Coudln't load images") model.view_stack}, Cmd.none)
+        SelectedImage img_id ->
+            ( {model | showImageModal = False, loadedImages = [] }
+            , addImgToAce (UUID.toString img_id))
             
 doGoHome model =
     (model, Cmd.batch [ getSettings
@@ -384,7 +403,7 @@ view model =
                                           ShowError err ->
                                               [pre [] [text err]]
                                           PostEditorList titles -> [ PostsAdmin.view titles ]
-                                          PostEditor post tag_index -> PostEditor.postEditor post tag_index
+                                          PostEditor post tag_index -> PostEditor.postEditor post tag_index model.showImageModal model.loadedImages
                                           CommentsList -> [ div [] [text "CommentsList"] ]
                                           MediaList -> [div [] [text "Medialist!"]])
                         , div [id "sidebar"] [ User.loginView model.loginState
