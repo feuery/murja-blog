@@ -16,4 +16,9 @@
  :client-config {:time-format "dd.MM.yyyy HH:mm"
                  :blog-title "Murja.dev @ $HOSTNAME"
                  :recent-post-count 6
-                 :xss-filter-posts? false}}
+                 :xss-filter-posts? false}
+ :rss {:title "murja-sample-channel"
+       :link "http://localhost:3000/blog"
+       :description "murja-sample-description"
+       :lang "en-us"
+       :email "demo@example.com"}}

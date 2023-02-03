@@ -28,7 +28,11 @@
 
 ;; tags: posts, login, users, settings
 
-(def app-routes [["/api" {:middleware [middleware/wrap-db]}
+(def app-routes [["/rss" {:middleware [middleware/wrap-db]
+                          :swagger {:tags ["rss"]}
+                          :get {:handler #'api/get-rss}}]
+                  
+                 ["/api" {:middleware [middleware/wrap-db]}
                   ["/pictures" {:swagger {:tags ["media"]}
                                 :middleware [middleware.multipart/multipart-middleware
                                              middleware/wrap-user

@@ -16,7 +16,8 @@
                  [ragtime "0.8.0"]
                  [metosin/reitit "0.5.10"]
                  [com.layerware/hugsql-core "0.5.1"]
-                 [com.layerware/hugsql-adapter-clojure-java-jdbc "0.5.1"]]
+                 [com.layerware/hugsql-adapter-clojure-java-jdbc "0.5.1"]
+                 [org.clojure/data.xml "0.0.8"]]
   :repl-options {:init-ns murja.reitit}
   :profiles {:dev {:dependencies [[org.clojure/tools.nrepl "0.2.13"]
                                   [cider/cider-nrepl "0.28.5"]

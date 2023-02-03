@@ -1,5 +1,6 @@
 (ns murja.api
   (:require [murja.config :as config]
+            [murja.rss :as rss]
             [hiccup.page :refer [include-js include-css html5]]
             [clojure.java.io :as io]
             [murja.api.posts :as api.posts]
@@ -150,7 +151,13 @@
    :body (api.media/list-pictures db)})
 
 
-
+(defn get-rss [{:keys [db]}]
+  {:body (-> (api.posts/get-page db 1 10)
+             :posts
+             rss/post-page->rss)
+   :content-type "application/rss+xml"
+             
+   :status 200})
 
 
 
