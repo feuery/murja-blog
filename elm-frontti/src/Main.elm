@@ -356,19 +356,20 @@ sidebarHistory titles =
                (List.concat (List.map (\year ->
                                            case get year grouped_by_year of
                                                Just per_year ->
-                                                   [li [] [details [] [summary [] [text (fromInt year)],
+                                                   [li [] [details [] [summary [] [text ((fromInt year) ++ " (" ++ (fromInt (List.length per_year)) ++ ")")],
                                                                         let grouped_by_month = groupBy .month per_year in
                                                                           ul [] (List.concat (List.map (\month ->
                                                                                                             case (int_to_month_string month) of
-                                                                                                                Just month_str -> 
-                                                                                                                    [li [] [details [] [summary [] [text (toSentenceCase month_str)]
-                                                                                                                                       , ul [class "title-list"] (titles
-                                                                                                                                                                 |> List.filter (\title ->
-                                                                                                                                                                                     title.year == year && title.month == month)
-                                                                                                                                                                 |> List.map (\title ->
-                                                                                                                                                                                  [li [class "title-list"]
-                                                                                                                                                                                       [a [href ("/blog/post/" ++ (fromInt title.id))] [text title.title]]])
-                                                                                                                                                                 |> List.concat)]]]
+                                                                                                                Just month_str ->
+                                                                                                                    let month_titles = titles |> List.filter (\title ->
+                                                                                                                                                                  title.year == year && title.month == month)
+                                                                                                                    in
+                                                                                                                        [li [] [details [] [summary [] [text ((toSentenceCase month_str) ++ " (" ++ (fromInt (List.length month_titles)) ++ ")")]
+                                                                                                                               , ul [class "title-list"] (month_titles
+                                                                                                                                                         |> List.map (\title ->
+                                                                                                                                                                          [li [class "title-list"]
+                                                                                                                                                                               [a [href ("/blog/post/" ++ (fromInt title.id))] [text title.title]]])
+                                                                                                                                                         |> List.concat)]]]
                                                                                                                 Nothing -> [li [] [details [] [summary [] [text ("Couldn't decode month " ++ (String.fromInt month))]]]]
                                                                                                        ) (keys grouped_by_month) |> List.reverse))]]]
 
