@@ -14,6 +14,9 @@ type alias Image =
     { id: UUID
     , name: String }
 
+type alias PostImageResponse =
+    { id: UUID }
+
 encode img =
     object
         [ ("id", UUID.toValue img.id)
@@ -26,3 +29,5 @@ imageDecoder =
     Decode.succeed Image
         |> decodeApply idDecoder
         |> decodeApply nameDecoder
+imageResponseDecoder = Decode.succeed PostImageResponse
+                       |> decodeApply idDecoder

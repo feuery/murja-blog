@@ -10,6 +10,7 @@ import Url
 import Title
 import Image exposing (Image)
 
+import File exposing (File)
 import UUID exposing (UUID)
 import Stack exposing (..)
     
@@ -48,6 +49,7 @@ type alias Model =
     { view_stack : Stack ViewState
     , settings : Maybe Settings.Settings
     , showImageModal : Bool
+    , draggingImages : Bool
     , loadedImages : List Image
     , loginState : LoginState
     , key : Nav.Key
@@ -87,6 +89,10 @@ type Msg
   | GetListOfImages
   | GotListOfImages (Result Http.Error String)
   | SelectedImage UUID
+  | EditorDragEnter
+  | EditorDragLeave
+  | GotFiles File (List File)
+  | UploadedImage (Result Http.Error Image.PostImageResponse)
   
 
 

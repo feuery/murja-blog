@@ -3,7 +3,7 @@ module PostEditor exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Json.Decode
+import Json.Decode as D
     
 
 import Http
@@ -14,6 +14,24 @@ import Creator as C
 import Page as P
 import Message exposing (..)
 import ImageSelector exposing (imageSelector)
+
+import File exposing (File)
+import File.Select as Select
+
+dropDecoder : D.Decoder Msg
+dropDecoder =
+  D.at ["dataTransfer","files"] (D.oneOrMore GotFiles File.decoder)
+
+
+hijackOn : String -> D.Decoder msg -> Attribute msg
+hijackOn event decoder =
+  preventDefaultOn event (D.map hijack decoder)
+
+
+hijack : msg -> (msg, Bool)
+hijack msg =
+  (msg, True)
+      
 
 optionize tag = option [value tag] [text tag]
 
@@ -27,18 +45,27 @@ tagView post selectedTag = div [class "tagview"]
                    [text "Remove selected tag"]
                ]
 
-postEditor post tag showImageModal loadedImages = [ div [ id "editor-buttons"]
-                                                        [ input [ name "title"
-                                                                , id "editor-post-title"
-                                                                , value post.title
-                                                                , onInput ChangeTitle] []
-                                                        , button [ id "editor-post-save"
-                                                                 , onClick SavePost ] [text "Save version"]
-                                                        , button [ id "image-insert-btn"
-                                                                 , onClick GetListOfImages]
-                                                              [text "Insert image"]]
-                                                        
-                                                  , tagView post tag
-                                                  , if showImageModal then imageSelector loadedImages else div [] []
-                                                  , div [ id "editor-post-content"] []]
-                  
+postEditor post tag showImageModal loadedImages draggingImages
+    = [ div [ id "editor-buttons"]
+            [ input [ name "title"
+                    , id "editor-post-title"
+                    , value post.title
+                    , onInput ChangeTitle] []
+            , button [ id "editor-post-save"
+                     , onClick SavePost ] [text "Save version"]
+            , button [ id "image-insert-btn"
+                     , onClick GetListOfImages]
+                  [text "Insert image"]]
+            
+      , tagView post tag
+      , if showImageModal then imageSelector loadedImages else div [] []
+      , div [ id "editor-post-content"
+            , style "background-color" (if draggingImages then "#880088" else "")
+            , hijackOn "dragenter" (D.succeed EditorDragEnter)
+            , hijackOn "dragend" (D.succeed EditorDragLeave)
+            , hijackOn "dragover" (D.succeed EditorDragEnter)
+            , hijackOn "dragleave" (D.succeed EditorDragLeave)
+            , hijackOn "drop" dropDecoder
+            ] []]
+    
+    

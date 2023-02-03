@@ -4,6 +4,7 @@ import Article
 import User
 import Message exposing (..)
 import Http exposing (..)
+import Image as Image
 
 getSession =
     Http.get
@@ -76,4 +77,9 @@ putArticle article =
 getListOfImages = Http.get
                   { url = "/api/pictures/list/all"
                   , expect = Http.expectString GotListOfImages}
-                   
+
+
+postPicture pictureFile = Http.post 
+                          { url = "/api/pictures"
+                          , body = Http.multipartBody [ Http.filePart "file" pictureFile ]
+                          , expect = Http.expectJson UploadedImage Image.imageResponseDecoder }

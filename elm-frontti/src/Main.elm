@@ -41,6 +41,7 @@ import Url
 import Date_utils exposing (int_to_month_string)
 
 import UUID
+import File exposing (mime)
 
 
 -- MAIN
@@ -90,7 +91,7 @@ viewStatePerUrl url =
     
 init _ url key =
     let (viewstate, cmds) = (viewStatePerUrl url)
-        model = Model (push viewstate Stack.initialise) Nothing False [] LoggedOut key url
+        model = Model (push viewstate Stack.initialise) Nothing False False [] LoggedOut key url
     in
         ( model
         , Cmd.batch cmds)
@@ -302,6 +303,27 @@ update msg ({settings} as model) =
         SelectedImage img_id ->
             ( {model | showImageModal = False, loadedImages = [] }
             , addImgToAce (UUID.toString img_id))
+        EditorDragEnter ->
+            ( {model | draggingImages = True}
+            , Cmd.none)
+        EditorDragLeave ->
+            ( {model | draggingImages = False}
+            , Cmd.none)
+        GotFiles file files ->
+            if String.startsWith "image" (mime file) then
+                ( { model | draggingImages = False }
+                , postPicture file)
+            else
+                ( { model | draggingImages = False }
+                , alert ("Got " ++ (mime file) ++ ", expected an image"))
+        UploadedImage imgResponse ->
+            case imgResponse of
+                Ok actualResponse ->
+                    ( model
+                    , addImgToAce (UUID.toString actualResponse.id ))
+                Err err ->
+                    ({model | view_stack = push (ShowError "Error uploading image") model.view_stack}, Cmd.none)
+                  
             
 doGoHome model =
     (model, Cmd.batch [ getSettings
@@ -403,7 +425,7 @@ view model =
                                           ShowError err ->
                                               [pre [] [text err]]
                                           PostEditorList titles -> [ PostsAdmin.view titles ]
-                                          PostEditor post tag_index -> PostEditor.postEditor post tag_index model.showImageModal model.loadedImages
+                                          PostEditor post tag_index -> PostEditor.postEditor post tag_index model.showImageModal model.loadedImages model.draggingImages
                                           CommentsList -> [ div [] [text "CommentsList"] ]
                                           MediaList -> [div [] [text "Medialist!"]])
                         , div [id "sidebar"] [ User.loginView model.loginState
