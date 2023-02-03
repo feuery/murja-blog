@@ -14,4 +14,9 @@
  :client-config {:time-format "dd.MM.yyyy HH:mm"
                  :blog-title "Welcome to FEUERX.NET"
                  :recent-post-count 6
-                 :xss-filter-posts? false}}
+                 :xss-filter-posts? false}
+ :rss {:title "feuerx.net"
+       :link "https://feuerx.net/blog"
+       :description "Ilpo pyöräilemässä ja koodailemassa"
+       :lang "fi-fi"
+       :email "feuer+rss@feuerx.net"}}
