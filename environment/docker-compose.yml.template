@@ -2,8 +2,6 @@
 services:
   db:
     image: postgres:latest
-    ports:
-      - 5432:5432
     environment:
       POSTGRES_USER: blogadmin
       # TODO templatoi
@@ -33,5 +31,3 @@ services:
     restart: unless-stopped
   app:
     build: .
-    ports:
-      - 3000:3000
