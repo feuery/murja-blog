@@ -60,3 +60,12 @@ app.ports.addImgToAce.subscribe(img_id => {
 
     } else alert("Didn't find ace editor");
 })
+
+Object.defineProperty(HTMLElement.prototype, "dangerouslySetInnerHTML", {
+    get () {
+        return this.innerHTML
+    },
+    set (value) {
+        this.innerHTML = value
+    }
+})

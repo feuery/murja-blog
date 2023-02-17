@@ -5,9 +5,6 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
 
-import Html.Parser
-import Html.Parser.Util
-
 import Http
 
 import Article
@@ -25,6 +22,7 @@ import ImageSelector exposing (imageSelector)
 
 import DateTime exposing (DateTime)
 import Json.Decode as Decode
+import Json.Encode
 import DateFormat as Df
 import Time
 import Task
@@ -375,6 +373,10 @@ sidebarHistory titles =
 
                                                Nothing ->
                                                         [li [] [text ("There's no year " ++ (fromInt year) ++ " in titles")]]) (keys grouped_by_year |> List.reverse)))]
+
+dangerouslySetInnerHTML: String -> Attribute msg
+dangerouslySetInnerHTML = Json.Encode.string >> Html.Attributes.property "dangerouslySetInnerHTML"
+
               
 articleView : Settings.Settings -> Article.Article -> Html Msg
 articleView settings the_actual_post =
@@ -389,11 +391,8 @@ articleView settings the_actual_post =
                                                                                    p [] [text ("Written at " ++ (formatDateTime settings.time_format writing_time))]
                                                                                Nothing ->
                                                                                    p [] [text ("No idea when it's written")]],
-                                                   article [class "content"] (case (Html.Parser.run the_actual_post.content) of 
-                                                                                  Ok content ->
-                                                                                      Html.Parser.Util.toVirtualDom content
-                                                                                  Err error ->
-                                                                                      [ p [] [text "VIRHE"]])]
+                                                   article [ class "content"
+                                                           , dangerouslySetInnerHTML the_actual_post.content ] []]
 
 view : Model -> Browser.Document Msg
 view model =
@@ -417,7 +416,7 @@ view model =
                                           Loading ->
                                               [div [] [text "LOADING"]]
                                           PostView article ->
-                                              [articleView settings article]
+                                              [articleView settings article] 
                                           PageView page ->
                                               (List.concat [(List.map (articleView settings) page.posts),
                                                                 [footer [] (if page.id > 1 then [ a [href ("/blog/page/" ++ fromInt (page.id + 1))] [text "Older posts"]
