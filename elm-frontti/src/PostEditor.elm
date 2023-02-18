@@ -45,6 +45,14 @@ tagView post selectedTag = div [class "tagview"]
                    [text "Remove selected tag"]
                ]
 
+editor params =
+    node "ace-editor"
+    (  params
+    ++ [ attribute "theme" "ace/theme/monokai"
+       , attribute "mode" "ace/mode/html"])
+    []
+
+                  
 postEditor post tag showImageModal loadedImages draggingImages
     = [ div [ id "editor-buttons"]
             [ input [ name "title"
@@ -59,13 +67,14 @@ postEditor post tag showImageModal loadedImages draggingImages
             
       , tagView post tag
       , if showImageModal then imageSelector loadedImages else div [] []
-      , div [ id "editor-post-content"
+      , editor [ id "editor-post-content"
             , style "background-color" (if draggingImages then "#880088" else "")
             , hijackOn "dragenter" (D.succeed EditorDragEnter)
             , hijackOn "dragend" (D.succeed EditorDragLeave)
             , hijackOn "dragover" (D.succeed EditorDragEnter)
             , hijackOn "dragleave" (D.succeed EditorDragLeave)
             , hijackOn "drop" dropDecoder
-            ] []]
+            , hijackOn "ready" (D.succeed (RunAce post.content))
+            ]]
     
     

@@ -178,7 +178,9 @@
                    :xmlns:fb "http://www.facebook.com/2008/fbml"}
                   (into [:head
                          (include-css css-route)
-                         [:script {:src "https://pagecdn.io/lib/ace/1.4.12/ace.js"}]
+                         [:script {:type "module"
+                                   :src "https://unpkg.com/ace-custom-element@latest/dist/index.min.js"}]
+                                   
                          [:meta {:charset "UTF-8"}]
                          [:script js]]
                         post-meta)

@@ -102,7 +102,6 @@ init _ url key =
 port prompt : String -> Cmd msg
 port alert : String -> Cmd msg
 port tags : (String -> msg) -> Sub msg
-port runAce : String -> Cmd msg
 port aceStateUpdate : (String -> msg) -> Sub msg               
                 
 update : Msg -> Model -> (Model, Cmd Msg)
@@ -216,7 +215,7 @@ update msg ({settings} as model) =
             case result of
                 Ok post ->
                     ({model | view_stack = push (PostEditor post "") model.view_stack}
-                    , setupAce post.content)
+                    , Cmd.none)
                 Err _ ->
                     ({model | view_stack = push (ShowError "Error while loading editor") model.view_stack}, Cmd.none)
         ChangeViewState viewstate cmd ->
@@ -234,7 +233,7 @@ update msg ({settings} as model) =
         Alert alert_msg ->
             (model, alert alert_msg)
         RunAce content ->
-            (model, runAce content)
+            (model, reallySetupAce content)
         SelectTag tag ->
             let (top_viewstate, stack) = pop model.view_stack in
             case top_viewstate of

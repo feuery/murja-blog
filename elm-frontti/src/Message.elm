@@ -97,5 +97,5 @@ type Msg
 
 
 -- ports
-port setupAce : String -> Cmd msg
+port reallySetupAce : String -> Cmd msg
 port addImgToAce : String -> Cmd msg
