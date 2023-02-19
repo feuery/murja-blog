@@ -19,3 +19,6 @@
 (defn delete-pictures [{:keys [db-spec]} ids]
   (doseq [id ids]
     (delete-picture* db-spec {:id id})))
+
+(defn posts-referencing [{:keys [db-spec]} id]
+  (select-referencing-posts* db-spec {:id id}))

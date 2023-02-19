@@ -45,10 +45,13 @@
                    ["/list/all" {:swagger {:tags ["media"]}
                              :middleware [middleware/wrap-user
                                           [middleware/can? "create-post"]]
-                             :get {:handler #'api/get-pictures-list}}]
+                                 :get {:handler #'api/get-pictures-list}}]
                    ["/:id" {:swagger {:tags ["media"]}
                             :get {:handler #'api/get-pictures
-                                  :parameters {:path {:id string?}}}}]]
+                                  :parameters {:path {:id string?}}}}
+                    ["/referencing" {:swagger {:tags ["media"]}
+                                     :get {:handler #'api/get-posts-referencing-pic
+                                           :parameters {:path {:id string?}}}}]]]
                                            
                    
                   ["/login" {:swagger {:tags ["login"]}}

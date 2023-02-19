@@ -168,6 +168,11 @@
        (api.media/delete-pictures db))
   {:status 204})
 
+(defn get-posts-referencing-pic [{:keys [db]
+                                  {:keys [id]} :path-params}]
+  {:status 200
+   :body (api.media/posts-referencing db (UUID/fromString id))})
+
 
 
   
