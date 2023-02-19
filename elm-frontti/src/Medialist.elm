@@ -24,7 +24,8 @@ medialist images medialist_state =
             div [ class "vertical-flex-container" ]
                 (List.append
                      [div [class "title-flex-container"]
-                          [ button [ class "post-admin-title" ] [ text "Remove selected" ]
+                          [ button [ class "post-admin-title"
+                                   , onClick RemoveSelectedImages ] [ text "Remove selected" ]
                           , div [ class "post-admin-title" ] []
                           , button [ class "post-admin-title"
                                    , onClick (MarkAllImages (List.map .id images))] [ text "Select all" ]]]

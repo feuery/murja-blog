@@ -287,6 +287,7 @@ update msg ({settings} as model) =
                     ({model | view_stack = push (PostEditor {article | title = new_title} selected_tag) new_stack}, Cmd.none)
                 _ -> (model, Cmd.none)
         ManagerGetListOfImages -> (model, getListOfImages True)
+        HttpManagerGetListOfImages _ -> (model, getListOfImages True)                                  
         GetListOfImages -> ( { model | showImageModal = True }
                            , getListOfImages False)
         GotListOfImages managerCalled result ->
@@ -353,6 +354,12 @@ update msg ({settings} as model) =
                     , Cmd.none)
                 Nothing -> ( model
                            , alert "Medialist state is uninitialized")
+        RemoveSelectedImages ->
+            case model.medialist_state of
+                Just state -> 
+                    (model, deletePictures state.selected_ids_for_removal)
+                Nothing -> (model, Cmd.none)
+            
                   
             
 doGoHome model =

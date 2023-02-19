@@ -38,8 +38,10 @@
                                              middleware/wrap-user
                                              [middleware/can? "create-post"]]
                                 :post {:handler #'api/post-pictures
-                                       :parameters {:multipart {:file middleware.multipart/temp-file-part}}}}]
-                  ["/pictures"
+                                       :parameters {:multipart {:file middleware.multipart/temp-file-part}}}
+                                :delete {:handler #'api/delete-pictures
+                                         :parameters {:body {:ids [string?]}}}}]
+                  ["/pictures" 
                    ["/list/all" {:swagger {:tags ["media"]}
                              :middleware [middleware/wrap-user
                                           [middleware/can? "create-post"]]

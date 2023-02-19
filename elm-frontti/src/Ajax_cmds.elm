@@ -84,3 +84,13 @@ postPicture pictureFile = Http.post
                           { url = "/api/pictures"
                           , body = Http.multipartBody [ Http.filePart "file" pictureFile ]
                           , expect = Http.expectJson UploadedImage Image.imageResponseDecoder }
+
+
+deletePictures ids = Http.request
+                     { url = "/api/pictures"
+                     , method = "DELETE"
+                     , headers = []
+                     , expect = Http.expectString HttpManagerGetListOfImages
+                     , body = Http.jsonBody <| (Image.list_of_uuids_encode ids)
+                     , timeout = Nothing
+                     , tracker = Nothing}

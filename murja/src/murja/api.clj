@@ -7,7 +7,8 @@
             [murja.api.users :as api.users]
             [murja.api.login :as api.login]
             [murja.api.media :as api.media]
-            [murja.db.posts :as post-db]))
+            [murja.db.posts :as post-db])
+  (:import [java.util UUID]))
 
 (defn get-client-settings [_]
   {:status 200
@@ -158,6 +159,14 @@
    :content-type "application/rss+xml"
              
    :status 200})
+
+(defn delete-pictures [{:keys [db]
+                        {:keys [ids]} :body-params}]
+  {:pre [(seq ids)]}
+  (->> ids
+       (map #(UUID/fromString %))
+       (api.media/delete-pictures db))
+  {:status 204})
 
 
 

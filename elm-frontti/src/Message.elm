@@ -101,6 +101,8 @@ type Msg
   | ManagerGetListOfImages
   | MarkImageForRemoval UUID
   | MarkAllImages (List UUID)
+  | RemoveSelectedImages
+  | HttpManagerGetListOfImages (Result Http.Error String)
   
 
 

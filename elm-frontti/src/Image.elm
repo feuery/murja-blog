@@ -31,3 +31,6 @@ imageDecoder =
         |> decodeApply nameDecoder
 imageResponseDecoder = Decode.succeed PostImageResponse
                        |> decodeApply idDecoder
+
+list_of_uuids_encode ids = Json.object
+                           [ ( "ids", Json.list UUID.toValue ids)]

@@ -15,3 +15,7 @@
 
 (defn list-pictures [{:keys [db-spec]}]
   (list-pictures* db-spec))
+
+(defn delete-pictures [{:keys [db-spec]} ids]
+  (doseq [id ids]
+    (delete-picture* db-spec {:id id})))
