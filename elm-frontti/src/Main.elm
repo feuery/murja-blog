@@ -17,6 +17,7 @@ import User
 import Topbar
 import PostsAdmin
 import PostEditor
+import Medialist exposing (medialist)
 import Image
 import ImageSelector exposing (imageSelector)
 
@@ -89,7 +90,7 @@ viewStatePerUrl url =
     
 init _ url key =
     let (viewstate, cmds) = (viewStatePerUrl url)
-        model = Model (push viewstate Stack.initialise) Nothing False False [] LoggedOut key url
+        model = Model (push viewstate Stack.initialise) Nothing False False [] Nothing LoggedOut key url
     in
         ( model
         , Cmd.batch cmds)
@@ -285,14 +286,25 @@ update msg ({settings} as model) =
                     let (_, new_stack) = pop model.view_stack in
                     ({model | view_stack = push (PostEditor {article | title = new_title} selected_tag) new_stack}, Cmd.none)
                 _ -> (model, Cmd.none)
+        ManagerGetListOfImages -> (model, getListOfImages True)
         GetListOfImages -> ( { model | showImageModal = True }
-                           , getListOfImages)
-        GotListOfImages result ->
+                           , getListOfImages False)
+        GotListOfImages managerCalled result ->
             case result of
                 Ok json ->
                     case Decode.decodeString (Decode.list Image.imageDecoder) json of
                         Ok images ->
-                            ({model | showImageModal = True, loadedImages = images}, Cmd.none) -- view_stack = push (ShowMediaForSelection images) model.view_stack}, Cmd.none)
+                            case managerCalled of
+                                True ->
+                                    ({ model
+                                         | view_stack = push
+                                                        MediaList
+                                                        model.view_stack
+                                         , loadedImages = images
+                                         , medialist_state = Just (MediaListState [])}
+                                    , Cmd.none)
+                                False -> 
+                                    ({model | showImageModal = True, loadedImages = images}, Cmd.none)
                         Err error ->
                             ({model | view_stack = push (ShowError "Couldn't deserialize images") model.view_stack}, Cmd.none)
                 Err error ->
@@ -320,6 +332,27 @@ update msg ({settings} as model) =
                     , addImgToAce (UUID.toString actualResponse.id ))
                 Err err ->
                     ({model | view_stack = push (ShowError "Error uploading image") model.view_stack}, Cmd.none)
+        MarkImageForRemoval img_id ->
+            case model.medialist_state of
+                Just state ->
+                    if List.member img_id state.selected_ids_for_removal then
+                        ({ model | medialist_state = Just {state | selected_ids_for_removal =
+                                                               List.filter ((/=) img_id) state.selected_ids_for_removal}}
+                        , Cmd.none)
+                    else 
+                        ({ model | medialist_state = Just {state | selected_ids_for_removal = img_id :: state.selected_ids_for_removal}}
+                        , Cmd.none)
+                        
+                Nothing ->
+                    ( model
+                    , alert "Medialist state is uninitialized")
+        MarkAllImages ids ->
+            case model.medialist_state of
+                Just state ->
+                    ({ model | medialist_state = Just {state | selected_ids_for_removal = ids}}
+                    , Cmd.none)
+                Nothing -> ( model
+                           , alert "Medialist state is uninitialized")
                   
             
 doGoHome model =
@@ -426,7 +459,7 @@ view model =
                                           PostEditorList titles -> [ PostsAdmin.view titles ]
                                           PostEditor post tag_index -> PostEditor.postEditor post tag_index model.showImageModal model.loadedImages model.draggingImages
                                           CommentsList -> [ div [] [text "CommentsList"] ]
-                                          MediaList -> [div [] [text "Medialist!"]])
+                                          MediaList -> [ medialist model.loadedImages model.medialist_state ])
                         , div [id "sidebar"] [ User.loginView model.loginState
                                             , (case settings.titles of
                                                    Just titles ->

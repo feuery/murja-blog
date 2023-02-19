@@ -10,7 +10,7 @@ import Date_utils exposing (int_to_month_string)
 
 titleView title =  case (int_to_month_string title.month) of
                        Just month -> 
-                           div [class "title-flex-container" ] 
+                           div [ class "title-flex-container" ] 
                                [ span [class "post-admin-title" ] [text ( title.title ++ " - " ++ month  ++ ", " ++ (String.fromInt title.year))]
                                , a [ href ("/blog/post/edit/" ++ String.fromInt title.id)
                                    , onClick (OpenPostEditor title.id)] [text "Edit"]

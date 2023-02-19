@@ -9,10 +9,10 @@ import UUID
 import Image exposing (Image)
 import Message exposing (..)
 
+image the_actual_img = img [ src ("/api/pictures/" ++ (UUID.toString the_actual_img.id))
+                           , onClick (SelectedImage the_actual_img.id)] []
+
 imageSelector : List Image -> Html Msg
 imageSelector img_list =
     div [ id "selector-div" ]
-        (List.map (\image -> img [ src ("/api/pictures/" ++ (UUID.toString image.id))
-                                 , onClick (SelectedImage image.id)
-                                 ]
-                       []) img_list)
+        (List.map image img_list)

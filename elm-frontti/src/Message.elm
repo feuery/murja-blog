@@ -22,6 +22,7 @@ type ViewState
     | PostEditorList (List Title.Title)                     -- list all the posts in db
     | PostEditor Article.Article String --String == SelectedTag as it's rendered
     | CommentsList                  -- list all the comments in db
+
     | MediaList                     -- list all the image blobs in db
       
 type alias User =
@@ -43,7 +44,10 @@ type alias LoginUser =
     , img_location : String
     , primary_group_name : String
     , permissions : List String
-    }      
+    }
+
+type alias MediaListState =
+    { selected_ids_for_removal : List UUID }
       
 type alias Model =
     { view_stack : Stack ViewState
@@ -51,6 +55,7 @@ type alias Model =
     , showImageModal : Bool
     , draggingImages : Bool
     , loadedImages : List Image
+    , medialist_state : Maybe MediaListState
     , loginState : LoginState
     , key : Nav.Key
     , url : Url.Url}
@@ -87,12 +92,15 @@ type Msg
   | ChangeTitle String
   | RunAce String
   | GetListOfImages
-  | GotListOfImages (Result Http.Error String)
+  | GotListOfImages Bool (Result Http.Error String)
   | SelectedImage UUID
   | EditorDragEnter
   | EditorDragLeave
   | GotFiles File (List File)
   | UploadedImage (Result Http.Error Image.PostImageResponse)
+  | ManagerGetListOfImages
+  | MarkImageForRemoval UUID
+  | MarkAllImages (List UUID)
   
 
 

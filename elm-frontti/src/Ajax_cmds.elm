@@ -74,9 +74,10 @@ putArticle article =
         Nothing -> Cmd.none
 
 -- returns { :id :name }
-getListOfImages = Http.get
+getListOfImages : Bool -> Cmd Msg
+getListOfImages managerCalled = Http.get
                   { url = "/api/pictures/list/all"
-                  , expect = Http.expectString GotListOfImages}
+                  , expect = Http.expectString (GotListOfImages managerCalled)}
 
 
 postPicture pictureFile = Http.post 

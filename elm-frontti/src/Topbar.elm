@@ -20,6 +20,6 @@ topbar state =
                                        , ul [] [ li [ onClick GoHome] [text "Home"]
                                                , li [ onClick (ChangeViewState (PostEditorList []) (Just getEditablePosts))] [text "Manage posts"]
                                                , li [ onClick (ChangeViewState CommentsList Nothing)] [text "Manage comments"]
-                                               , li [ onClick (ChangeViewState MediaList Nothing)] [text "Manage media"]
+                                               , li [ onClick (ManagerGetListOfImages)] [text "Manage media"]
                                                , li [ onClick new_post_cmd ] [text "New post!"]]]
         _ -> div [] []
