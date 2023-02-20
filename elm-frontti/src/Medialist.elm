@@ -4,6 +4,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode as D
+import Dict
     
 
 import Http
@@ -17,6 +18,10 @@ import ImageSelector exposing (imageSelector)
 import Image
 
 import UUID
+
+referencing_post_view post = li []
+                             [ a [ href ("/blog/post/" ++ (String.fromInt post.post_id)) ]
+                                 [ text post.post_title ]]
 
 medialist images medialist_state =
     case medialist_state of
@@ -38,7 +43,15 @@ medialist images medialist_state =
                                                                                  , div [] [ text (UUID.toString image.id)]]
                                           , ImageSelector.image image]
                                     , details [ class "post-admin-title" ]
-                                        [ summary [] [ text "Linking posts" ]]
+                                        [ summary [] [ text "Referencing posts" ]
+                                        , case (Dict.get (UUID.toString image.id) state.referencing_posts) of
+                                              Just referencing_posts ->
+                                                  if referencing_posts == [] then
+                                                      div [] [ text "No referencing posts" ]
+                                                  else
+                                                       ul []
+                                                           (List.map referencing_post_view referencing_posts)
+                                              Nothing -> div [] [ text "No referencing posts" ]]
                                     , div [ class "post-admin-title" ]
                                         [ label [for checkbox_id] [text "Valitse poistettavaksi"]
                                         , input [ type_ "checkbox"

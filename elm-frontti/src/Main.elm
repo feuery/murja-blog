@@ -302,8 +302,8 @@ update msg ({settings} as model) =
                                                         MediaList
                                                         model.view_stack
                                          , loadedImages = images
-                                         , medialist_state = Just (MediaListState [])}
-                                    , Cmd.none)
+                                         , medialist_state = Just (MediaListState [] Dict.empty)}
+                                    , Cmd.batch (List.map (\image -> getReferencingPosts (UUID.toString image.id)) images))
                                 False -> 
                                     ({model | showImageModal = True, loadedImages = images}, Cmd.none)
                         Err error ->
@@ -359,6 +359,18 @@ update msg ({settings} as model) =
                 Just state -> 
                     (model, deletePictures state.selected_ids_for_removal)
                 Nothing -> (model, Cmd.none)
+        GotReferencingPosts response ->
+            case response of
+                Ok posts ->
+                    case model.medialist_state of
+                        Just state -> ({ model | medialist_state = Just {state | referencing_posts =
+                                                                             Dict.union state.referencing_posts (groupBy .media_id posts)}}
+                                      , Cmd.none)
+                        Nothing -> ( model
+                                   , Cmd.none)
+                Err err ->
+                    ( model
+                    , alert "Error while downloading info about referencing posts, check your devtools' network log")
             
                   
             

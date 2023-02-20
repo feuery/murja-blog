@@ -5,6 +5,7 @@ import User
 import Message exposing (..)
 import Http exposing (..)
 import Image as Image
+import Json.Decode as Json
 
 getSession =
     Http.get
@@ -94,3 +95,7 @@ deletePictures ids = Http.request
                      , body = Http.jsonBody <| (Image.list_of_uuids_encode ids)
                      , timeout = Nothing
                      , tracker = Nothing}
+
+getReferencingPosts id = Http.get
+                         { url = "/api/pictures/referencing/" ++ id
+                         , expect = Http.expectJson GotReferencingPosts (Json.list Image.referencingPostDecoder)}

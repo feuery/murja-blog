@@ -8,11 +8,12 @@ import Browser.Navigation as Nav
 import Settings
 import Url
 import Title
-import Image exposing (Image)
+import Image exposing (Image, ReferencingPost)
 
 import File exposing (File)
 import UUID exposing (UUID)
 import Stack exposing (..)
+import Dict exposing (Dict)
     
 type ViewState
     = PageView P.Page
@@ -47,7 +48,8 @@ type alias LoginUser =
     }
 
 type alias MediaListState =
-    { selected_ids_for_removal : List UUID }
+    { selected_ids_for_removal : List UUID
+    , referencing_posts : Dict String (List ReferencingPost)}
       
 type alias Model =
     { view_stack : Stack ViewState
@@ -103,6 +105,7 @@ type Msg
   | MarkAllImages (List UUID)
   | RemoveSelectedImages
   | HttpManagerGetListOfImages (Result Http.Error String)
+  | GotReferencingPosts (Result Http.Error (List Image.ReferencingPost))
   
 
 

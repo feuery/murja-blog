@@ -17,6 +17,12 @@ type alias Image =
 type alias PostImageResponse =
     { id: UUID }
 
+type alias ReferencingPost =
+    { post_id : Int
+    , post_title : String
+    , media_id : String
+    , media_name : String}
+
 encode img =
     object
         [ ("id", UUID.toValue img.id)
@@ -34,3 +40,10 @@ imageResponseDecoder = Decode.succeed PostImageResponse
 
 list_of_uuids_encode ids = Json.object
                            [ ( "ids", Json.list UUID.toValue ids)]
+
+referencingPostDecoder =
+    Decode.succeed ReferencingPost
+        |> decodeApply (Decode.field "post_id" Decode.int)
+        |> decodeApply (Decode.field "post_title" Decode.string)
+        |> decodeApply (Decode.field "media_id" Decode.string)
+        |> decodeApply (Decode.field "media_name" Decode.string)

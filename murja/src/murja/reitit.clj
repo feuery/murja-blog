@@ -46,12 +46,12 @@
                              :middleware [middleware/wrap-user
                                           [middleware/can? "create-post"]]
                                  :get {:handler #'api/get-pictures-list}}]
+                   ["/referencing/:id" {:swagger {:tags ["media"]}
+                                     :get {:handler #'api/get-posts-referencing-pic
+                                           :parameters {:path {:id string?}}}}]
                    ["/:id" {:swagger {:tags ["media"]}
                             :get {:handler #'api/get-pictures
-                                  :parameters {:path {:id string?}}}}
-                    ["/referencing" {:swagger {:tags ["media"]}
-                                     :get {:handler #'api/get-posts-referencing-pic
-                                           :parameters {:path {:id string?}}}}]]]
+                                  :parameters {:path {:id string?}}}}]]
                                            
                    
                   ["/login" {:swagger {:tags ["login"]}}
