@@ -3,7 +3,7 @@ port module Main exposing (..)
 import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onInput)
+import Html.Events exposing (onInput, onClick)
 
 import Http
 
@@ -428,22 +428,25 @@ sidebarHistory titles =
 dangerouslySetInnerHTML: String -> Attribute msg
 dangerouslySetInnerHTML = Json.Encode.string >> Html.Attributes.property "dangerouslySetInnerHTML"
 
-              
-articleView : Settings.Settings -> Article.Article -> Html Msg
-articleView settings the_actual_post =
+articleView settings loginstate the_actual_post =
     case the_actual_post.id of
         Nothing -> div [class "post"] [text "Post id is nil :/"]
         Just post_id ->
-            div [class "post"] [ a [href ("/blog/post/" ++ String.fromInt post_id)] [ text the_actual_post.title ],
-                                                   div [class "meta"] [User.user_avatar the_actual_post.creator,
-                                                                       p [] [text ("By " ++ the_actual_post.creator.nickname)],
-                                                                           case the_actual_post.created_at of
-                                                                               Just writing_time ->
-                                                                                   p [] [text ("Written at " ++ (formatDateTime settings.time_format writing_time))]
-                                                                               Nothing ->
-                                                                                   p [] [text ("No idea when it's written")]],
-                                                   article [ class "content"
-                                                           , dangerouslySetInnerHTML the_actual_post.content ] []]
+            div [class "post"] [ a [href ("/blog/post/" ++ String.fromInt post_id)] [ text the_actual_post.title ]
+                               , div [class "meta"] [ User.user_avatar the_actual_post.creator
+                                                    , p [] [text ("By " ++ the_actual_post.creator.nickname)]
+                                                    , case the_actual_post.created_at of
+                                                          Just writing_time ->
+                                                              p [] [text ("Written at " ++ (formatDateTime settings.time_format writing_time))]
+                                                          Nothing ->
+                                                              p [] [text ("No idea when it's written")]]
+                               , (case loginstate of
+                                      LoggedIn _ -> a [ href ("/blog/post/edit/" ++ String.fromInt post_id)
+                                                      , onClick (OpenPostEditor post_id)] [text "Edit this post"]
+                                      _ -> div [] [])
+                                                    
+                               , article [ class "content"
+                                         , dangerouslySetInnerHTML the_actual_post.content ] []]
 
 view : Model -> Browser.Document Msg
 view model =
@@ -460,28 +463,28 @@ view model =
                   , div [class "flex-container"] 
                         [ div [class "page"]
                               (let maybe_view  = top model.view_stack in
-                              case maybe_view of
+                               case maybe_view of
                                    Nothing -> [div [] [text "Couldn't load view status"]]
                                    Just viewstate ->
-                                      case viewstate of
-                                          Loading ->
-                                              [div [] [text "LOADING"]]
-                                          PostView article ->
-                                              [articleView settings article] 
-                                          PageView page ->
-                                              (List.concat [(List.map (articleView settings) page.posts),
-                                                                [footer [] (if page.id > 1 then [ a [href ("/blog/page/" ++ fromInt (page.id + 1))] [text "Older posts"]
-                                                                                                , a [href ("/blog/page/" ++ fromInt (page.id - 1)), class "newer-post"] [text "Newer posts"]]
-                                                                            else [a [href ("/blog/page/" ++ fromInt (page.id + 1))] [text "Next page"]])]])
-                                          ShowError err ->
-                                              [pre [] [text err]]
-                                          PostEditorList titles -> [ PostsAdmin.view titles ]
-                                          PostEditor post tag_index -> PostEditor.postEditor post tag_index model.showImageModal model.loadedImages model.draggingImages
-                                          CommentsList -> [ div [] [text "CommentsList"] ]
-                                          MediaList -> [ medialist model.loadedImages model.medialist_state ])
+                                       case viewstate of
+                                           Loading ->
+                                               [div [] [text "LOADING"]]
+                                           PostView article ->
+                                               [ articleView settings model.loginState article ]
+                                           PageView page ->
+                                               (List.concat [(List.map (articleView settings model.loginState) page.posts),
+                                                                 [footer [] (if page.id > 1 then [ a [href ("/blog/page/" ++ fromInt (page.id + 1))] [text "Older posts"]
+                                                                                                 , a [href ("/blog/page/" ++ fromInt (page.id - 1)), class "newer-post"] [text "Newer posts"]]
+                                                                             else [a [href ("/blog/page/" ++ fromInt (page.id + 1))] [text "Next page"]])]])
+                                           ShowError err ->
+                                               [pre [] [text err]]
+                                           PostEditorList titles -> [ PostsAdmin.view titles ]
+                                           PostEditor post tag_index -> PostEditor.postEditor post tag_index model.showImageModal model.loadedImages model.draggingImages
+                                           CommentsList -> [ div [] [text "CommentsList"] ]
+                                           MediaList -> [ medialist model.loadedImages model.medialist_state ])
                         , div [id "sidebar"] [ User.loginView model.loginState
-                                            , (case settings.titles of
-                                                   Just titles ->
-                                                       sidebarHistory titles 
-                                                   Nothing ->
-                                                       div [] [text "Loading history failed"])]]]}
+                                             , (case settings.titles of
+                                                    Just titles ->
+                                                        sidebarHistory titles 
+                                                    Nothing ->
+                                                        div [] [text "Loading history failed"])]]]}
