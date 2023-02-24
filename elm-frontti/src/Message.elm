@@ -22,8 +22,6 @@ type ViewState
     | ShowError String
     | PostEditorList (List Title.Title)                     -- list all the posts in db
     | PostEditor Article.Article String --String == SelectedTag as it's rendered
-    | CommentsList                  -- list all the comments in db
-
     | MediaList                     -- list all the image blobs in db
       
 type alias User =

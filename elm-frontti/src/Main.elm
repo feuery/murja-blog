@@ -480,7 +480,6 @@ view model =
                                                [pre [] [text err]]
                                            PostEditorList titles -> [ PostsAdmin.view titles ]
                                            PostEditor post tag_index -> PostEditor.postEditor post tag_index model.showImageModal model.loadedImages model.draggingImages
-                                           CommentsList -> [ div [] [text "CommentsList"] ]
                                            MediaList -> [ medialist model.loadedImages model.medialist_state ])
                         , div [id "sidebar"] [ User.loginView model.loginState
                                              , (case settings.titles of
