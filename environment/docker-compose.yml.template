@@ -27,6 +27,8 @@ services:
       - ./nginx:/config/nginx/site-confs/
       - ./dns-conf:/config/dns-conf
       - ./www:/config/www
+      - ./logs:/config/log
+      - ./fail2ban:/config/fail2ban
     ports:
       - 443:443
       - 80:80
