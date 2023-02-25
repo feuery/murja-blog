@@ -52,7 +52,10 @@ editor params =
        , attribute "mode" "ace/mode/html"])
     []
 
-                  
+filesDecoder : D.Decoder (List File)
+filesDecoder =
+  D.at ["target","files"] (D.list File.decoder)
+      
 postEditor post tag showImageModal loadedImages draggingImages
     = [ div [ id "editor-buttons"]
             [ input [ name "title"
@@ -61,6 +64,13 @@ postEditor post tag showImageModal loadedImages draggingImages
                     , onInput ChangeTitle] []
             , button [ id "editor-post-save"
                      , onClick SavePost ] [text "Save version"]
+            , label [ for "file-pictures-input"
+                    , class "murja-button"] [ text "Add pictures from device"]
+            , input [ type_ "file"
+                    , multiple False
+                    , style "display" "none"
+                    , id "file-pictures-input"
+                    , on "change" (D.map GotInputFiles filesDecoder)] []
             , button [ id "image-insert-btn"
                      , onClick GetListOfImages]
                   [text "Insert image"]]

@@ -97,6 +97,7 @@ type Msg
   | EditorDragEnter
   | EditorDragLeave
   | GotFiles File (List File)
+  | GotInputFiles (List File)
   | UploadedImage (Result Http.Error Image.PostImageResponse)
   | ManagerGetListOfImages
   | MarkImageForRemoval UUID

@@ -326,6 +326,13 @@ update msg ({settings} as model) =
             else
                 ( { model | draggingImages = False }
                 , alert ("Got " ++ (mime file) ++ ", expected an image"))
+        GotInputFiles files ->
+            if List.all (\file -> String.startsWith "image" (mime file)) files then
+                ( model
+                , Cmd.batch (List.map (\file -> postPicture file) files))
+            else
+                ( model
+                , alert ("Expected images, got " ++ (String.join ", " (List.map mime files))))
         UploadedImage imgResponse ->
             case imgResponse of
                 Ok actualResponse ->

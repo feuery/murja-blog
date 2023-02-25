@@ -219,6 +219,13 @@ header {
     padding-bottom: 10%;
 }
 
+.murja-button
+{
+    border: 10px solid #00CC00;
+    padding: 5px;
+    border-radius: 30px;
+}
+
 
 @media only screen and (max-device-width:480px)
 {
