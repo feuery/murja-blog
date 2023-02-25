@@ -221,9 +221,15 @@ header {
 
 .murja-button
 {
-    border: 10px solid #00CC00;
-    padding: 5px;
-    border-radius: 30px;
+    border: 5px solid #00CC00;
+    margin: 5px;
+    border-radius: 15px;
+
+}
+
+#new-tag-btn
+{
+    display: block;
 }
 
 

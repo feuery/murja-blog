@@ -14,6 +14,7 @@ import Creator as C
 import Page as P
 import Message exposing (..)
 import ImageSelector exposing (imageSelector)
+import Button exposing (murja_button)
 
 import File exposing (File)
 import File.Select as Select
@@ -39,10 +40,11 @@ tagView post selectedTag = div [class "tagview"]
               [ select [ multiple True
                         , class "tag-select"
                         , onInput SelectTag] (List.map optionize post.tags)
-               , button [ onClick (PromptTag "New tag? ") ]
-                   [ text "Add tag"]
-               , button [ onClick (DropTag selectedTag) ]
-                   [text "Remove selected tag"]
+               , murja_button [ onClick (PromptTag "New tag? ")
+                              , id "new-tag-btn"]
+                    [ text "Add tag"]
+               , murja_button [ onClick (DropTag selectedTag) ]
+                    [text "Remove selected tag"]
                ]
 
 editor params =
@@ -62,8 +64,8 @@ postEditor post tag showImageModal loadedImages draggingImages
                     , id "editor-post-title"
                     , value post.title
                     , onInput ChangeTitle] []
-            , button [ id "editor-post-save"
-                     , onClick SavePost ] [text "Save version"]
+            , murja_button [ id "editor-post-save"
+                           , onClick SavePost ] [text "Save version"]
             , label [ for "file-pictures-input"
                     , class "murja-button"] [ text "Add pictures from device"]
             , input [ type_ "file"
@@ -71,8 +73,8 @@ postEditor post tag showImageModal loadedImages draggingImages
                     , style "display" "none"
                     , id "file-pictures-input"
                     , on "change" (D.map GotInputFiles filesDecoder)] []
-            , button [ id "image-insert-btn"
-                     , onClick GetListOfImages]
+            , murja_button [ id "image-insert-btn"
+                           , onClick GetListOfImages]
                   [text "Insert image"]]
             
       , tagView post tag
