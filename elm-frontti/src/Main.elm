@@ -64,6 +64,8 @@ subscriptions _ = Sub.batch
                   [ tags ReceivedTag
                   , aceStateUpdate AceStateUpdate]
 
+initialModel url key viewstate = Model viewstate Nothing False False [] Nothing LoggedOut key url Nothing
+    
 viewStatePerUrl : Url.Url -> (ViewState, List (Cmd Msg))
 viewStatePerUrl url =
     case RouteParser.url_to_route url of
@@ -85,12 +87,24 @@ viewStatePerUrl url =
                                                     , getTitles
                                                     , getSession
                                                     , getPostEditorData post_id])
-                                          
+        RouteParser.PostAdmin -> (Loading, [ getSettings
+                                           , getSession
+                                           , getTitles
+                                           , getEditablePosts ])
+        RouteParser.MediaManager -> (Loading, [ getSettings
+                                              , getSession
+                                              , getTitles
+                                              , getListOfImages True] )
+        RouteParser.NewPost ->
+            (PostEditor, [ getSettings
+                         , getTitles
+                         , getSession])
+                               
         RouteParser.NotFound -> (ShowError ("Couldn't parse url " ++ (Url.toString url)), [Cmd.none])
     
 init _ url key =
     let (viewstate, cmds) = (viewStatePerUrl url)
-        model = Model (push viewstate Stack.initialise) Nothing False False [] Nothing LoggedOut key url
+        model = initialModel url key viewstate
     in
         ( model
         , Cmd.batch cmds)
@@ -106,7 +120,7 @@ port tags : (String -> msg) -> Sub msg
 port aceStateUpdate : (String -> msg) -> Sub msg               
                 
 update : Msg -> Model -> (Model, Cmd Msg)
-update msg ({settings} as model) =
+update msg model =
     case msg of
         SettingsReceived result ->
             case result of
@@ -115,44 +129,54 @@ update msg ({settings} as model) =
                         Ok new_settings ->
                             ({model | settings = Just new_settings}, Cmd.none)
                         Err error ->
-                            ({model | view_stack = push (ShowError (Decode.errorToString error)) model.view_stack}, Cmd.none)
-                Err http_error -> 
-                    ({model | view_stack = push (ShowError "Http error while loading settings") model.view_stack}, Cmd.none)
+                            ( model
+                            , alert ("Error loading settings " ++ Debug.toString error))
+                Err http_error ->
+                    ( model
+                    , alert ("Error loading settings " ++ Debug.toString http_error))
         PostReceived result ->
             case result of
                 Ok post_json ->
                     case (Decode.decodeString Article.articleDecoder post_json) of
-                        Ok post -> ({model | view_stack = push (PostView post) model.view_stack}, Cmd.none)
-                        Err error -> ({model | view_stack = push (ShowError (Decode.errorToString error)) model.view_stack}, Cmd.none)
+                        Ok post -> ( {model | view_state = PostView post}
+                                   , Cmd.none)
+                        Err error -> ( model
+                                     , alert ("Error loading post " ++ Debug.toString error))
                 Err http_error ->
-                    ({model | view_stack = push (ShowError "Http error while loading settings") model.view_stack}, Cmd.none)
+                    ( model
+                    , alert ("HttpError loading post " ++ Debug.toString http_error))
         PageReceived result ->
             case result of
                 Ok page_json ->
                     case (Decode.decodeString P.pageDecoder page_json) of
                         Ok page -> 
-                            ({model | view_stack = push (PageView page) model.view_stack}, Cmd.none)
+                            ( {model | view_state = PageView page}
+                            , Cmd.none)
                         Err error ->
-                            ({model | view_stack = push (ShowError (Decode.errorToString error)) model.view_stack}, Cmd.none)
+                            ( model
+                            , alert ("Error loading page " ++ Debug.toString error))
                 Err http_error ->
-                    ({model | view_stack = push (ShowError "ERROR") model.view_stack}, Cmd.none)
+                    ( model
+                    , alert ("HttpError loading page " ++ Debug.toString http_error))
         TitlesReceived result ->
             case result of
                 Ok json ->
                     case Decode.decodeString (Decode.list Article.sidebarTitleDecoder) json of
                         Ok decoded_titles ->
-                            case settings of
+                            case model.settings of
                                 Just unwrapped_settings ->
                                     ({model | settings = Just {unwrapped_settings | titles = Just decoded_titles}}, Cmd.none)
                                 Nothing ->
                                     (model, Cmd.none)
                         Err error ->
-                            ({model | view_stack = push (ShowError (Decode.errorToString error)) model.view_stack}, Cmd.none)
+                            ( model
+                            , alert ("Error loading titles " ++ Debug.toString error))
                 Err error ->
-                    ({model | view_stack = push (ShowError "Coudln't load titles") model.view_stack}, Cmd.none)
+                    ( model
+                    , alert ("Error loading titles " ++ Debug.toString error))
         UrlChanged url ->
             let (view_state, cmds) = viewStatePerUrl url in 
-            ({model | url = url, view_stack = push view_state model.view_stack}, Cmd.batch cmds)
+            ({model | url = url, view_state = view_state}, Cmd.batch cmds)
         LinkClicked urlRequest ->
             case urlRequest of
                 Browser.Internal url ->
@@ -188,7 +212,12 @@ update msg ({settings} as model) =
         GotSession result ->
             case result of
                 Ok user ->
-                    ({model | loginState = LoggedIn user}, Cmd.none)
+                    if model.view_state == PostEditor then
+                        ({ model | loginState = LoggedIn user 
+                         , postEditorSettings = Just (PostEditorSettings (Article.Article (C.Creator user.username user.nickname user.img_location) [""] "" Nothing "New post" Nothing Nothing [] Nothing Nothing) "")}
+                        , Cmd.none)
+                    else 
+                        ({model | loginState = LoggedIn user}, Cmd.none)
                 Err error ->
                     case error of
                         Http.BadStatus status ->
@@ -196,39 +225,37 @@ update msg ({settings} as model) =
                                 -- no valid session
                                 (model, Cmd.none)
                             else
-                                ({model | view_stack = push (ShowError ("Error (" ++ String.fromInt status ++ ") when loading session")) model.view_stack}, Cmd.none)
+                                ( model
+                                , alert ("Error (" ++ String.fromInt status ++ ") when loading session"))
                         Http.BadBody err ->
-                            ({model | view_stack = push (ShowError ("Error when loading session: " ++ err)) model.view_stack}, Cmd.none)
-                        _ -> ({model | view_stack = push (ShowError "Error when loading session") model.view_stack}, Cmd.none)
+                            ( model
+                            , alert ("Error when loading session: " ++ err))
+                        _ -> ( model
+                             , alert ("Error when loading session"))
         EditableTitlesReceived result ->
             case result of
                 Ok titles_json ->
                     case Decode.decodeString (Decode.list Article.sidebarTitleDecoder) titles_json of
                         Ok titles ->
-                            ({model | view_stack = push (PostEditorList titles) model.view_stack}, Cmd.none)
+                            ({model | view_state = PostEditorList titles}
+                            , Cmd.none)
                         Err error ->
-                            ({model | view_stack = push (ShowError "Coudln't load titles") model.view_stack}, Cmd.none)
+                            ( model
+                            , alert ("Coudln't load titles " ++ Debug.toString error))
                 Err error ->
-                    ({model | view_stack = push (ShowError "http error while loading titles") model.view_stack}, Cmd.none)
+                    ( model
+                    , alert ("EditableTitlesReceived error " ++ Debug.toString error))
         OpenPostEditor post_id ->
             (model, getPostEditorData post_id)
         EditorPostReceived result ->
             case result of
                 Ok post ->
-                    ({model | view_stack = push (PostEditor post "") model.view_stack}
+                    ({ model | view_state = PostEditor
+                     , postEditorSettings = Just (PostEditorSettings post "")}
                     , Cmd.none)
-                Err _ ->
-                    ({model | view_stack = push (ShowError "Error while loading editor") model.view_stack}, Cmd.none)
-        ChangeViewState viewstate cmd ->
-            let command = 
-                    case cmd of
-                        Just cmd_ -> cmd_
-                        Nothing -> Cmd.none
-            in
-                ({model | view_stack = push viewstate model.view_stack}, command)
-        PopViewstate ->
-            let (_, new_stack) = pop model.view_stack in
-            ({model | view_stack = new_stack}, Cmd.none)
+                Err error ->
+                    ( model
+                    , alert ("Error loading post editor " ++ Debug.toString error))
         PromptTag prompt_message ->
             (model, prompt prompt_message)
         Alert alert_msg ->
@@ -236,57 +263,70 @@ update msg ({settings} as model) =
         RunAce content ->
             (model, reallySetupAce content)
         SelectTag tag ->
-            let (top_viewstate, stack) = pop model.view_stack in
-            case top_viewstate of
-                Just (PostEditor article selected_tag) -> 
-                    ({model | view_stack = push (PostEditor article tag) stack}, Cmd.none)
+            case model.postEditorSettings of
+                Just settings ->
+                    ({ model | postEditorSettings = Just
+                           { settings | selected_tag = tag}}
+                    , Cmd.none)
                 _ -> (model, Cmd.none)
         ReceivedTag tag ->
-            case top model.view_stack of
-                Just (PostEditor article selected_tag) ->
-                    let (_, new_stack) = pop model.view_stack in
-                    ({model | view_stack = push (PostEditor {article | tags = tag :: article.tags } selected_tag) new_stack}, Cmd.none)
-                _ -> ({model | view_stack = push (ShowError "Error while loading editor") model.view_stack}, Cmd.none)
+            case model.postEditorSettings of
+                Just settings ->
+                    let article = settings.article in
+                    ({ model | postEditorSettings = Just
+                           { settings | article = { article | tags = tag :: settings.article.tags}
+                           }}
+                    , Cmd.none)
+                Nothing -> (model, alert "ReceivedTag called even though postEditorSettings is nil")
         DropTag tag ->
-            case top model.view_stack of
-                Just (PostEditor article selected_tag) ->
-                    let (_, new_stack) = pop model.view_stack in
-                    ({model | view_stack = push (PostEditor {article | tags = List.filter ((/=) tag) article.tags } selected_tag) new_stack}, Cmd.none)
-                _ -> ({model | view_stack = push (ShowError "Error dropping tag") model.view_stack}, Cmd.none)
+            case model.postEditorSettings of
+                Just settings ->
+                    let article = settings.article in
+                    ({ model | postEditorSettings = Just
+                           { settings | article =
+                                 { article | tags = List.filter ((/=) settings.selected_tag) article.tags}}}
+                    , Cmd.none)
+                Nothing -> (model, alert "DropTag called even though postEditorSettings is nil")
         HttpIgnoreResponse result ->
             (model, Cmd.none)
         ChangePost new_content ->
-            case top model.view_stack of
-                Just (PostEditor article selected_tag) ->
-                    let (_, new_stack) = pop model.view_stack in
-                    ({model | view_stack = push (PostEditor {article | content = new_content} selected_tag) new_stack}, Cmd.none)
-                _ -> (model, Cmd.none)
-        SavePost ->
-            case top model.view_stack of
-                Just (PostEditor article _) ->
-                    let new_post_p = article.id == Nothing
-                        (_, new_stack) = pop model.view_stack in
+            case model.postEditorSettings of
+                Just settings ->
+                    let article = settings.article in
+                    ({ model | postEditorSettings = Just
+                           { settings | article =
+                                 { article | content = new_content}}}
+                    , Cmd.none)
+                Nothing -> (model, alert "ChangePost called even though postEditorSettings is nil")
+        SavePost article ->
+            let new_post_p = article.id == Nothing in
+            doGoHome_
+              { model | postEditorSettings = Nothing}
+              [ if new_post_p then postArticle article else putArticle article ]
+                    
 
-                    ( {model | view_stack = new_stack}
-                    , if new_post_p then postArticle article else putArticle article)
-                _ -> ({model | view_stack = push (ShowError "Error while saving the article") model.view_stack}, Cmd.none)
         GoHome -> doGoHome model
         HttpGoHome _ -> doGoHome model
+
         AceStateUpdate content ->
-            case top model.view_stack of
-                Just (PostEditor article selected_tag) ->
-                    let(_, new_stack) = pop model.view_stack in
-                    ( {model | view_stack = push (PostEditor {article | content = content} selected_tag) new_stack}
+            case model.postEditorSettings of
+                Just settings ->
+                    let article = settings.article in
+                    ({ model | postEditorSettings = Just
+                           { settings | article =
+                                 { article | content = content}}}
                     , Cmd.none)
-                _ -> (model, Cmd.none)
+                Nothing -> (model, alert "AceStateUpdate called even though postEditorSettings is nil")
                     
         ChangeTitle new_title ->
-            case top model.view_stack of
-                Just (PostEditor article selected_tag) ->
-                    let (_, new_stack) = pop model.view_stack in
-                    ({model | view_stack = push (PostEditor {article | title = new_title} selected_tag) new_stack}, Cmd.none)
-                _ -> (model, Cmd.none)
-        ManagerGetListOfImages -> (model, getListOfImages True)
+            case model.postEditorSettings of
+                Just settings ->
+                    let article = settings.article in
+                    ({ model | postEditorSettings = Just
+                           { settings | article =
+                                 { article | title = new_title}}}
+                    , Cmd.none)
+                Nothing -> (model, alert "ChangeTitle called even though postEditorSettings is nil")            
         HttpManagerGetListOfImages _ -> (model, getListOfImages True)                                  
         GetListOfImages -> ( { model | showImageModal = True }
                            , getListOfImages False)
@@ -298,18 +338,18 @@ update msg ({settings} as model) =
                             case managerCalled of
                                 True ->
                                     ({ model
-                                         | view_stack = push
-                                                        MediaList
-                                                        model.view_stack
-                                         , loadedImages = images
+                                         | loadedImages = images
+                                         , view_state = MediaList
                                          , medialist_state = Just (MediaListState [] Dict.empty)}
                                     , Cmd.batch (List.map (\image -> getReferencingPosts (UUID.toString image.id)) images))
                                 False -> 
                                     ({model | showImageModal = True, loadedImages = images}, Cmd.none)
                         Err error ->
-                            ({model | view_stack = push (ShowError "Couldn't deserialize images") model.view_stack}, Cmd.none)
+                            ( model
+                            , alert (Debug.toString error))
                 Err error ->
-                    ({model | view_stack = push (ShowError "Coudln't load images") model.view_stack}, Cmd.none)
+                    ( model
+                    , alert (Debug.toString error))
         SelectedImage img_id ->
             ( {model | showImageModal = False, loadedImages = [] }
             , addImgToAce (UUID.toString img_id))
@@ -339,7 +379,7 @@ update msg ({settings} as model) =
                     ( model
                     , addImgToAce (UUID.toString actualResponse.id ))
                 Err err ->
-                    ({model | view_stack = push (ShowError "Error uploading image") model.view_stack}, Cmd.none)
+                    (model, alert ("Error uploading image " ++ Debug.toString err))
         MarkImageForRemoval img_id ->
             case model.medialist_state of
                 Just state ->
@@ -378,15 +418,21 @@ update msg ({settings} as model) =
                 Err err ->
                     ( model
                     , alert "Error while downloading info about referencing posts, check your devtools' network log")
+        PushUrl url ->
+            ( model, Nav.pushUrl model.key url )
             
                   
             
-doGoHome model =
-    (model, Cmd.batch [ getSettings
-                      , getTitles
-                      , getSession
-                      , getPage 1
-                      ])
+doGoHome_ model other_cmds =
+    (model, Cmd.batch (List.append [ getSettings
+                                   , getTitles
+                                   , getSession
+                                   , getPage 1
+                                   , Nav.pushUrl model.key "/blog/"]
+                           other_cmds))
+
+doGoHome model = doGoHome_ model []        
+                           
                 
 getContentCmd viewState =
     case viewState of
@@ -466,14 +512,10 @@ view model =
             { title = settings.blog_title
             , body = 
                   [ header [] [a [href "/"] [text settings.blog_title ]]
-                  , Topbar.topbar model.loginState --model
+                  , Topbar.topbar model.loginState
                   , div [class "flex-container"] 
                         [ div [class "page"]
-                              (let maybe_view  = top model.view_stack in
-                               case maybe_view of
-                                   Nothing -> [div [] [text "Couldn't load view status"]]
-                                   Just viewstate ->
-                                       case viewstate of
+                              (case model.view_state of
                                            Loading ->
                                                [div [] [text "LOADING"]]
                                            PostView article ->
@@ -486,7 +528,13 @@ view model =
                                            ShowError err ->
                                                [pre [] [text err]]
                                            PostEditorList titles -> [ PostsAdmin.view titles ]
-                                           PostEditor post tag_index -> PostEditor.postEditor post tag_index model.showImageModal model.loadedImages model.draggingImages
+                                           PostEditor ->
+                                               case model.postEditorSettings of
+                                                   Just editorSettings ->
+                                                       let post = editorSettings.article
+                                                           tag_index = editorSettings.selected_tag in
+                                                       PostEditor.postEditor post tag_index model.showImageModal model.loadedImages model.draggingImages
+                                                   Nothing -> [ div [] [ text "No post loaded" ]]
                                            MediaList -> [ medialist model.loadedImages model.medialist_state ])
                         , div [id "sidebar"] [ User.loginView model.loginState
                                              , (case settings.titles of

@@ -65,7 +65,7 @@ postEditor post tag showImageModal loadedImages draggingImages
                     , value post.title
                     , onInput ChangeTitle] []
             , murja_button [ id "editor-post-save"
-                           , onClick SavePost ] [text "Save version"]
+                           , onClick (SavePost post) ] [text "Save version"]
             , label [ for "file-pictures-input"
                     , class "murja-button"] [ text "Add pictures from device"]
             , input [ type_ "file"

@@ -21,7 +21,7 @@ type ViewState
     | Loading 
     | ShowError String
     | PostEditorList (List Title.Title)                     -- list all the posts in db
-    | PostEditor Article.Article String --String == SelectedTag as it's rendered
+    | PostEditor
     | MediaList                     -- list all the image blobs in db
       
 type alias User =
@@ -48,9 +48,13 @@ type alias LoginUser =
 type alias MediaListState =
     { selected_ids_for_removal : List UUID
     , referencing_posts : Dict String (List ReferencingPost)}
-      
+
+type alias PostEditorSettings =
+    { article : Article.Article
+    , selected_tag : String }
+    
 type alias Model =
-    { view_stack : Stack ViewState
+    { view_state : ViewState
     , settings : Maybe Settings.Settings
     , showImageModal : Bool
     , draggingImages : Bool
@@ -58,7 +62,8 @@ type alias Model =
     , medialist_state : Maybe MediaListState
     , loginState : LoginState
     , key : Nav.Key
-    , url : Url.Url}
+    , url : Url.Url
+    , postEditorSettings: Maybe PostEditorSettings}
     
 type Msg
   = PageReceived (Result Http.Error String)
@@ -73,8 +78,6 @@ type Msg
   | ChangePassword String
   | DoLogIn
   | LoginSuccess (Result Http.Error String)
-  | ChangeViewState ViewState (Maybe (Cmd Msg))
-  | PopViewstate
   | GotSession (Result Http.Error LoginUser)
   | OpenPostEditor Int
   | EditorPostReceived (Result Http.Error Article.Article)
@@ -84,7 +87,7 @@ type Msg
   | SelectTag String
   | Alert String
   | DropTag String
-  | SavePost
+  | SavePost Article.Article
   | HttpIgnoreResponse (Result Http.Error String)
   | ChangePost String
   | HttpGoHome (Result Http.Error String)
@@ -99,12 +102,12 @@ type Msg
   | GotFiles File (List File)
   | GotInputFiles (List File)
   | UploadedImage (Result Http.Error Image.PostImageResponse)
-  | ManagerGetListOfImages
   | MarkImageForRemoval UUID
   | MarkAllImages (List UUID)
   | RemoveSelectedImages
   | HttpManagerGetListOfImages (Result Http.Error String)
   | GotReferencingPosts (Result Http.Error (List Image.ReferencingPost))
+  | PushUrl String
   
 
 

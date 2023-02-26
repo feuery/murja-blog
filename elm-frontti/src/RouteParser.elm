@@ -7,6 +7,9 @@ import String exposing (fromInt)
 type Route
     = Page Int
     | Post Int
+    | NewPost 
+    | PostAdmin
+    | MediaManager
     | PostEditor Int
     | Home
     | NotFound
@@ -17,19 +20,10 @@ routeParser =
         , map Home Url.Parser.top
         , map Home (s "blog")
         , map Post (s "blog" </> (s "post" </> int))
-        , map PostEditor (s "blog" </> (s "post" </> (s "edit" </> int)))]
+        , map PostEditor (s "blog" </> (s "post" </> (s "edit" </> int)))
+        , map MediaManager (s "blog" </> (s "mediamanager"))
+        , map NewPost (s "blog" </> (s "new_post"))
+        , map PostAdmin (s "blog" </> (s "postadmin"))]
 
 url_to_route url =
             Maybe.withDefault NotFound (parse routeParser url)
-
-
--- for debug reasons
-route_to_string route =
-    case route of
-        Page page ->
-            ("Page " ++ (fromInt page))
-        Post post ->
-            ("Post " ++ (fromInt post))
-        Home -> "Home"
-        PostEditor id -> "Editing post " ++ String.fromInt id
-        NotFound -> "Parsing failed"
