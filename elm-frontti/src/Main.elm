@@ -64,7 +64,7 @@ subscriptions _ = Sub.batch
                   [ tags ReceivedTag
                   , aceStateUpdate AceStateUpdate]
 
-initialModel url key viewstate = Model viewstate Nothing False False [] Nothing LoggedOut key url Nothing
+initialModel url key viewstate = Model viewstate Nothing False False [] Nothing LoggedOut key url Nothing Time.utc
     
 viewStatePerUrl : Url.Url -> (ViewState, List (Cmd Msg))
 viewStatePerUrl url =
@@ -107,7 +107,7 @@ init _ url key =
         model = initialModel url key viewstate
     in
         ( model
-        , Cmd.batch cmds)
+        , Cmd.batch (List.append cmds [ Task.perform AdjustTimeZone Time.here]))
 
 
 -- UPDATE
@@ -420,6 +420,9 @@ update msg model =
                     , alert "Error while downloading info about referencing posts, check your devtools' network log")
         PushUrl url ->
             ( model, Nav.pushUrl model.key url )
+        AdjustTimeZone zone ->
+            ( {model | zone = zone}
+            , Cmd.none)
             
                   
             
@@ -439,11 +442,8 @@ getContentCmd viewState =
         PostEditorList _ -> getEditablePosts
         _ -> Cmd.none
                      
--- Everything's now in utc
--- Getting user's local tz is fucking impossible due to static functional reasons
--- Let someone who cares fix this
-formatDateTime formatString posixTime =
-    Df.format formatString Time.utc posixTime
+formatDateTime formatString zone posixTime =
+    Df.format formatString zone posixTime
                         
 
 -- VIEW
@@ -481,7 +481,7 @@ sidebarHistory titles =
 dangerouslySetInnerHTML: String -> Attribute msg
 dangerouslySetInnerHTML = Json.Encode.string >> Html.Attributes.property "dangerouslySetInnerHTML"
 
-articleView settings loginstate the_actual_post =
+articleView settings loginstate zone the_actual_post =
     case the_actual_post.id of
         Nothing -> div [class "post"] [text "Post id is nil :/"]
         Just post_id ->
@@ -490,7 +490,7 @@ articleView settings loginstate the_actual_post =
                                                     , p [] [text ("By " ++ the_actual_post.creator.nickname)]
                                                     , case the_actual_post.created_at of
                                                           Just writing_time ->
-                                                              p [] [text ("Written at " ++ (formatDateTime settings.time_format writing_time))]
+                                                              p [] [text ("Written at " ++ (formatDateTime settings.time_format zone writing_time))]
                                                           Nothing ->
                                                               p [] [text ("No idea when it's written")]]
                                , (case loginstate of
@@ -519,9 +519,9 @@ view model =
                                            Loading ->
                                                [div [] [text "LOADING"]]
                                            PostView article ->
-                                               [ articleView settings model.loginState article ]
+                                               [ articleView settings model.loginState model.zone article ]
                                            PageView page ->
-                                               (List.concat [(List.map (articleView settings model.loginState) page.posts),
+                                               (List.concat [(List.map (articleView settings model.loginState model.zone) page.posts),
                                                                  [footer [] (if page.id > 1 then [ a [href ("/blog/page/" ++ fromInt (page.id + 1))] [text "Older posts"]
                                                                                                  , a [href ("/blog/page/" ++ fromInt (page.id - 1)), class "newer-post"] [text "Newer posts"]]
                                                                              else [a [href ("/blog/page/" ++ fromInt (page.id + 1))] [text "Next page"]])]])

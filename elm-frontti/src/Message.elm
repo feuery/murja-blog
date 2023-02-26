@@ -2,6 +2,7 @@ port module Message exposing (..)
 
 import Http
 import Browser
+import Time
 import Page as P
 import Article
 import Browser.Navigation as Nav
@@ -63,7 +64,8 @@ type alias Model =
     , loginState : LoginState
     , key : Nav.Key
     , url : Url.Url
-    , postEditorSettings: Maybe PostEditorSettings}
+    , postEditorSettings: Maybe PostEditorSettings
+    , zone : Time.Zone}
     
 type Msg
   = PageReceived (Result Http.Error String)
@@ -108,6 +110,7 @@ type Msg
   | HttpManagerGetListOfImages (Result Http.Error String)
   | GotReferencingPosts (Result Http.Error (List Image.ReferencingPost))
   | PushUrl String
+  | AdjustTimeZone Time.Zone
   
 
 
