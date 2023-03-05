@@ -134,4 +134,5 @@ WHERE p.tags ?? 'landing-page' AND NOT p.tags ?? 'hidden'
 SELECT p.ID, p.Title, p.created_at, p.Content, p.tags, u.Username, u.Nickname, u.Img_location, 0 AS "amount-of-comments"
 FROM blog.Post p
 JOIN blog.Users u ON u.ID = p.creator_id
-WHERE p.tags @> :tags AND (NOT p.tags ?? 'hidden' OR (p.tags ?? 'hidden' AND :show-hidden))
+WHERE p.tags @> :tags AND (NOT p.tags ?? 'hidden' OR (p.tags ?? 'hidden' AND :show-hidden))  	     	
+      	     	      and ((NOT p.tags ?? 'unlisted') OR :show-hidden)
