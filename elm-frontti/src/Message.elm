@@ -1,6 +1,7 @@
 port module Message exposing (..)
 
 import Http
+import Html
 import Browser
 import Time
 import Page as P
@@ -24,6 +25,7 @@ type ViewState
     | PostEditorList (List Title.Title)                     -- list all the posts in db
     | PostEditor
     | MediaList                     -- list all the image blobs in db
+    | TaggedPostsView (List Article.Article)
       
 type alias User =
     { username : String
@@ -65,7 +67,9 @@ type alias Model =
     , key : Nav.Key
     , url : Url.Url
     , postEditorSettings: Maybe PostEditorSettings
-    , zone : Time.Zone}
+    , zone : Time.Zone
+    -- , extra_sidebar : Maybe (List (Html.Html msg))
+    }
     
 type Msg
   = PageReceived (Result Http.Error String)
@@ -111,6 +115,7 @@ type Msg
   | GotReferencingPosts (Result Http.Error (List Image.ReferencingPost))
   | PushUrl String
   | AdjustTimeZone Time.Zone
+  | GotTaggedPosts  (Result Http.Error (List Article.Article))
   
 
 

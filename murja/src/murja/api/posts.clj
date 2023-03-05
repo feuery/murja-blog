@@ -52,3 +52,6 @@
 
 (defn comment-post [db user comment]
   (db.posts/comment-post! db user comment))
+
+(defn get-tagged-posts [db tags]
+  (db.posts/get-tagged db tags))

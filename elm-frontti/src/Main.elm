@@ -95,6 +95,9 @@ viewStatePerUrl url =
                                               , getSession
                                               , getTitles
                                               , getListOfImages True] )
+        RouteParser.TaggedPosts tags_ -> (Loading, [ getSession
+                                                   , getSettings
+                                                   , loadTaggedPosts tags_])
         RouteParser.NewPost ->
             (PostEditor, [ getSettings
                          , getTitles
@@ -423,6 +426,13 @@ update msg model =
         AdjustTimeZone zone ->
             ( {model | zone = zone}
             , Cmd.none)
+        GotTaggedPosts result ->
+            case result of
+                Ok posts ->
+                    ({ model | view_state = TaggedPostsView posts}
+                    , Cmd.none)
+                Err err ->
+                    ( model , alert ( "Error loading tagged posts " ++ (Debug.toString err)))
             
                   
             
@@ -528,6 +538,8 @@ view model =
                                            ShowError err ->
                                                [pre [] [text err]]
                                            PostEditorList titles -> [ PostsAdmin.view titles ]
+                                           TaggedPostsView articles ->
+                                               (List.map (articleView settings model.loginState model.zone) articles)
                                            PostEditor ->
                                                case model.postEditorSettings of
                                                    Just editorSettings ->

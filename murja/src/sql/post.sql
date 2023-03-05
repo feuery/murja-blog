@@ -128,3 +128,10 @@ GROUP BY p.ID, u.ID
 SELECT p.Title, p.Id
 FROM blog.Post p
 WHERE p.tags ?? 'landing-page' AND NOT p.tags ?? 'hidden'
+
+
+-- :name get-tagged*
+SELECT p.ID, p.Title, p.created_at, p.Content, p.tags, u.Username, u.Nickname, u.Img_location, 0 AS "amount-of-comments"
+FROM blog.Post p
+JOIN blog.Users u ON u.ID = p.creator_id
+WHERE p.tags @> :tags AND (NOT p.tags ?? 'hidden' OR (p.tags ?? 'hidden' AND :show-hidden))

@@ -258,3 +258,8 @@
         (mapv (partial remove-tag! {:db-spec c} "landing-page")
               ids)))
     (insert-post db-spec (assoc post :creator-id _id))))
+
+(defn get-tagged [{:keys [db-spec] :as db} tags]
+  (->> (get-tagged* db-spec {:tags tags
+                             :show-hidden false})
+       (map (partial ->Post db))))

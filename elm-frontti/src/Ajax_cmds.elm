@@ -99,3 +99,7 @@ deletePictures ids = Http.request
 getReferencingPosts id = Http.get
                          { url = "/api/pictures/referencing/" ++ id
                          , expect = Http.expectJson GotReferencingPosts (Json.list Image.referencingPostDecoder)}
+
+loadTaggedPosts tags = Http.get
+                       { url = "/api/posts/tagged/" ++ tags
+                       , expect = Http.expectJson GotTaggedPosts (Json.list Article.articleDecoder)}

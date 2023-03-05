@@ -11,6 +11,7 @@ type Route
     | PostAdmin
     | MediaManager
     | PostEditor Int
+    | TaggedPosts String
     | Home
     | NotFound
 
@@ -23,6 +24,7 @@ routeParser =
         , map PostEditor (s "blog" </> (s "post" </> (s "edit" </> int)))
         , map MediaManager (s "blog" </> (s "mediamanager"))
         , map NewPost (s "blog" </> (s "new_post"))
+        , map TaggedPosts (s "blog" </> (s "tags" </> string))
         , map PostAdmin (s "blog" </> (s "postadmin"))]
 
 url_to_route url =

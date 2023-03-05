@@ -3,6 +3,7 @@
             [murja.rss :as rss]
             [hiccup.page :refer [include-js include-css html5]]
             [clojure.java.io :as io]
+            [clojure.string :as str]
             [murja.api.posts :as api.posts]
             [murja.api.users :as api.users]
             [murja.api.login :as api.login]
@@ -201,3 +202,9 @@
                   [:body
                    [:script (slurp (io/resource "public/js/murja-helper.js"))]
                    [:div#app]])}))
+
+(defn get-tagged-posts [{:keys [db]
+                         {:keys [tags]} :path-params}]
+  (assert (some? tags))
+  {:status 200
+   :body (api.posts/get-tagged-posts db (str/split tags #", ?"))})

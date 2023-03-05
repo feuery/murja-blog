@@ -70,6 +70,10 @@
                    ["/client-settings" {:get {:handler #'api/get-client-settings}}]]
 
                   ["/posts" {:swagger {:tags ["posts"]}}
+                   ["/tagged/:tags" {:get {:parameters {:path {:tags string?}}
+                                           :handler #'api/get-tagged-posts
+                                           :summary "Get tagged posts"
+                                           #_#_:responses {200 {:body (spec/* ::post/Post)}}}}]
                    ["/titles" {:get {:handler #'api/get-posts-titles
                                      :summary "Returns titles, tags, months and years for the title-widget"
                                      :responses {200 {:body (spec/* ::timed-title/Timed-Title)}}}}]
