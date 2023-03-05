@@ -97,6 +97,7 @@ viewStatePerUrl url =
                                               , getListOfImages True] )
         RouteParser.TaggedPosts tags_ -> (Loading, [ getSession
                                                    , getSettings
+                                                   , getTitles
                                                    , loadTaggedPosts tags_])
         RouteParser.NewPost ->
             (PostEditor, [ getSettings
@@ -553,4 +554,8 @@ view model =
                                                     Just titles ->
                                                         sidebarHistory titles 
                                                     Nothing ->
-                                                        div [] [text "Loading history failed"])]]]}
+                                                        div [] [text "Loading history failed"])
+                                             , (case model.view_state of
+                                                    PostEditorList titles -> PostsAdmin.tagList titles
+                                                    
+                                                    _ -> div [] [])]]]}

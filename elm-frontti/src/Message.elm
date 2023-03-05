@@ -67,9 +67,7 @@ type alias Model =
     , key : Nav.Key
     , url : Url.Url
     , postEditorSettings: Maybe PostEditorSettings
-    , zone : Time.Zone
-    -- , extra_sidebar : Maybe (List (Html.Html msg))
-    }
+    , zone : Time.Zone}
     
 type Msg
   = PageReceived (Result Http.Error String)
