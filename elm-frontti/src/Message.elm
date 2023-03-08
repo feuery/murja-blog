@@ -2,6 +2,8 @@ port module Message exposing (..)
 
 import Http
 import Html
+import Html.Attributes
+import Json.Encode
 import Browser
 import Time
 import Page as P
@@ -54,7 +56,8 @@ type alias MediaListState =
 
 type alias PostEditorSettings =
     { article : Article.Article
-    , selected_tag : String }
+    , selected_tag : String
+    , show_preview : Bool}
     
 type alias Model =
     { view_state : ViewState
@@ -114,9 +117,15 @@ type Msg
   | PushUrl String
   | AdjustTimeZone Time.Zone
   | GotTaggedPosts  (Result Http.Error (List Article.Article))
+  | ToggleArticlePreview
   
 
 
 -- ports
 port reallySetupAce : String -> Cmd msg
 port addImgToAce : String -> Cmd msg
+
+
+-- dumb shit that would deserve its own module
+dangerouslySetInnerHTML: String -> Html.Attribute msg
+dangerouslySetInnerHTML = Json.Encode.string >> Html.Attributes.property "dangerouslySetInnerHTML"

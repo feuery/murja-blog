@@ -8,6 +8,7 @@ import Html.Events exposing (onInput, onClick)
 import Http
 
 import Article
+import Article_view exposing (articleView)
 import Ajax_cmds exposing (..)
 import Creator as C
 import Page as P
@@ -24,7 +25,6 @@ import ImageSelector exposing (imageSelector)
 import DateTime exposing (DateTime)
 import Json.Decode as Decode
 import Json.Encode
-import DateFormat as Df
 import Time
 import Task
 import Dict.Extra exposing (groupBy)
@@ -218,7 +218,7 @@ update msg model =
                 Ok user ->
                     if model.view_state == PostEditor then
                         ({ model | loginState = LoggedIn user 
-                         , postEditorSettings = Just (PostEditorSettings (Article.Article (C.Creator user.username user.nickname user.img_location) [""] "" Nothing "New post" Nothing Nothing [] Nothing Nothing) "")}
+                         , postEditorSettings = Just (PostEditorSettings (Article.Article (C.Creator user.username user.nickname user.img_location) [""] "" Nothing "New post" Nothing Nothing [] Nothing Nothing) "" False)}
                         , Cmd.none)
                     else 
                         ({model | loginState = LoggedIn user}, Cmd.none)
@@ -255,7 +255,7 @@ update msg model =
             case result of
                 Ok post ->
                     ({ model | view_state = PostEditor
-                     , postEditorSettings = Just (PostEditorSettings post "")}
+                     , postEditorSettings = Just (PostEditorSettings post "" False)}
                     , Cmd.none)
                 Err error ->
                     ( model
@@ -434,6 +434,10 @@ update msg model =
                     , Cmd.none)
                 Err err ->
                     ( model , alert ( "Error loading tagged posts " ++ (Debug.toString err)))
+        ToggleArticlePreview ->
+            ({ model | postEditorSettings = Maybe.map (\settings ->
+                                                           {settings | show_preview = not settings.show_preview}) model.postEditorSettings}
+            , Cmd.none)
             
                   
             
@@ -452,9 +456,6 @@ getContentCmd viewState =
     case viewState of
         PostEditorList _ -> getEditablePosts
         _ -> Cmd.none
-                     
-formatDateTime formatString zone posixTime =
-    Df.format formatString zone posixTime
                         
 
 -- VIEW
@@ -489,28 +490,7 @@ sidebarHistory titles =
                                                Nothing ->
                                                         [li [] [text ("There's no year " ++ (fromInt year) ++ " in titles")]]) (keys grouped_by_year |> List.reverse)))]
 
-dangerouslySetInnerHTML: String -> Attribute msg
-dangerouslySetInnerHTML = Json.Encode.string >> Html.Attributes.property "dangerouslySetInnerHTML"
 
-articleView settings loginstate zone the_actual_post =
-    case the_actual_post.id of
-        Nothing -> div [class "post"] [text "Post id is nil :/"]
-        Just post_id ->
-            div [class "post"] [ a [href ("/blog/post/" ++ String.fromInt post_id)] [ text the_actual_post.title ]
-                               , div [class "meta"] [ User.user_avatar the_actual_post.creator
-                                                    , p [] [text ("By " ++ the_actual_post.creator.nickname)]
-                                                    , case the_actual_post.created_at of
-                                                          Just writing_time ->
-                                                              p [] [text ("Written at " ++ (formatDateTime settings.time_format zone writing_time))]
-                                                          Nothing ->
-                                                              p [] [text ("No idea when it's written")]]
-                               , (case loginstate of
-                                      LoggedIn _ -> a [ href ("/blog/post/edit/" ++ String.fromInt post_id)
-                                                      , onClick (OpenPostEditor post_id)] [text "Edit this post"]
-                                      _ -> div [] [])
-                                                    
-                               , article [ class "content"
-                                         , dangerouslySetInnerHTML the_actual_post.content ] []]
 
 view : Model -> Browser.Document Msg
 view model =
@@ -546,7 +526,7 @@ view model =
                                                    Just editorSettings ->
                                                        let post = editorSettings.article
                                                            tag_index = editorSettings.selected_tag in
-                                                       PostEditor.postEditor post tag_index model.showImageModal model.loadedImages model.draggingImages
+                                                       PostEditor.postEditor post tag_index model.showImageModal model.loadedImages model.draggingImages editorSettings settings model.zone model.loginState
                                                    Nothing -> [ div [] [ text "No post loaded" ]]
                                            MediaList -> [ medialist model.loadedImages model.medialist_state ])
                         , div [id "sidebar"] [ User.loginView model.loginState

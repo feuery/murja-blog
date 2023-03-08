@@ -8,7 +8,7 @@ import Json.Decode as D
 
 import Http
 
-import Article
+import Article_view
 import Ajax_cmds exposing (..)
 import Creator as C
 import Page as P
@@ -58,7 +58,7 @@ filesDecoder : D.Decoder (List File)
 filesDecoder =
   D.at ["target","files"] (D.list File.decoder)
       
-postEditor post tag showImageModal loadedImages draggingImages
+postEditor post tag showImageModal loadedImages draggingImages editorSettings app_settings tz loginState
     = [ div [ id "editor-buttons"]
             [ input [ name "title"
                     , id "editor-post-title"
@@ -75,18 +75,28 @@ postEditor post tag showImageModal loadedImages draggingImages
                     , on "change" (D.map GotInputFiles filesDecoder)] []
             , murja_button [ id "image-insert-btn"
                            , onClick GetListOfImages]
-                  [text "Insert image"]]
+                  [text "Insert image"]
+            , label [for "show-preview-cb"]
+                [text "Show article preview"]
+            , input [ type_ "checkbox"
+                    , id "show-preview-cb"
+                    , checked editorSettings.show_preview
+                    , onClick ToggleArticlePreview] []]
             
       , tagView post tag
       , if showImageModal then imageSelector loadedImages else div [] []
-      , editor [ id "editor-post-content"
-            , style "background-color" (if draggingImages then "#880088" else "")
-            , hijackOn "dragenter" (D.succeed EditorDragEnter)
-            , hijackOn "dragend" (D.succeed EditorDragLeave)
-            , hijackOn "dragover" (D.succeed EditorDragEnter)
-            , hijackOn "dragleave" (D.succeed EditorDragLeave)
-            , hijackOn "drop" dropDecoder
-            , hijackOn "ready" (D.succeed (RunAce post.content))
-            ]]
-    
-    
+
+      , if editorSettings.show_preview then
+            case loginState of
+                LoggedIn user ->
+                    Article_view.articleView app_settings loginState tz post
+                _ -> div [] [text "You're not logged in"]
+                        
+        else editor [ id "editor-post-content"
+                    , style "background-color" (if draggingImages then "#880088" else "")
+                    , hijackOn "dragenter" (D.succeed EditorDragEnter)
+                    , hijackOn "dragend" (D.succeed EditorDragLeave)
+                    , hijackOn "dragover" (D.succeed EditorDragEnter)
+                    , hijackOn "dragleave" (D.succeed EditorDragLeave)
+                    , hijackOn "drop" dropDecoder
+                    , hijackOn "ready" (D.succeed (RunAce post.content))]]
