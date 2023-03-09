@@ -103,7 +103,12 @@ viewStatePerUrl url =
             (PostEditor, [ getSettings
                          , getTitles
                          , getSession])
-                               
+
+        RouteParser.PostVersion post_id version_id -> (Loading, [ getSession
+                                                                , getSettings
+                                                                , getTitles
+                                                                , loadPostVersion post_id version_id])
+                                                                      
         RouteParser.NotFound -> (ShowError ("Couldn't parse url " ++ (Url.toString url)), [Cmd.none])
     
 init _ url key =
@@ -438,6 +443,14 @@ update msg model =
             ({ model | postEditorSettings = Maybe.map (\settings ->
                                                            {settings | show_preview = not settings.show_preview}) model.postEditorSettings}
             , Cmd.none)
+        GotOldPost result ->
+            case result of
+                Ok post ->
+                    ({ model | view_state = PostView post}
+                    , Cmd.none)
+                Err err ->
+                    (model , alert ("Error loading post version " ++ Debug.toString err))
+            
             
                   
             

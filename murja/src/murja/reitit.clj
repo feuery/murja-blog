@@ -80,7 +80,7 @@
                    ;; TODO this WILL break if used in an environment with more than one writer
                    ["/all-titles" {:middleware [middleware/wrap-user
                                                 [middleware/can? "edit-post"]]
-                                  :get {:handler #'api/get-posts-all-titles
+                                   :get {:handler #'api/get-posts-all-titles
                                          :summary "Same as /titles, but auths that requester has edit-post - permission"
                                          :responses {200 {:body (spec/* ::timed-title/Timed-Title)}}}}]
 

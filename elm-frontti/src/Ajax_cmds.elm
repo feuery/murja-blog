@@ -103,3 +103,10 @@ getReferencingPosts id = Http.get
 loadTaggedPosts tags = Http.get
                        { url = "/api/posts/tagged/" ++ tags
                        , expect = Http.expectJson GotTaggedPosts (Json.list Article.articleDecoder)}
+
+loadPostVersion post_id_int version_id_int =
+    let post_id = String.fromInt post_id_int
+        version_id = String.fromInt version_id_int in
+    Http.get
+        { url = "/api/posts/post/" ++ post_id ++ "/version/" ++ version_id
+        , expect = Http.expectJson GotOldPost Article.articleDecoder}

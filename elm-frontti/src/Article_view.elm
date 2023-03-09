@@ -15,13 +15,18 @@ articleView settings loginstate zone the_actual_post =
     div [class "post"] [ case the_actual_post.id of
                              Just post_id -> a [href ("/blog/post/" ++ String.fromInt post_id)] [ text the_actual_post.title ]
                              Nothing -> span [] [ text the_actual_post.title ]
-                       , div [class "meta"] [ User.user_avatar the_actual_post.creator
-                                            , p [] [text ("By " ++ the_actual_post.creator.nickname)]
-                                            , case the_actual_post.created_at of
-                                                  Just writing_time ->
-                                                      p [] [text ("Written at " ++ (formatDateTime settings.time_format zone writing_time))]
-                                                  Nothing ->
-                                                      p [] [text ("No idea when it's written")]]
+                       , div [class "meta"] (List.append [ User.user_avatar the_actual_post.creator
+                                                         , p [] [text ("By " ++ the_actual_post.creator.nickname)]
+                                                         , case the_actual_post.created_at of
+                                                               Just writing_time ->
+                                                                   p [] [text ("Written at " ++ (formatDateTime settings.time_format zone writing_time))]
+                                                               Nothing ->
+                                                                   p [] [text ("No idea when it's written")]]
+                                                 (case the_actual_post.id of
+                                                     Just post_id ->
+                                                         (List.map (\version -> a [ href ("/blog/post/" ++ String.fromInt post_id ++ "/version/" ++ String.fromInt version) ] [ text ((String.fromInt version) ++ ", ")]) the_actual_post.versions)
+                                                     Nothing -> []))
+                             
                        , (case the_actual_post.id of
                               Just post_id ->
                                   case loginstate of
@@ -31,4 +36,4 @@ articleView settings loginstate zone the_actual_post =
                               _ -> div [] [])
                                                     
                        , article [ class "content"
-                                 , dangerouslySetInnerHTML the_actual_post.content ] []]
+                                 , dangerouslySetInnerHTML the_actual_post.content] []]

@@ -12,6 +12,7 @@ type Route
     | MediaManager
     | PostEditor Int
     | TaggedPosts String
+    | PostVersion Int Int
     | Home
     | NotFound
 
@@ -20,6 +21,7 @@ routeParser =
         [ map Page (s "blog" </> (s "page" </> int))
         , map Home Url.Parser.top
         , map Home (s "blog")
+        , map PostVersion (s "blog" </> (s "post" </> (int </> (s "version" </> int))))
         , map Post (s "blog" </> (s "post" </> int))
         , map PostEditor (s "blog" </> (s "post" </> (s "edit" </> int)))
         , map MediaManager (s "blog" </> (s "mediamanager"))

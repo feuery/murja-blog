@@ -118,6 +118,7 @@ type Msg
   | AdjustTimeZone Time.Zone
   | GotTaggedPosts  (Result Http.Error (List Article.Article))
   | ToggleArticlePreview
+  | GotOldPost (Result Http.Error Article.Article)
   
 
 
