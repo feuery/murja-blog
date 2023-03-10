@@ -73,18 +73,18 @@ type alias Model =
     , zone : Time.Zone}
     
 type Msg
-  = PageReceived (Result Http.Error String)
-  | PostReceived (Result Http.Error String)
-  | SettingsReceived (Result Http.Error String)
-  | TitlesReceived (Result Http.Error String)
-  | EditableTitlesReceived (Result Http.Error String)
+  = PageReceived (Result Http.Error P.Page)
+  | PostReceived (Result Http.Error Article.Article)
+  | SettingsReceived (Result Http.Error Settings.Settings)
+  | TitlesReceived (Result Http.Error (List Article.Title))
+  | EditableTitlesReceived (Result Http.Error (List Article.Title))
   | UrlChanged Url.Url
   | LinkClicked Browser.UrlRequest
   | LoginFocus
   | ChangeUsername String
   | ChangePassword String
   | DoLogIn
-  | LoginSuccess (Result Http.Error String)
+  | LoginSuccess (Result Http.Error LoginUser)
   | GotSession (Result Http.Error LoginUser)
   | OpenPostEditor Int
   | EditorPostReceived (Result Http.Error Article.Article)
@@ -102,7 +102,7 @@ type Msg
   | ChangeTitle String
   | RunAce String
   | GetListOfImages
-  | GotListOfImages Bool (Result Http.Error String)
+  | GotListOfImages Bool (Result Http.Error (List Image.Image))
   | SelectedImage UUID
   | EditorDragEnter
   | EditorDragLeave

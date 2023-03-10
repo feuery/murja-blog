@@ -2,9 +2,11 @@ module Ajax_cmds exposing (..)
 
 import Article
 import User
+import Page
 import Message exposing (..)
 import Http exposing (..)
 import Image as Image
+import Settings
 import Json.Decode as Json
 
 getSession =
@@ -16,36 +18,36 @@ getEditablePosts : Cmd Msg
 getEditablePosts =
     Http.get
         { url = "/api/posts/all-titles"
-        , expect = Http.expectString EditableTitlesReceived }
+        , expect = Http.expectJson EditableTitlesReceived (Json.list Article.sidebarTitleDecoder) }
 
 getPage : Int -> Cmd Msg
 getPage page_id =
     Http.get
         { url = "/api/posts/page/" ++ (String.fromInt page_id) ++ "/page-size/6"
-        , expect = Http.expectString PageReceived}
+        , expect = Http.expectJson PageReceived Page.pageDecoder}
 
 getPost : Int -> Cmd Msg
 getPost post_id =
     Http.get
         { url = "/api/posts/post/" ++ (String.fromInt post_id)
-        , expect = Http.expectString PostReceived}
+        , expect = Http.expectJson PostReceived Article.articleDecoder}
 
 getSettings : Cmd Msg
 getSettings =
     Http.get
         { url = "/api/settings/client-settings"
-        , expect = Http.expectString SettingsReceived}
+        , expect = Http.expectJson SettingsReceived Settings.settingsDecoder}
 
 getTitles =
     Http.get
         { url = "/api/posts/titles"
-        , expect = Http.expectString TitlesReceived}
+        , expect = Http.expectJson TitlesReceived (Json.list Article.sidebarTitleDecoder)}
 
 postLogin username password =
     Http.post
        { url = "/api/login/login"
-       , expect = Http.expectString LoginSuccess
-       , body = Http.stringBody "application/json" ("{\"username\": \""++username++"\", \"password\": \""++password++"\"})")}
+       , expect = Http.expectJson LoginSuccess User.userDecoder
+       , body = Http.jsonBody <| User.encodeLoggingIn <| User.UserLoggingIn username password}
 
 getPostEditorData post_id =
     Http.get
@@ -78,7 +80,7 @@ putArticle article =
 getListOfImages : Bool -> Cmd Msg
 getListOfImages managerCalled = Http.get
                   { url = "/api/pictures/list/all"
-                  , expect = Http.expectString (GotListOfImages managerCalled)}
+                  , expect = Http.expectJson (GotListOfImages managerCalled) (Json.list Image.imageDecoder)}
 
 
 postPicture pictureFile = Http.post 

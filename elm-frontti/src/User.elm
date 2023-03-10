@@ -9,6 +9,7 @@ import Article exposing (decodeApply)
 import Json.Decode as Decode exposing (Decoder, succeed)
 import Json.Decode.Pipeline exposing (required)
 import Json.Decode.Extra as Extra
+import Json.Encode as Json
 
 
     -- {
@@ -76,3 +77,12 @@ loginView loginstate =
                                                      div [] [text "Login failed! Check username and password!"]]]))
 
 user_avatar creator = img [class "user_avatar", src creator.img_location] []
+
+type alias UserLoggingIn =
+    { username : String
+    , password : String}
+
+encodeLoggingIn user =
+    Json.object
+        [ ("username", Json.string user.username)
+        , ("password", Json.string user.password)]

@@ -133,53 +133,31 @@ update msg model =
     case msg of
         SettingsReceived result ->
             case result of
-                Ok settings_json ->
-                    case (Decode.decodeString Settings.settingsDecoder settings_json) of
-                        Ok new_settings ->
-                            ({model | settings = Just new_settings}, Cmd.none)
-                        Err error ->
-                            ( model
-                            , alert ("Error loading settings " ++ Debug.toString error))
+                Ok new_settings ->
+                    ({model | settings = Just new_settings}, Cmd.none)
+                        
                 Err http_error ->
                     ( model
                     , alert ("Error loading settings " ++ Debug.toString http_error))
         PostReceived result ->
             case result of
-                Ok post_json ->
-                    case (Decode.decodeString Article.articleDecoder post_json) of
-                        Ok post -> ( {model | view_state = PostView post}
-                                   , Cmd.none)
-                        Err error -> ( model
-                                     , alert ("Error loading post " ++ Debug.toString error))
-                Err http_error ->
-                    ( model
-                    , alert ("HttpError loading post " ++ Debug.toString http_error))
+                Ok post -> ( {model | view_state = PostView post}
+                           , Cmd.none)
+                Err error -> ( model
+                             , alert ("Error loading post " ++ Debug.toString error))
         PageReceived result ->
             case result of
-                Ok page_json ->
-                    case (Decode.decodeString P.pageDecoder page_json) of
-                        Ok page -> 
-                            ( {model | view_state = PageView page}
-                            , Cmd.none)
-                        Err error ->
-                            ( model
-                            , alert ("Error loading page " ++ Debug.toString error))
-                Err http_error ->
+                Ok page -> 
+                    ( {model | view_state = PageView page}
+                    , Cmd.none)
+                Err error ->
                     ( model
-                    , alert ("HttpError loading page " ++ Debug.toString http_error))
+                    , alert ("Error loading page " ++ Debug.toString error))
         TitlesReceived result ->
             case result of
-                Ok json ->
-                    case Decode.decodeString (Decode.list Article.sidebarTitleDecoder) json of
-                        Ok decoded_titles ->
-                            case model.settings of
-                                Just unwrapped_settings ->
-                                    ({model | settings = Just {unwrapped_settings | titles = Just decoded_titles}}, Cmd.none)
-                                Nothing ->
-                                    (model, Cmd.none)
-                        Err error ->
-                            ( model
-                            , alert ("Error loading titles " ++ Debug.toString error))
+                Ok decoded_titles ->
+                    ({ model | settings = Maybe.map (\s -> {s | titles = Just decoded_titles}) model.settings}
+                    ,  Cmd.none)
                 Err error ->
                     ( model
                     , alert ("Error loading titles " ++ Debug.toString error))
@@ -210,12 +188,8 @@ update msg model =
                        _ -> (model, Cmd.none)
         LoginSuccess result ->
             case result of
-                Ok login_result ->
-                    case Decode.decodeString User.userDecoder login_result of
-                        Ok user ->
-                            ({model | loginState = LoggedIn user}, Cmd.none)
-                        Err error ->
-                             ({model | loginState = LoginFailed}, Cmd.none)
+                Ok user ->
+                    ({model | loginState = LoggedIn user}, Cmd.none)
                 Err error ->
                     ({model | loginState = LoginFailed}, Cmd.none)
         GotSession result ->
@@ -243,17 +217,12 @@ update msg model =
                              , alert ("Error when loading session"))
         EditableTitlesReceived result ->
             case result of
-                Ok titles_json ->
-                    case Decode.decodeString (Decode.list Article.sidebarTitleDecoder) titles_json of
-                        Ok titles ->
-                            ({model | view_state = PostEditorList titles}
-                            , Cmd.none)
-                        Err error ->
-                            ( model
-                            , alert ("Coudln't load titles " ++ Debug.toString error))
+                Ok titles ->
+                    ({model | view_state = PostEditorList titles}
+                    , Cmd.none)
                 Err error ->
                     ( model
-                    , alert ("EditableTitlesReceived error " ++ Debug.toString error))
+                    , alert ("Coudln't load titles " ++ Debug.toString error))
         OpenPostEditor post_id ->
             (model, getPostEditorData post_id)
         EditorPostReceived result ->
@@ -341,21 +310,17 @@ update msg model =
                            , getListOfImages False)
         GotListOfImages managerCalled result ->
             case result of
-                Ok json ->
-                    case Decode.decodeString (Decode.list Image.imageDecoder) json of
-                        Ok images ->
-                            case managerCalled of
-                                True ->
-                                    ({ model
-                                         | loadedImages = images
-                                         , view_state = MediaList
-                                         , medialist_state = Just (MediaListState [] Dict.empty)}
-                                    , Cmd.batch (List.map (\image -> getReferencingPosts (UUID.toString image.id)) images))
-                                False -> 
-                                    ({model | showImageModal = True, loadedImages = images}, Cmd.none)
-                        Err error ->
-                            ( model
-                            , alert (Debug.toString error))
+
+                Ok images ->
+                    case managerCalled of
+                        True ->
+                            ({ model
+                                 | loadedImages = images
+                                 , view_state = MediaList
+                                 , medialist_state = Just (MediaListState [] Dict.empty)}
+                            , Cmd.batch (List.map (\image -> getReferencingPosts (UUID.toString image.id)) images))
+                        False -> 
+                            ({model | showImageModal = True, loadedImages = images}, Cmd.none)
                 Err error ->
                     ( model
                     , alert (Debug.toString error))
