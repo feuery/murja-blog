@@ -16,3 +16,4 @@ elm-frontti/elm-stuff/*
 /response
 /result
 /murja/resources/murja.min.js
+/murja-activitypub-common-lisp/resources/*.pem

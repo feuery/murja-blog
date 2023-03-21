@@ -1,5 +1,5 @@
 (defpackage murja-activitypub-common-lisp
-  (:use :cl :ql :easy-routes :postmodern)
+  (:use :cl :ql :easy-routes :postmodern :murja-activitypub-common-lisp.actor)
   (:import-from :fset :wb-map))
 (in-package :murja-activitypub-common-lisp)
 
@@ -12,17 +12,29 @@
   (funcall next))
 
 (defun @transaction (next)
-  (format t "Moro from transaction~%")
   (with-connection '("blogdb" "blogadmin" "blog" "localhost" :pooled-p t)
     (with-transaction ()
       (funcall next))))
 
-(defroute posts ("/posts"
+(defroute actor ("/activitypub/feuer"
 		 :method :get
 		 :decorators (@transaction @json))
     ()
-  (format nil "~a"
-	  (query "SELECT * FROM blog.post" :json-strs)))
+  (get-person))
+
+(defroute webfinger ("/.well-known/webfinger"
+		     :method :get
+		     :decorators (@transaction @json))
+    (&get resource)
+  ;; example resource
+  ;; acct:bob@my-example.com
+
+  (let* ((account-with-server (second (str:split ":" resource)))
+	 (acc-split (str:split "@" account-with-server))
+	 (account (first acc-split))
+	 (server (second acc-split)))
+    (webfinger-query resource server account)))
+  
 
 
 

@@ -2,11 +2,12 @@
   :version "0.1.0"
   :author ""
   :license ""
-  :depends-on (:fset :postmodern :simple-date :simple-date/postgres-glue :easy-routes :cl-json)
+  :depends-on (:fset :postmodern :simple-date :simple-date/postgres-glue :easy-routes :cl-json :str)
   :components ((:module "src"
                 :components
                 ((:file "db")
-		 (:file "main"))))
+		 (:file "main")
+		 (:file "actor"))))
   :description ""
   :in-order-to ((test-op (test-op "murja-activitypub-common-lisp/tests"))))
 
