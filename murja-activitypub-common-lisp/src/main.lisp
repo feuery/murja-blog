@@ -1,5 +1,7 @@
 (defpackage murja-activitypub-common-lisp
-  (:use :cl :ql :easy-routes :postmodern :murja-activitypub-common-lisp.actor)
+  (:use :cl :ql :easy-routes :postmodern
+	:murja-activitypub-common-lisp.actor
+	:murja-activitypub-common-lisp.post)
   (:import-from :fset :wb-map))
 (in-package :murja-activitypub-common-lisp)
 
@@ -20,7 +22,7 @@
 		 :method :get
 		 :decorators (@transaction @json))
     ()
-  (get-person))
+  (json:encode-json-alist-to-string (get-person "feuer")))
 
 (defroute webfinger ("/.well-known/webfinger"
 		     :method :get
@@ -34,6 +36,15 @@
 	 (account (first acc-split))
 	 (server (second acc-split)))
     (webfinger-query resource server account)))
+
+
+(defroute activitypub-posts
+    ("/activitypub/posts"
+     :method :get
+     :decorators (@transaction @json))
+    ()
+    (load-posts-as-activitypub))
+    
   
 
 

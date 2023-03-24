@@ -6,8 +6,9 @@
   :components ((:module "src"
                 :components
                 ((:file "db")
-		 (:file "main")
-		 (:file "actor"))))
+		 (:file "post")
+		 (:file "actor")
+		 (:file "main"))))
   :description ""
   :in-order-to ((test-op (test-op "murja-activitypub-common-lisp/tests"))))
 

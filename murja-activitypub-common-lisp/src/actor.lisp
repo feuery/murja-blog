@@ -1,6 +1,6 @@
 (defpackage murja-activitypub-common-lisp.actor
   (:use :cl :ql :postmodern)
-  (:export :get-person :webfinger-query))
+  (:export :get-person :get-person-from-db :webfinger-query))
 (in-package murja-activitypub-common-lisp.actor)
 
 (defun slurp (path)
@@ -9,8 +9,11 @@
       (read-sequence data stream)
       data)))
 
-(defun get-person ()
-  (json:encode-json-alist-to-string `(("@context" . ("https://www.w3.org/ns/activitystreams"
+(defun get-person-from-db (account)
+  (query "SELECT * FROM blog.Users WHERE username = $1" account :alist))
+
+(defun get-person (id)
+  `(("@context" . ("https://www.w3.org/ns/activitystreams"
 						     "https://w3id.org/security/v1"))
 				      ("id" . "https://feuerx.net/activitypub/feuer")
 				      ("type" . "Person")
@@ -18,7 +21,7 @@
 				      ("inbox" . "https://feuerx.net/inbox")
 				      ("publicKey" . (("id" . "https://feuerx.net/activitypub/feuer#main-key")
 						      ("owner" . "https://feuerx.net/activitypub/feuer")
-						      ("publicKeyPem" . ,(slurp  #P"/Users/feuer/common-lisp/murja-activitypub-common-lisp/resources/public.pem")))))))
+						      ("publicKeyPem" . ,(slurp  #P"/Users/feuer/common-lisp/murja-activitypub-common-lisp/resources/public.pem"))))))
 
 (defun webfinger-query (resource server account)
   (if (string= server "feuerx.net")
