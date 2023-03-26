@@ -28,6 +28,8 @@ if [ -f ../murja/target/murja-2.0.0-SNAPSHOT-standalone.jar ]; then
 
     sed "s/{{dns}}/$dns_api_key/g" dns-conf/digitalocean.ini.template > dns-conf/digitalocean.ini
 
+    docker-compose stop
+
     if [ -d www ] ;
     then
 	rm -rf www
@@ -36,6 +38,8 @@ if [ -f ../murja/target/murja-2.0.0-SNAPSHOT-standalone.jar ]; then
     git clone https://github.com/feuery/feuerx_frontpage.git www	
 
     docker-compose start
+    # docker-compose isn't really keen on respecting docker-compose.yml's 'build: .' property
+    docker-compose up -d --force-recreate --build --no-deps app
 else
     echo "No murja jar found :("
 fi
