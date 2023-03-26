@@ -36,4 +36,9 @@ articleView settings loginstate zone the_actual_post =
                               _ -> div [] [])
                                                     
                        , article [ class "content"
-                                 , dangerouslySetInnerHTML the_actual_post.content] []]
+                                 , dangerouslySetInnerHTML the_actual_post.content] []
+                       , div [] ( the_actual_post.tags
+                                |> List.filter ((/=) "")
+                                |> List.map ( \tag -> span [] [ a [ href ("/blog/tags/" ++ tag)
+                                                                  , class "tag" ] [text tag]
+                                                              , text ", "]))]

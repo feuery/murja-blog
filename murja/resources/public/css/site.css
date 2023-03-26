@@ -18,6 +18,10 @@ html, body {
     display: block;
 }
 
+.tag {
+    font-size: 0.7em;
+}
+
 #editor-post-content {
     box-sizing: border-box;
     height: 100%;
