@@ -62,9 +62,10 @@ main =
 subscriptions : Model -> Sub Msg
 subscriptions _ = Sub.batch 
                   [ tags ReceivedTag
-                  , aceStateUpdate AceStateUpdate]
+                  , aceStateUpdate AceStateUpdate
+                  , fromLocalStorage PostFromLocalStorage]
 
-initialModel url key viewstate = Model viewstate Nothing False False [] Nothing LoggedOut key url Nothing Time.utc
+initialModel url key viewstate = Model viewstate Nothing False False [] Nothing LoggedOut key url Nothing Time.utc Nothing
     
 viewStatePerUrl : Url.Url -> (ViewState, List (Cmd Msg))
 viewStatePerUrl url =
@@ -102,7 +103,8 @@ viewStatePerUrl url =
         RouteParser.NewPost ->
             (PostEditor, [ getSettings
                          , getTitles
-                         , getSession])
+                         , getSession
+                         , loadPostFromLocalStorage ()])
 
         RouteParser.PostVersion post_id version_id -> (Loading, [ getSession
                                                                 , getSettings
@@ -126,8 +128,12 @@ init _ url key =
 port prompt : String -> Cmd msg
 port alert : String -> Cmd msg
 port tags : (String -> msg) -> Sub msg
-port aceStateUpdate : (String -> msg) -> Sub msg               
-                
+port aceStateUpdate : (String -> msg) -> Sub msg
+
+port savePostToLocalStorage: String -> Cmd msg
+port loadPostFromLocalStorage: () -> Cmd msg                         
+port fromLocalStorage: (String -> msg) -> Sub msg
+
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
@@ -197,7 +203,11 @@ update msg model =
                 Ok user ->
                     if model.view_state == PostEditor then
                         ({ model | loginState = LoggedIn user 
-                         , postEditorSettings = Just (PostEditorSettings (Article.Article (C.Creator user.username user.nickname user.img_location) [""] "" Nothing "New post" Nothing Nothing [] Nothing Nothing) "" False)}
+                         , postEditorSettings = Just (PostEditorSettings
+                                                          (Maybe.withDefault 
+                                                               (Article.Article (C.Creator user.username user.nickname user.img_location) [""] "" Nothing "New post" Nothing Nothing (Just []) Nothing Nothing)
+                                                               model.postFromLocalStorage)
+                                                          "" False)}
                         , Cmd.none)
                     else 
                         ({model | loginState = LoggedIn user}, Cmd.none)
@@ -250,32 +260,23 @@ update msg model =
         ReceivedTag tag ->
             case model.postEditorSettings of
                 Just settings ->
-                    let article = settings.article in
+                    let old_article = settings.article
+                        article = { old_article | tags = tag :: settings.article.tags} in
                     ({ model | postEditorSettings = Just
-                           { settings | article = { article | tags = tag :: settings.article.tags}
-                           }}
-                    , Cmd.none)
+                           { settings | article = article}}
+                    , savePostToLocalStorage (Json.Encode.encode 0 (Article.encode article)))
                 Nothing -> (model, alert "ReceivedTag called even though postEditorSettings is nil")
         DropTag tag ->
             case model.postEditorSettings of
                 Just settings ->
-                    let article = settings.article in
+                    let old_article = settings.article
+                        article = { old_article | tags = List.filter ((/=) settings.selected_tag) old_article.tags} in
                     ({ model | postEditorSettings = Just
-                           { settings | article =
-                                 { article | tags = List.filter ((/=) settings.selected_tag) article.tags}}}
-                    , Cmd.none)
+                           { settings | article = article}}
+                    , savePostToLocalStorage (Json.Encode.encode 0 (Article.encode article)))
                 Nothing -> (model, alert "DropTag called even though postEditorSettings is nil")
         HttpIgnoreResponse result ->
             (model, Cmd.none)
-        ChangePost new_content ->
-            case model.postEditorSettings of
-                Just settings ->
-                    let article = settings.article in
-                    ({ model | postEditorSettings = Just
-                           { settings | article =
-                                 { article | content = new_content}}}
-                    , Cmd.none)
-                Nothing -> (model, alert "ChangePost called even though postEditorSettings is nil")
         SavePost article ->
             let new_post_p = article.id == Nothing in
             doGoHome_
@@ -293,7 +294,7 @@ update msg model =
                     ({ model | postEditorSettings = Just
                            { settings | article =
                                  { article | content = content}}}
-                    , Cmd.none)
+                    , savePostToLocalStorage (Json.Encode.encode 0 (Article.encode article)))
                 Nothing -> (model, alert "AceStateUpdate called even though postEditorSettings is nil")
                     
         ChangeTitle new_title ->
@@ -303,7 +304,7 @@ update msg model =
                     ({ model | postEditorSettings = Just
                            { settings | article =
                                  { article | title = new_title}}}
-                    , Cmd.none)
+                    , savePostToLocalStorage (Json.Encode.encode 0 (Article.encode article)))
                 Nothing -> (model, alert "ChangeTitle called even though postEditorSettings is nil")            
         HttpManagerGetListOfImages _ -> (model, getListOfImages True)                                  
         GetListOfImages -> ( { model | showImageModal = True }
@@ -415,6 +416,14 @@ update msg model =
                     , Cmd.none)
                 Err err ->
                     (model , alert ("Error loading post version " ++ Debug.toString err))
+        PostFromLocalStorage post_json ->
+            case (Decode.decodeString Article.articleDecoder post_json) of
+                Ok saved_article ->
+                    ({ model | postFromLocalStorage = Just saved_article} 
+                    , Cmd.none)
+                Err err ->
+                    ( model
+                    , alert ("json decoding failed" ++ Debug.toString err))
             
             
                   

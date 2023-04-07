@@ -6,12 +6,17 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onInput, onClick)
 import User
 import Message exposing (..)
+import Settings
+import Time
+import Article
 
 
 formatDateTime formatString zone posixTime =
     Df.format formatString zone posixTime
 
 articleView settings loginstate zone the_actual_post =
+    let versions = Maybe.withDefault [] the_actual_post.versions
+    in
     div [class "post"] [ case the_actual_post.id of
                              Just post_id -> a [href ("/blog/post/" ++ String.fromInt post_id)] [ text the_actual_post.title ]
                              Nothing -> span [] [ text the_actual_post.title ]
@@ -24,7 +29,7 @@ articleView settings loginstate zone the_actual_post =
                                                                    p [] [text ("No idea when it's written")]]
                                                  (case the_actual_post.id of
                                                      Just post_id ->
-                                                         (List.map (\version -> a [ href ("/blog/post/" ++ String.fromInt post_id ++ "/version/" ++ String.fromInt version) ] [ text ((String.fromInt version) ++ ", ")]) the_actual_post.versions)
+                                                         (List.map (\version -> a [ href ("/blog/post/" ++ String.fromInt post_id ++ "/version/" ++ String.fromInt version) ] [ text ((String.fromInt version) ++ ", ")]) versions)
                                                      Nothing -> []))
                              
                        , (case the_actual_post.id of

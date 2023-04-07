@@ -70,7 +70,8 @@ type alias Model =
     , key : Nav.Key
     , url : Url.Url
     , postEditorSettings: Maybe PostEditorSettings
-    , zone : Time.Zone}
+    , zone : Time.Zone
+    , postFromLocalStorage : Maybe Article.Article}
     
 type Msg
   = PageReceived (Result Http.Error P.Page)
@@ -96,7 +97,6 @@ type Msg
   | DropTag String
   | SavePost Article.Article
   | HttpIgnoreResponse (Result Http.Error String)
-  | ChangePost String
   | HttpGoHome (Result Http.Error String)
   | GoHome
   | ChangeTitle String
@@ -119,6 +119,7 @@ type Msg
   | GotTaggedPosts  (Result Http.Error (List Article.Article))
   | ToggleArticlePreview
   | GotOldPost (Result Http.Error Article.Article)
+  | PostFromLocalStorage String
   
 
 
