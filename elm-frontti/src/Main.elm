@@ -126,8 +126,12 @@ init _ url key =
 port prompt : String -> Cmd msg
 port alert : String -> Cmd msg
 port tags : (String -> msg) -> Sub msg
-port aceStateUpdate : (String -> msg) -> Sub msg               
-                
+port aceStateUpdate : (String -> msg) -> Sub msg
+
+port savePostToLocalStorage: String -> Cmd msg
+port loadPostFromLocalStorage: () -> Cmd msg                         
+port fromLocalStorage: (String -> msg) -> Sub msg
+
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
@@ -293,7 +297,7 @@ update msg model =
                     ({ model | postEditorSettings = Just
                            { settings | article =
                                  { article | content = content}}}
-                    , Cmd.none)
+                    , savePostToLocalStorage (Json.Encode.encode 0 (Article.encode article)))
                 Nothing -> (model, alert "AceStateUpdate called even though postEditorSettings is nil")
                     
         ChangeTitle new_title ->

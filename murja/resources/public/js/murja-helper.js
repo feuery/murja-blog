@@ -43,3 +43,13 @@ Object.defineProperty(HTMLElement.prototype, "dangerouslySetInnerHTML", {
         this.innerHTML = value
     }
 })
+
+app.ports.savePostToLocalStorage.subscribe( v => {
+    Window.localStorage.setItem("post", v)
+});
+
+app.ports.loadPostFromLocalStorage.subscribe( () => {
+    const post = Window.localStorage.getItem("post");
+    debugger;
+    app.ports.fromLocalStorage.send(post);
+});
