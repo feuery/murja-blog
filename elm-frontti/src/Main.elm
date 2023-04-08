@@ -62,7 +62,8 @@ main =
 subscriptions : Model -> Sub Msg
 subscriptions _ = Sub.batch 
                   [ tags ReceivedTag
-                  , aceStateUpdate AceStateUpdate]
+                  , aceStateUpdate AceStateUpdate
+                  , fromLocalStorage PostFromLocalStorage]
 
 initialModel url key viewstate = Model viewstate Nothing False False [] Nothing LoggedOut key url Nothing Time.utc
     
@@ -102,7 +103,8 @@ viewStatePerUrl url =
         RouteParser.NewPost ->
             (PostEditor, [ getSettings
                          , getTitles
-                         , getSession])
+                         , getSession
+                         , loadPostFromLocalStorage ()])
 
         RouteParser.PostVersion post_id version_id -> (Loading, [ getSession
                                                                 , getSettings
@@ -419,6 +421,16 @@ update msg model =
                     , Cmd.none)
                 Err err ->
                     (model , alert ("Error loading post version " ++ Debug.toString err))
+        PostFromLocalStorage post_json ->
+            case (Decode.decodeString Article.articleDecoder post_json) of
+                Ok saved_article ->
+                    ({ model | postEditorSettings =
+                           (Maybe.map (\settings -> { settings | article = saved_article})
+                                model.postEditorSettings)}
+                    , alert ( if model.postEditorSettings == Nothing then "ei oo asetuksia vielä" else "oho on jo asetukset"))
+                Err err ->
+                    ( model
+                    , alert ("json decoding failed" ++ Debug.toString err))
             
             
                   

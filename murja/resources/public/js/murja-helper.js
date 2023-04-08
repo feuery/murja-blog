@@ -45,11 +45,10 @@ Object.defineProperty(HTMLElement.prototype, "dangerouslySetInnerHTML", {
 })
 
 app.ports.savePostToLocalStorage.subscribe( v => {
-    Window.localStorage.setItem("post", v)
+    localStorage.setItem("post", v)
 });
 
 app.ports.loadPostFromLocalStorage.subscribe( () => {
-    const post = Window.localStorage.getItem("post");
-    debugger;
+    const post = localStorage.getItem("post");
     app.ports.fromLocalStorage.send(post);
 });
