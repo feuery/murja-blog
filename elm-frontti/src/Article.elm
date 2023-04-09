@@ -46,7 +46,7 @@ type alias Article =
     , title : String
     , pre_post_id : Maybe Int
     , id : Maybe Int
-    , versions: List Int
+    , versions: Maybe (List Int)
     , version : Maybe Int
     -- , next_post_id: Maybe Int
     , created_at: Maybe Time.Posix
@@ -80,7 +80,7 @@ commentsDecoder = Decode.maybe (Decode.field "comments" (Decode.list Decode.stri
 titleDecoder = Decode.field "title" Decode.string
 pre_post_idDecoder = Decode.maybe (Decode.field "prev-post-id"  Decode.int)
 idDecoder = Decode.maybe ( Decode.field "id" Decode.int)
-versionsDecoder = Decode.field "versions" (Decode.list Decode.int)
+versionsDecoder = Decode.maybe (Decode.field "versions" (Decode.list Decode.int))
 versionDecoder = Decode.maybe (Decode.field "version" Decode.int)
 -- next_post_idDecoder = Decode.field "next-post-id" (Decode.maybe Decode.int)
 created_atDecoder = Decode.field "created_at" (Decode.maybe Extra.iso8601)
