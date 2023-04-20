@@ -120,12 +120,14 @@ type Msg
   | ToggleArticlePreview
   | GotOldPost (Result Http.Error Article.Article)
   | PostFromLocalStorage String
+  | ClearLocalStorage 
   
 
 
 -- ports
 port reallySetupAce : String -> Cmd msg
 port addImgToAce : String -> Cmd msg
+port clearPostFromLS : () -> Cmd msg                   
 
 
 -- dumb shit that would deserve its own module

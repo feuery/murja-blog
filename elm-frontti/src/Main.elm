@@ -424,6 +424,16 @@ update msg model =
                 Err err ->
                     ( model
                     , alert ("json decoding failed" ++ Debug.toString err))
+        ClearLocalStorage ->
+            case model.loginState of
+                LoggedIn user ->
+                    ({ model | postEditorSettings = Just (PostEditorSettings
+                                                              (Maybe.withDefault 
+                                                                   (Article.Article (C.Creator user.username user.nickname user.img_location) [""] "" Nothing "New post" Nothing Nothing (Just []) Nothing Nothing)
+                                                                   model.postFromLocalStorage)
+                                                              "" False)}
+                    , clearPostFromLS ())
+                _ -> (model, Cmd.none)
             
             
                   
