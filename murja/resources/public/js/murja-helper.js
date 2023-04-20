@@ -50,5 +50,13 @@ app.ports.savePostToLocalStorage.subscribe( v => {
 
 app.ports.loadPostFromLocalStorage.subscribe( () => {
     const post = localStorage.getItem("post");
-    app.ports.fromLocalStorage.send(post);
+    if (post) 
+	app.ports.fromLocalStorage.send(post);
+});
+
+app.ports.clearPostFromLS.subscribe( () => {
+    if (window.confirm("Are you sure to clear the editor?")) {
+	localStorage.removeItem("post");
+	location.reload();
+    }
 });

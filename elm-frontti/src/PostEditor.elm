@@ -47,6 +47,9 @@ tagView post selectedTag = div [class "tagview"]
                     [text "Remove selected tag"]
                ]
 
+third_column = div [class "tagview" ]
+               [ murja_button [ onClick ClearLocalStorage ] [ text "Clear post in the editor" ] ]
+
 editor params =
     node "ace-editor"
     (  params
@@ -84,6 +87,7 @@ postEditor post tag showImageModal loadedImages draggingImages editorSettings ap
                     , onClick ToggleArticlePreview] []]
             
       , tagView post tag
+      , third_column
       , if showImageModal then imageSelector loadedImages else div [] []
 
       , if editorSettings.show_preview then
