@@ -9,17 +9,24 @@ import Html.Events exposing (..)
 
 import Date_utils exposing (int_to_month_string)
 
+tagListElement allTags tag =
+    let count = (  allTags
+                |> List.filter ((==) tag)
+                |> List.length) in
+    a [ href ("/blog/tags/" ++ tag)
+      , style "display" "block" ]
+    [ text (tag ++ " (" ++ (String.fromInt count) ++ ")")]
+
 tagList titles =
-    let tags = (  titles
-               |> List.concatMap (\title -> title.tags)
+    let allTags = (  titles
+                  |> List.concatMap (\title -> title.tags))
+        tags = (  allTags
                |> Set.fromList
                |> Set.toList
                |> List.filter ((/=) "")) in
     div [] (List.append [h3 [] [text ("Tags in the system (" ++ String.fromInt (List.length tags) ++ "): ")]]
                 (  tags 
-                |> List.map (\tag -> a [ href ("/blog/tags/" ++ tag)
-                                       , style "display" "block" ]
-                                 [ text tag ])))
+                |> List.map (tagListElement allTags)))
 
 titleView title =  case (int_to_month_string title.month) of
                        Just month -> 
