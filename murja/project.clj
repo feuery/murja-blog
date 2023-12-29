@@ -20,10 +20,10 @@
                  [org.clojure/data.xml "0.0.8"]]
   :repl-options {:init-ns murja.reitit}
   :profiles {:dev {:dependencies [[org.clojure/tools.nrepl "0.2.13"]
-                                  [cider/cider-nrepl "0.30.0"]
+                                  [cider/cider-nrepl "0.44.0"]
 
                                   [ring/ring-mock "0.4.0"]]
-                   :plugins [[cider/cider-nrepl "0.26.0"]]}}
+                   :plugins [[cider/cider-nrepl "0.44.0"]]}}
   :source-paths ["src" "src/sql"]
   
   :main murja.reitit

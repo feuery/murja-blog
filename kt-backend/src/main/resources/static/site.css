@@ -1,0 +1,245 @@
+html, body {
+    height: 100%
+}
+
+#editor-post-title {
+    flex: 1 1;	    
+}
+
+.tagview {
+    display: table;
+}
+
+.tagview > button {
+    display: table-cell;
+}
+
+.tagview > select {
+    display: block;
+}
+
+.tag {
+    font-size: 0.7em;
+}
+
+#editor-post-content {
+    box-sizing: border-box;
+    height: 100%;
+    min-width: 100%;
+    display: block;
+    flex: 10 1;	    
+}
+
+/* #editor-post-save { */
+/*     flex: 1 1; */
+/* } */
+
+#editor-buttons * {
+    display: block;
+}
+
+#selector-div {
+    
+}
+
+#selector-div img {
+    width: 300px;
+    height: 300px;
+    padding: 1em;
+}
+
+#selector-div img:hover {
+    background-color: #880088;
+}
+
+.left-sidebar {
+    flex: 1 1;
+    border: 2px solid #666666;
+}
+
+.left-sidebar > ul {
+    display: flex;
+    flex-flow: row wrap;
+}
+
+.left-sidebar > ul > li {
+    flex: 1 1;
+    list-style: none;
+}
+
+.page {
+    flex: 8 1;
+    bottom: 0;
+
+
+    display: flex;
+    flex-flow: row wrap;
+}
+
+.post {
+    border: 2px solid #666666;
+    width: 100%;
+}
+
+body {
+    background-color: #000000;
+    font-family: 'Helvetica Neue', Verdana, Helvetica, Arial, sans-serif;
+    color: #00CC00;
+}
+
+.meta {
+    color: #666666;
+}
+
+.flex-container {
+    display: flex;
+    flex-flow: row wrap;
+    height: 100%;
+}
+
+.title-flex-container {
+    display: flex;
+    flex-flow: row wrap;
+    margin-bottom: 10%;
+}
+
+.title-flex-container > * {
+
+}
+
+.title-flex-container > a {
+    flex: 1 4;
+}
+
+.vertical-flex-container {
+    display: flex;
+    width: 100%;
+    flex-flow: column wrap;
+}
+
+.post-admin-title {
+    flex: 3 1;
+}
+
+#sidebar {
+    border: 2px solid #666666;
+    flex: 1 1;
+}
+
+#loginview {
+    border-top: 2px solid #666666;
+    border-bottom: 2px solid #666666;
+}
+
+#loginview button {
+    display: block;
+    margin-bottom: 30px;
+}
+
+#loginview a {
+    display: block;
+}
+
+.user_avatar {
+    width: 50px;
+    height: 50px;
+    margin-left: 10px;
+    margin-right: 10px;
+    display: block;
+}
+
+label {
+    display: block;
+}
+
+textarea {
+    width: 100%;
+    height: 100%;
+}
+
+.blog-title {
+    color: #FFFFFF;
+}
+
+.blog-title:hover {
+    color: #0000FF;
+}
+
+.commenting-area {
+    margin-top: 60px;
+}
+
+#form button {
+    display: block;
+}
+
+#import-form input {
+    display: block;
+}
+
+.newer-post {
+    float: right;
+}
+
+a {
+    color: #0DF;
+}
+
+a:hover {
+    color: #FFF;
+}
+
+#grouper ul {
+    list-style: none;
+}
+
+.title-list li {
+    margin: 10px;
+}
+
+header {
+    font-size: 3em;
+    color: #00CC00;
+    display: table;
+    margin: 0 auto;
+    max-widht: 70%;
+}
+
+.version-container {
+    float: right;
+    position: relative;
+    right: 0px;
+}
+
+.version-container a {
+    padding-right: 5px;
+}
+
+.big_font {
+    font-size: 2em;
+}
+
+.media-row {
+    padding-bottom: 10%;
+}
+
+.murja-button
+{
+    border: 5px solid #00CC00;
+    margin: 5px;
+    border-radius: 15px;
+
+}
+
+#new-tag-btn
+{
+    display: block;
+}
+
+
+@media only screen and (max-device-width:480px)
+{
+    body {
+	font-size: 3em;
+    }
+}
