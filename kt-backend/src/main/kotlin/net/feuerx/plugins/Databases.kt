@@ -24,22 +24,19 @@ fun Application.configureDatabases() {
 		val pagesize = pagesize_nil?: error("pagesize is required")
 
 		println("Page: " + page + ", pagesize: " + pagesize);
-
-// 		-- WHERE ((NOT p.tags ?? 'unlisted') OR :show-hidden)
-// --   AND ((NOT p.tags ?? 'hidden') OR :show-hidden)
-
 		
 		val posts: List<Post> = session.run(queryOf("""
 SELECT p.ID as post_id, p.Title, p.Content, p.created_at, p.tags, u.Username, u.Nickname, u.Img_location, p.creator_id
 FROM blog.Post p
 JOIN blog.Users u ON u.ID = p.creator_id
-
+WHERE (((NOT p.tags ?? 'unlisted') OR :show_hidden)
+   AND ((NOT p.tags ?? 'hidden') OR :show_hidden))
 GROUP BY p.ID, u.ID
 ORDER BY p.created_at DESC
 LIMIT :pageSize
 OFFSET :pageId
 						""",
-							    mapOf("pageId" to page, "pageSize" to pagesize, "show-hidden" to false))
+							    mapOf("pageId" to page, "pageSize" to pagesize, "show_hidden" to false))
 							.map { row ->
 							    Post( row.int("post_id")
 								, row.string("title")
