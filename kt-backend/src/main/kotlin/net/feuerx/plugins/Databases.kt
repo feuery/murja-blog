@@ -12,6 +12,8 @@ import kotliquery.HikariCP
 import kotliquery.queryOf
 import kotlin.text.toLong
 import net.feuerx.model.Post
+import net.feuerx.model.PageResponse
+import net.feuerx.model.getUserById
 
 fun Application.configureDatabases() {
 	routing {
@@ -41,16 +43,16 @@ OFFSET :pageId
 							    Post( row.int("post_id")
 								, row.string("title")
 								, row.string("content")
-								, row.int("creator_id")
+								, getUserById(session, row.long("creator_id"))
 								, listOf("test", "tags") // row.string("tags")
 								, row.localDateTime("created_at"))
 							}
 							.asList
 		)
 
-		println("Posts: " + posts) 
+		val response = PageResponse(posts, page, false)
 
-		call.respond(posts);
+		call.respond(response)
 	    }
 	}    
     }	

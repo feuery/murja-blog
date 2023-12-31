@@ -9,7 +9,7 @@ import net.feuerx.hacks.DateTimeSerializer
 data class Post (val id: Int,
 		 val title: String,
 		 val content: String,
-		 val creator: Int,
+		 val creator: User,
 		 val tags: List<String>,
  
 		 @Serializable(with = DateTimeSerializer::class)
