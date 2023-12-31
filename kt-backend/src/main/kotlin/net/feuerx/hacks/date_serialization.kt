@@ -11,7 +11,8 @@ import java.util.Locale
 @OptIn(ExperimentalSerializationApi::class)
 @Serializer(forClass = LocalDateTime::class)
 object DateTimeSerializer {
-    private val format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+    // 2019-11-22T18:26:45Z
+    private val format = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:SS'Z'")
 
     override fun deserialize(decoder: Decoder): LocalDateTime {
         val dateString = decoder.decodeString()
