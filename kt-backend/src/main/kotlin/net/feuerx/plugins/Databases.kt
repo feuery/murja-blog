@@ -7,27 +7,59 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import java.sql.*
 import kotlinx.coroutines.*
+import kotlinx.serialization.json.Json
 import kotliquery.sessionOf
 import kotliquery.HikariCP
 import kotliquery.queryOf
 import kotlin.text.toLong
 import net.feuerx.model.Post
+import net.feuerx.model.Title
 import net.feuerx.model.PageResponse
 import net.feuerx.model.getUserById
 
 fun Application.configureDatabases() {
-	routing {
-	    get("/api/posts/page/{page}/page-size/{size}") {
-		    sessionOf(HikariCP.dataSource()).use { session ->
+    routing {
+	get ("/api/posts/titles") {
+	    sessionOf(HikariCP.dataSource()).use { session ->
+		val show_hidden = false;
+		val titles =
+		    session.run(
+			queryOf(
+			    """
+SELECT p.Title,
+EXTRACT(MONTH FROM p.created_at) AS "Month",
+EXTRACT(YEAR FROM p.created_at) AS "Year",
+p.id as "Id",
+p.Tags
+FROM blog.Post p
+WHERE :show_hidden OR (NOT p.tags ?? 'unlisted' AND NOT p.tags ?? 'hidden')
+ORDER BY p.created_at DESC
+			    """
+			       , mapOf("show_hidden" to show_hidden))
+			    .map { row ->
+				Title( row.string("title")
+				     , row.long("month")
+				     , row.long("year")
+				     , row.long("id")
+				     , Json.decodeFromString<List<String>>(row.string("tags")))}
+			    .asList)
+
+		call.respond(titles)
+		
+	    }
+	}
+	get("/api/posts/page/{page}/page-size/{size}") {
+	    sessionOf(HikariCP.dataSource()).use { session ->
 		val page_nil = call.parameters["page"]?.toLong()
 		val pagesize_nil = call.parameters["size"]?.toLong()
 
-		val page: Long = page_nil?: error("page is required")
-		val pagesize = pagesize_nil?: error("pagesize is required")
-
-		println("Page: " + page + ", pagesize: " + pagesize);
+		val page: Long = page_nil ?: error("page is required")
+		val pagesize = pagesize_nil ?: error("pagesize is required")
 		
-		val posts: List<Post> = session.run(queryOf("""
+		val posts: List<Post> =
+                    session.run(
+                        queryOf(
+                            """
 SELECT p.ID as post_id, p.Title, p.Content, p.created_at, p.tags, u.Username, u.Nickname, u.Img_location, p.creator_id
 FROM blog.Post p
 JOIN blog.Users u ON u.ID = p.creator_id
@@ -37,54 +69,29 @@ GROUP BY p.ID, u.ID
 ORDER BY p.created_at DESC
 LIMIT :pageSize
 OFFSET :pageId
-						""",
-							    mapOf("pageId" to page, "pageSize" to pagesize, "show_hidden" to false))
-							.map { row ->
-							    Post( row.int("post_id")
-								, row.string("title")
-								, row.string("content")
-								, getUserById(session, row.long("creator_id"))
-								, listOf("test", "tags") // row.string("tags")
-								, row.localDateTime("created_at"))
-							}
-							.asList
-		)
-
+			    """,
+                            mapOf(
+                                "pageId" to page,
+                                "pageSize" to pagesize,
+                                "show_hidden" to false
+                            )
+                        )
+                            .map { row ->
+                                Post(
+                                    row.int("post_id"),
+                                    row.string("title"),
+                                    row.string("content"),
+                                    getUserById(session, row.long("creator_id")),
+				    Json.decodeFromString<List<String>>(row.string("tags")),
+                                    row.localDateTime("created_at")
+                                )
+                            }
+                            .asList
+                    )
 		val response = PageResponse(posts, page, false)
 
 		call.respond(response)
 	    }
-	}    
-    }	
+	}
+    }
 }
-
-/**
- * Makes a connection to a Postgres database.
- *
- * In order to connect to your running Postgres process,
- * please specify the following parameters in your configuration file:
- * - postgres.url -- Url of your running database process.
- * - postgres.user -- Username for database connection
- * - postgres.password -- Password for database connection
- *
- * If you don't have a database process running yet, you may need to [download]((https://www.postgresql.org/download/))
- * and install Postgres and follow the instructions [here](https://postgresapp.com/).
- * Then, you would be able to edit your url,  which is usually "jdbc:postgresql://host:port/database", as well as
- * user and password values.
- *
- *
- * @param embedded -- if [true] defaults to an embedded database for tests that runs locally in the same process.
- * In this case you don't have to provide any parameters in configuration file, and you don't have to run a process.
- *
- * @return [Connection] that represent connection to the database. Please, don't forget to close this connection when
- * your application shuts down by calling [Connection.close]
- * */
-fun Application.connectToPostgres(): Connection {
-    Class.forName("org.postgresql.Driver")
-    val url = environment.config.property("postgres.url").getString()
-    val user = environment.config.property("postgres.user").getString()
-    val password = environment.config.property("postgres.password").getString()
-
-    return DriverManager.getConnection(url, user, password)
-}
-

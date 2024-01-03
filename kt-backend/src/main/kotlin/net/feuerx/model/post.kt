@@ -14,3 +14,10 @@ data class Post (val id: Int,
  
 		 @Serializable(with = DateTimeSerializer::class)
 		 val created_at: LocalDateTime)
+
+@Serializable
+data class Title ( val Title: String
+		 , val Month: Long
+		 , val Year: Long
+		 , val Id: Long
+		 , val Tags: List<String>)
