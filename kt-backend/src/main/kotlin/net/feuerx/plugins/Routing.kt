@@ -24,7 +24,7 @@ fun Application.configureRouting() {
         get("/") {
             call.respondHtml(HttpStatusCode.OK) {
 		head {
-		    link(type="text/css", href="/static/site.css") {}
+		    link(type="text/css", href="/static/site.css", rel="stylesheet") {}
 		    meta(charset="UTF-8")
 		    script(type="module", src="https://unpkg.com/ace-custom-element@latest/dist/index.min.js") {}
 		    script(type="", src="static/murja.min.js") {defer=true}
