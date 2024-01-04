@@ -11,12 +11,16 @@ import io.ktor.server.routing.*
 import io.ktor.server.webjars.*
 import io.ktor.server.html.respondHtml
 import java.io.File
+import net.feuerx.plugins.settings
 
 fun Application.configureRouting() {
     install(Webjars) {
         path = "/webjars" //defaults to /webjars
     }
     routing {
+	get("/api/settings/client-settings") {
+	    call.respond(settings.value.client_conf)
+	}
         get("/") {
             call.respondHtml(HttpStatusCode.OK) {
 		head {
