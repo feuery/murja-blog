@@ -10,17 +10,18 @@ import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 
 fun Application.configureSecurity() {
-    data class MySession(val count: Int = 0)
+    data class Murja_Session(val userId: Int? = null)
+    
     install(Sessions) {
-        cookie<MySession>("MY_SESSION") {
+        cookie<Murja_Session>("MURJA_SESSION") {
             cookie.extensions["SameSite"] = "lax"
         }
     }
     // Please read the jwt property from the config file if you are using EngineMain
-    val jwtAudience = "jwt-audience"
-    val jwtDomain = "https://jwt-provider-domain/"
-    val jwtRealm = "ktor sample app"
-    val jwtSecret = "secret"
+    val jwtAudience = "murja-jwt"
+    val jwtDomain = "https://feuerx.net/blog"
+    val jwtRealm = "murja"
+    val jwtSecret = java.util.UUID.randomUUID().toString()
     authentication {
         jwt {
             realm = jwtRealm
@@ -37,10 +38,10 @@ fun Application.configureSecurity() {
         }
     }
     routing {
-        get("/session/increment") {
-                val session = call.sessions.get<MySession>() ?: MySession()
+        /*get("/session/increment") {
+                val session = call.sessions.get<Murja_Session>() ?: Murja_Session()
                 call.sessions.set(session.copy(count = session.count + 1))
                 call.respondText("Counter is ${session.count}. Refresh to increment.")
-            }
+            } */
     }
 }
