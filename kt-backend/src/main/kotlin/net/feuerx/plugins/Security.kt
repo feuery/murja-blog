@@ -12,9 +12,10 @@ import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 import kotliquery.*
 import net.feuerx.model.User
+import net.feuerx.model.getSessionUserById
 
 fun Application.configureSecurity() {
-    data class Murja_Session(val userId: Int? = null)
+    data class Murja_Session(val userId: Long? = null)
     
     install(Sessions) {
         cookie<Murja_Session>("MURJA_SESSION") {
@@ -46,22 +47,7 @@ fun Application.configureSecurity() {
 	    sessionOf(HikariCP.dataSource()).use { db_session ->
 		val session = call.sessions.get<Murja_Session>() ?: Murja_Session()
 		if (session.userId != null) {
-		    call.respond(
-			db_session.run(
-                            queryOf(
-                                """
-SELECT *
-FROM blog.Users
-WHERE id = :id""",
-                                mapOf("id" to session.userId)
-                            )
-                                .map { row ->
-                                    User(
-                                        row.string("username"),
-                                        row.string("nickname"),
-                                        row.string("img_location"))
-                                }
-                                .asList).first())
+		    call.respond(getSessionUserById(db_session, session.userId))
 		}
 		else {
 		    call.respond(HttpStatusCode.Unauthorized)
