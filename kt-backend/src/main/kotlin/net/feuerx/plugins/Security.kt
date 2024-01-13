@@ -71,6 +71,7 @@ fun Application.configureSecurity() {
 
 		if(user != null) {
 		    session.user = user
+		    call.sessions.set<Murja_Session>(session)
 		    call.respond(user)
 		}
 		else {
