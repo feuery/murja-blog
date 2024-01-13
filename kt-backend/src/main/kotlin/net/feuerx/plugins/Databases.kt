@@ -16,6 +16,8 @@ import net.feuerx.model.Post
 import net.feuerx.model.Title
 import net.feuerx.model.PageResponse
 import net.feuerx.model.getUserById
+import net.feuerx.model.dbToPost
+import net.feuerx.model.postById
 
 fun Application.configureDatabases() {
     routing {
@@ -48,6 +50,13 @@ ORDER BY p.created_at DESC
 		
 	    }
 	}
+        get("/api/posts/post/{post-id}") {
+	    sessionOf(HikariCP.dataSource()).use { session ->
+		val post_id_nil = call.parameters["post-id"]?.toLong()
+		val post_id: Long = post_id_nil ?: error("invalid post id")
+		call.respond(postById(session, post_id))
+	    }
+	}
 	get("/api/posts/page/{page}/page-size/{size}") {
 	    sessionOf(HikariCP.dataSource()).use { session ->
 		val page_nil = call.parameters["page"]?.toLong()
@@ -76,16 +85,7 @@ OFFSET :pageId
                                 "show_hidden" to false
                             )
                         )
-                            .map { row ->
-                                Post(
-                                    row.int("post_id"),
-                                    row.string("title"),
-                                    row.string("content"),
-                                    getUserById(session, row.long("creator_id")),
-				    Json.decodeFromString<List<String>>(row.string("tags")),
-                                    row.localDateTime("created_at")
-                                )
-                            }
+                            .map {row -> dbToPost(session, row)}
                             .asList
                     )
 		val response = PageResponse(posts, page, false)
