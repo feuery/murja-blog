@@ -36,6 +36,7 @@ articleView settings loginstate zone the_actual_post =
                               Just post_id ->
                                   case loginstate of
                                       LoggedIn _ -> a [ href ("/blog/post/edit/" ++ String.fromInt post_id)
+                                                      , attribute "data-testid" "edit-post-btn"
                                                       , onClick (OpenPostEditor post_id)] [text "Edit this post"]
                                       _ -> div [] []
                               _ -> div [] [])

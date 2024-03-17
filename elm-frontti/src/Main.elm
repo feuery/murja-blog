@@ -510,7 +510,7 @@ view model =
                                                [ articleView settings model.loginState model.zone article ]
                                            PageView page ->
                                                (List.concat [(List.map (articleView settings model.loginState model.zone) page.posts),
-                                                                 [footer [] (if page.id > 1 then [ a [href ("/blog/page/" ++ fromInt (page.id + 1))] [text "Older posts"]
+                                                                 [footer [(attribute "data-testid" "page-changer")] (if page.id > 1 then [ a [href ("/blog/page/" ++ fromInt (page.id + 1))] [text "Older posts"]
                                                                                                  , a [href ("/blog/page/" ++ fromInt (page.id - 1)), class "newer-post"] [text "Newer posts"]]
                                                                              else [a [href ("/blog/page/" ++ fromInt (page.id + 1))] [text "Next page"]])]])
                                            ShowError err ->

@@ -37,15 +37,17 @@ hijack msg =
 optionize tag = option [value tag] [text tag]
 
 tagView post selectedTag = div [class "tagview"]
-              [ select [ multiple True
-                        , class "tag-select"
-                        , onInput SelectTag] (List.map optionize post.tags)
-               , murja_button [ onClick (PromptTag "New tag? ")
-                              , id "new-tag-btn"]
-                    [ text "Add tag"]
-               , murja_button [ onClick (DropTag selectedTag) ]
-                    [text "Remove selected tag"]
-               ]
+                           [ select [ multiple True
+                                    , class "tag-select"
+                                    , id "tag-select"
+                                    , onInput SelectTag
+                                    , attribute "data-tags" (String.join "," post.tags)] (List.map optionize post.tags)
+                           , murja_button [ onClick (PromptTag "New tag? ")
+                                          , id "new-tag-btn"]
+                                 [ text "Add tag"]
+                           , murja_button [ onClick (DropTag selectedTag)
+                                          , attribute "data-testid" "remove-tag"]
+                               [text "Remove selected tag"]]
 
 third_column = div [class "tagview" ]
                [ murja_button [ onClick ClearLocalStorage ] [ text "Clear post in the editor" ] ]

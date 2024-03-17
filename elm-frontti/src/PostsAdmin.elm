@@ -33,6 +33,7 @@ titleView title =  case (int_to_month_string title.month) of
                            div [ class "title-flex-container" ] 
                                [ span [class "post-admin-title" ] [text ( title.title ++ " - " ++ month  ++ ", " ++ (String.fromInt title.year))]
                                , a [ href ("/blog/post/edit/" ++ String.fromInt title.id)
+                                   , attribute "data-testid" "manager-edit-post-btn"
                                    , onClick (OpenPostEditor title.id)] [text "Edit"]
                                , a [href ("/blog/post/remove/" ++ String.fromInt title.id)] [text "Remove"]
                                , div [class "post-admin-title" ]

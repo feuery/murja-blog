@@ -58,23 +58,23 @@ stateToText state =
            
 loginView loginstate =
     let actual_view = [label [for "username"] [text "Username"],
-                       input [name "username", id "username", onInput ChangeUsername, onFocus LoginFocus ] [],
+                       input [name "username", id "username", attribute "data-testid" "username-input-field", onInput ChangeUsername, onFocus LoginFocus ] [],
                        label [for "password"] [text "Password"],
-                       input [name "password", id "password", type_ "password", onInput ChangePassword ] []
+                       input [name "password", attribute "data-testid" "password-input-field", id "password", type_ "password", onInput ChangePassword ] []
                            -- , label [] [text ("Loginstate: " ++ stateToText loginstate)]
                       ] in
     div [] (case loginstate of
                                   LoggedIn usr ->
-                                      [text ("Welcome, " ++ usr.nickname)]
+                                      [p [attribute "data-testid" "welcome-user-label"] [text ("Welcome, " ++ usr.nickname)]]
                                   LoggingIn username password ->
                                       (List.concat [actual_view,
-                                                    [button [onClick DoLogIn] [text "Login!"]]])
+                                                    [button [attribute "data-testid" "dologin", onClick DoLogIn] [text "Login!"]]])
                                   LoggedOut ->
                                       actual_view
                                   LoginFailed ->
                                       (List.concat [actual_view,
                                                     [button [onClick DoLogIn] [text "Login!"],
-                                                     div [] [text "Login failed! Check username and password!"]]]))
+                                                     div [attribute "data-testid" "loginfailed"] [text "Login failed! Check username and password!"]]]))
 
 user_avatar creator = img [class "user_avatar", src creator.img_location] []
 
