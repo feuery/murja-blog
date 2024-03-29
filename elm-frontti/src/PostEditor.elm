@@ -91,6 +91,7 @@ postEditor post tag showImageModal loadedImages draggingImages editorSettings ap
       , tagView post tag
       , third_column
       , if showImageModal then imageSelector loadedImages else div [] []
+      , div [ attribute "data-testid" "article-id" ] [ text ("Article: " ++ (Maybe.withDefault "No id" (Maybe.map String.fromInt post.id)))]
 
       , if editorSettings.show_preview then
             case loginState of
