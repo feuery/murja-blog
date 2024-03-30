@@ -50,7 +50,9 @@ tagView post selectedTag = div [class "tagview"]
                                [text "Remove selected tag"]]
 
 third_column = div [class "tagview" ]
-               [ murja_button [ onClick ClearLocalStorage ] [ text "Clear post in the editor" ] ]
+               [ murja_button [ onClick ClearLocalStorage
+                              , attribute "data-testid" "clear-editor" ]
+                     [ text "Clear post in the editor" ] ]
 
 editor params =
     node "ace-editor"
