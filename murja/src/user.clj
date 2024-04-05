@@ -6,6 +6,7 @@
 
 (defn prepare-playwright-environment []
   (j/execute! (:db config) ["DELETE FROM blog.Users"])
+  (j/execute! (:db config) ["DELETE FROM blog.Media"])
   (register-user! {:db-spec (:db config)}
                   "playwrighte"
                   "Playwright-user"

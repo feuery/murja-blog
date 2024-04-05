@@ -53,7 +53,7 @@ medialist images medialist_state =
                                                            (List.map referencing_post_view referencing_posts)
                                               Nothing -> div [] [ text "No referencing posts" ]]
                                     , div [ class "post-admin-title" ]
-                                        [ label [for checkbox_id] [text "Valitse poistettavaksi"]
+                                        [ label [for checkbox_id] [text "Choose for deletion"]
                                         , input [ type_ "checkbox"
                                                 , id checkbox_id
                                                 , checked (List.member image.id state.selected_ids_for_removal)
