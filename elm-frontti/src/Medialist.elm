@@ -42,8 +42,9 @@ medialist images medialist_state =
                                           [ summary [ class "post-admin-title" ] [h2 [] [ text image.name ]
                                                                                  , div [] [ text (UUID.toString image.id)]]
                                           , ImageSelector.image image]
-                                    , details [ class "post-admin-title" ]
-                                        [ summary [] [ text "Referencing posts" ]
+                                    , details [ class "post-admin-title"]
+                                        [ summary [ attribute "data-testid" "referencing-post"]
+                                              [ text "Referencing posts" ]
                                         , case (Dict.get (UUID.toString image.id) state.referencing_posts) of
                                               Just referencing_posts ->
                                                   if referencing_posts == [] then
